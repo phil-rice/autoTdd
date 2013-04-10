@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: autoTdd
-Bundle-SymbolicName: autoTdd
-Bundle-Version: 1.0.0.qualifier
-Export-Package: org.autoTdd,
- org.autoTdd.engine,
- org.autoTdd.groovy

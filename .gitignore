@@ -1,6 +1,6 @@
 *.class
-
-# Package Files #
+*/target/*
+*/neo4j/*
 *.jar
-*.war
-*.ear
+*.zip
+
