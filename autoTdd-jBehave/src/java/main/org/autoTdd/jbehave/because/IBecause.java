@@ -1,4 +1,4 @@
-package org.autoTdd.jbehave;
+package org.autoTdd.jbehave.because;
 
 import java.util.Arrays;
 
@@ -13,28 +13,29 @@ public interface IBecause {
 
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public static boolean execute(IBecause because, Object... parameters) {
+			if (because instanceof IBecause1<?>) {
+				checkInputs(parameters, 1);
+				return ((IBecause1) because).evaluate(parameters[0]);
+			}
 			if (because instanceof IBecause2<?, ?>) {
 				checkInputs(parameters, 2);
 				return ((IBecause2) because).evaluate(parameters[0], parameters[1]);
 			}
 			throw new IllegalStateException("Don't know how to execute because clause of " + because.getClass());
 		}
+
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public static boolean execute(IBecause because, Step step) {
-			if (!(step  instanceof ParameterisedStep))
+			if (!(step instanceof ParameterisedStep))
 				throw new IllegalArgumentException("Cannot execute because as step is of " + step.getClass());
-			
+
 			IEngineSteps engineSteps = StepsHelper.findEngineStepsFor(step);
 			Object[] inputs = engineSteps.getInputs();
-			if (because instanceof IBecause2<?, ?>) {
-				checkInputs(inputs, 2);
-				return ((IBecause2) because).evaluate(inputs[0], inputs[1]);
-			}
-			throw new IllegalStateException("Don't know how to execute because clause of " + because.getClass());
+			return execute(because, inputs);
 		}
 
 		private static void checkInputs(Object[] parameters, int expected) {
-			if (parameters.length != 2)
+			if (parameters.length != expected)
 				throw new IllegalStateException("Wrong number of parameters, expected " + expected + " had " + parameters.length + " which are " + Arrays.asList(parameters));
 		}
 	}

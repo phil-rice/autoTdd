@@ -1,7 +1,7 @@
 package org.jbehave.core.i18n;
 
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.jbehave.core.configuration.Keywords.AND;
 import static org.jbehave.core.configuration.Keywords.AS_A;

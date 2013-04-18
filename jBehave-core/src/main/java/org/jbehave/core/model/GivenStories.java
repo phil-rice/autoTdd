@@ -83,7 +83,8 @@ public class GivenStories {
         return givenStoriesAsString;
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 

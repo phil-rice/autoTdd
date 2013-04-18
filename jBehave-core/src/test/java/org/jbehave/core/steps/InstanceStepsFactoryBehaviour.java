@@ -11,7 +11,6 @@ import org.jbehave.core.annotations.AsParameterConverter;
 import org.jbehave.core.annotations.Given;
 import org.jbehave.core.annotations.Then;
 import org.jbehave.core.annotations.When;
-import org.jbehave.core.configuration.AnnotationProcessor;
 import org.jbehave.core.configuration.MostUsefulConfiguration;
 import org.junit.Test;
 
@@ -19,7 +18,7 @@ public class InstanceStepsFactoryBehaviour {
     
     @Test
     public void shouldCreateCandidateSteps() {
-        InjectableStepsFactory factory = new InstanceStepsFactory(new MostUsefulConfiguration(),AnnotationProcessor.defaultAnnotationProcessor(), new MySteps());
+        InjectableStepsFactory factory = new InstanceStepsFactory(new MostUsefulConfiguration(),new MySteps());
         List<CandidateSteps> candidateSteps = factory.createCandidateSteps();
         assertThat(candidateSteps.size(), equalTo(1));
         assertThat(candidateSteps.get(0), instanceOf(Steps.class));
@@ -29,7 +28,7 @@ public class InstanceStepsFactoryBehaviour {
 
     @Test
     public void shouldDetermineIfStepsInstanceHasAnnotatedMethods() {
-        InstanceStepsFactory factory = new InstanceStepsFactory(new MostUsefulConfiguration(),AnnotationProcessor.defaultAnnotationProcessor());
+        InstanceStepsFactory factory = new InstanceStepsFactory(new MostUsefulConfiguration());
         assertThat(factory.hasAnnotatedMethods(MySteps.class), is(true));
         assertThat(factory.hasAnnotatedMethods(NoAnnotatedMethods.class), is(false));
     }    

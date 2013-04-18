@@ -34,75 +34,94 @@ public class UnmodifiableConfiguration extends Configuration {
     /**
      * @deprecated Use {@link StoryReporterBuilder}
      */
-    public StoryReporter defaultStoryReporter() {
+    @Deprecated
+	@Override
+	public StoryReporter defaultStoryReporter() {
         return delegate.defaultStoryReporter();
     }
 
-    public StoryParser storyParser() {
+    @Override
+	public StoryParser storyParser() {
         return delegate.storyParser();
     }
 
-    public PendingStepStrategy pendingStepStrategy() {
+    @Override
+	public PendingStepStrategy pendingStepStrategy() {
         return delegate.pendingStepStrategy();
     }
 
-    public StepCollector stepCollector() {
+    @Override
+	public StepCollector stepCollector() {
         return delegate.stepCollector();
     }
 
-    public FailureStrategy failureStrategy() {
+    @Override
+	public FailureStrategy failureStrategy() {
         return delegate.failureStrategy();
     }
 
-    public Keywords keywords() {
+    @Override
+	public Keywords keywords() {
         return delegate.keywords();
     }
 
-    public ParameterConverters parameterConverters() {
+    @Override
+	public ParameterConverters parameterConverters() {
         return delegate.parameterConverters();
     }
 
-    public ParameterControls parameterControls(){
+    @Override
+	public ParameterControls parameterControls(){
         return delegate.parameterControls();
     }
     
-    public Paranamer paranamer() {
+    @Override
+	public Paranamer paranamer() {
         return delegate.paranamer();
     }
 
-    public ViewGenerator viewGenerator() {
+    @Override
+	public ViewGenerator viewGenerator() {
         return delegate.viewGenerator();
     }
 
-    public StepMonitor stepMonitor() {
+    @Override
+	public StepMonitor stepMonitor() {
         return delegate.stepMonitor();
     }
 
-    public StepPatternParser stepPatternParser() {
+    @Override
+	public StepPatternParser stepPatternParser() {
         return delegate.stepPatternParser();
     }
 
-    public boolean dryRun() {
+    @Override
+	public boolean dryRun() {
         return delegate.dryRun();
     }
 
-    public StoryControls storyControls() {
+    @Override
+	public StoryControls storyControls() {
         return delegate.storyControls();
     }
 
-    public StoryLoader storyLoader() {
+    @Override
+	public StoryLoader storyLoader() {
         return delegate.storyLoader();
     }
 
-    public StoryPathResolver storyPathResolver() {
+    @Override
+	public StoryPathResolver storyPathResolver() {
         return delegate.storyPathResolver();
     }
 
-    public StoryReporter storyReporter(String storyPath) {
+    @Override
+	public StoryReporter storyReporter(String storyPath) {
         return delegate.storyReporter(storyPath);
     }
 
-    public StoryReporterBuilder storyReporterBuilder() {
+    @Override
+	public StoryReporterBuilder storyReporterBuilder() {
         return delegate.storyReporterBuilder();
     }
 

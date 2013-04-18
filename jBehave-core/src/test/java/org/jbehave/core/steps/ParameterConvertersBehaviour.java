@@ -1,5 +1,11 @@
 package org.jbehave.core.steps;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+
 import java.beans.IntrospectionException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -35,14 +41,6 @@ import org.jbehave.core.steps.ParameterConverters.ParameterConverter;
 import org.jbehave.core.steps.ParameterConverters.ParameterConvertionFailed;
 import org.jbehave.core.steps.ParameterConverters.StringListConverter;
 import org.junit.Test;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
 
 public class ParameterConvertersBehaviour {
 
@@ -211,7 +209,6 @@ public class ParameterConvertersBehaviour {
         assertThat((Double) converter.convertValue("-"+INFINITY, Double.class), equalTo(Double.NEGATIVE_INFINITY));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void shouldConvertCommaSeparatedValuesToListOfNumbersWithDefaultFormat() throws ParseException, IntrospectionException {
         ParameterConverter converter = new NumberListConverter();
@@ -227,7 +224,6 @@ public class ParameterConvertersBehaviour {
         assertThat(list.get(3), equalTo(numberFormat.parse("8.00")));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void shouldConvertCommaSeparatedValuesToListOfNumbersWithCustomFormat() throws ParseException,
             IntrospectionException {
@@ -241,7 +237,6 @@ public class ParameterConvertersBehaviour {
         assertThat(list.get(3), equalTo(numberFormat.parse("8.00")));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void shouldConvertCommaSeparatedValuesOfSpecificNumberTypes() throws ParseException, IntrospectionException {
         ParameterConverter converter = new NumberListConverter(NumberFormat.getInstance(Locale.ENGLISH), ",");
@@ -297,7 +292,6 @@ public class ParameterConvertersBehaviour {
         ensureValueIsConvertedToList(converter, listOfStrings, " ", Arrays.asList(new String[] {}));
     }
 
-    @SuppressWarnings("unchecked")
     private void ensureValueIsConvertedToList(ParameterConverter converter, Type type, String value,
             List<String> expected) {
         List<String> list = (List<String>) converter.convertValue(value, type);
@@ -407,7 +401,6 @@ public class ParameterConvertersBehaviour {
         converter.convertValue("FOUR", type);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void shouldConvertEnumList() throws IntrospectionException {
         ParameterConverter converter = new EnumListConverter();
@@ -429,7 +422,6 @@ public class ParameterConvertersBehaviour {
         assertThat((Boolean) converter.convertValue("true", type), is(true));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void shouldConvertBooleanList() throws IntrospectionException {
         ParameterConverter converter = new BooleanListConverter();

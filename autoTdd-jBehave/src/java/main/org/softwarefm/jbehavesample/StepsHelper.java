@@ -3,9 +3,9 @@ package org.softwarefm.jbehavesample;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import org.autoTdd.jbehave.annotations.Because;
-import org.autoTdd.jbehave.annotations.Called;
 import org.jbehave.core.ConfigurableEmbedder;
+import org.jbehave.core.annotations.Because;
+import org.jbehave.core.annotations.Called;
 import org.jbehave.core.annotations.Given;
 import org.jbehave.core.annotations.Then;
 import org.jbehave.core.annotations.When;
@@ -69,7 +69,6 @@ public class StepsHelper {
 		return new Object[0];
 	}
 
-	@SuppressWarnings("unchecked")
 	public static  IEngineSteps findEngineStepsFor(Step step) {
 		if (step instanceof ParameterisedStep) {
 			ParameterisedStep parameterisedStep = (ParameterisedStep) step;

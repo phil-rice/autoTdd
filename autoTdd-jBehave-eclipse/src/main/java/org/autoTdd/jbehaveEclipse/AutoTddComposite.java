@@ -1,6 +1,5 @@
 package org.autoTdd.jbehaveEclipse;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.softwarefm.core.swt.HasComposite;
 import org.softwarefm.core.swt.Swts;

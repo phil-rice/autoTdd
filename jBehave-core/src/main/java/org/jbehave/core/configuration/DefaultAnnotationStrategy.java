@@ -1,11 +1,12 @@
 package org.jbehave.core.configuration;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 import org.jbehave.core.steps.Step;
 import org.jbehave.core.steps.StepType;
 
-abstract public class DefaultAnnotationStrategy<T> implements AnnotationStrategy<T> {
+abstract public class DefaultAnnotationStrategy<A extends Annotation> implements AnnotationStrategy<A> {
 
 	private StepType stepType;
 
@@ -17,7 +18,7 @@ abstract public class DefaultAnnotationStrategy<T> implements AnnotationStrategy
 		return stepType;
 	}
 
-	public Object execute(Step step, Method method, Object object, Object[] parameters) throws Exception {
+	public Object execute(Step step, Method method,A annotation, Object object, Object[] parameters) throws Exception {
 		Object result = method.invoke(object, parameters);
 		return result;
 	}

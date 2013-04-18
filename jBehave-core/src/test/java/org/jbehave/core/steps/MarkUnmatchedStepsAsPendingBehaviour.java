@@ -1,5 +1,17 @@
 package org.jbehave.core.steps;
 
+import static java.util.Arrays.asList;
+import static junit.framework.Assert.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -24,24 +36,8 @@ import org.jbehave.core.steps.StepCollector.Stage;
 import org.jbehave.core.steps.StepCreator.PendingStep;
 import org.jbehave.core.steps.StepFinder.ByLevenshteinDistance;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import com.thoughtworks.xstream.XStream;
-
-import static java.util.Arrays.asList;
-import static junit.framework.Assert.assertEquals;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class MarkUnmatchedStepsAsPendingBehaviour {
 
@@ -123,7 +119,7 @@ public class MarkUnmatchedStepsAsPendingBehaviour {
                 asList(compositeStepAsString)), parameters);
 
         // Then
-        verify(compositeCandidate, times(1)).addComposedSteps(Mockito.eq(new ArrayList<Step>()), Mockito.eq(compositeStepAsString), Mockito.eq(parameters), Mockito.eq(allCandidates));
+        verify(compositeCandidate, times(1)).addComposedSteps(org.mockito.Matchers.eq(new ArrayList<Step>()), org.mockito.Matchers.eq(compositeStepAsString), org.mockito.Matchers.eq(parameters), org.mockito.Matchers.eq(allCandidates));
     }
 
     @Test

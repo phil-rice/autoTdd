@@ -1,6 +1,15 @@
 package org.jbehave.core.steps;
 
+import static java.util.Arrays.asList;
+import static org.jbehave.core.steps.AbstractStepResult.failed;
+import static org.jbehave.core.steps.AbstractStepResult.ignorable;
+import static org.jbehave.core.steps.AbstractStepResult.notPerformed;
+import static org.jbehave.core.steps.AbstractStepResult.pending;
+import static org.jbehave.core.steps.AbstractStepResult.skipped;
+import static org.jbehave.core.steps.AbstractStepResult.successful;
+
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -13,7 +22,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.jbehave.core.annotations.AfterScenario.Outcome;
 import org.jbehave.core.annotations.Named;
-import org.jbehave.core.configuration.AnnotationProcessor;
+import org.jbehave.core.configuration.IAnnotationProcessor;
 import org.jbehave.core.failures.BeforeOrAfterFailed;
 import org.jbehave.core.failures.RestartingScenarioFailure;
 import org.jbehave.core.failures.UUIDExceptionWrapper;
@@ -24,14 +33,6 @@ import org.jbehave.core.reporters.StoryReporter;
 
 import com.thoughtworks.paranamer.NullParanamer;
 import com.thoughtworks.paranamer.Paranamer;
-
-import static java.util.Arrays.asList;
-import static org.jbehave.core.steps.AbstractStepResult.failed;
-import static org.jbehave.core.steps.AbstractStepResult.ignorable;
-import static org.jbehave.core.steps.AbstractStepResult.notPerformed;
-import static org.jbehave.core.steps.AbstractStepResult.pending;
-import static org.jbehave.core.steps.AbstractStepResult.skipped;
-import static org.jbehave.core.steps.AbstractStepResult.successful;
 
 public class StepCreator {
 
@@ -190,7 +191,7 @@ public class StepCreator {
 		return paranamer.lookupParameterNames(method, false);
 	}
 
-	public Step createParametrisedStep(AnnotationProcessor annotationProcessor, final Method method, final String stepAsString, final String stepWithoutStartingWord, final Map<String, String> namedParameters) {
+	public Step createParametrisedStep(IAnnotationProcessor annotationProcessor, final Method method, final String stepAsString, final String stepWithoutStartingWord, final Map<String, String> namedParameters) {
 		return new ParameterisedStep(annotationProcessor, stepAsString, method, stepWithoutStartingWord, namedParameters);
 	}
 
@@ -519,9 +520,9 @@ public class StepCreator {
 		private final Method method;
 		private final String stepWithoutStartingWord;
 		private final Map<String, String> namedParameters;
-		private AnnotationProcessor annotationProcessor;
+		private IAnnotationProcessor annotationProcessor;
 
-		public ParameterisedStep(AnnotationProcessor annotationProcessor, String stepAsString, Method method, String stepWithoutStartingWord, Map<String, String> namedParameters) {
+		public ParameterisedStep(IAnnotationProcessor annotationProcessor, String stepAsString, Method method, String stepWithoutStartingWord, Map<String, String> namedParameters) {
 			this.annotationProcessor = annotationProcessor;
 			this.stepAsString = stepAsString;
 			this.method = method;

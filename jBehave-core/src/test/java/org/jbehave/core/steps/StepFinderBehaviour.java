@@ -13,7 +13,6 @@ import java.util.List;
 import org.jbehave.core.annotations.Given;
 import org.jbehave.core.annotations.Then;
 import org.jbehave.core.annotations.When;
-import org.jbehave.core.configuration.AnnotationProcessor;
 import org.jbehave.core.configuration.MostUsefulConfiguration;
 import org.junit.Test;
 
@@ -24,7 +23,7 @@ public class StepFinderBehaviour {
 	@Test
 	public void shouldFindStepdocs() throws Exception {
 		MySteps mySteps = new MySteps();
-		List<Stepdoc> stepdocs = finder.stepdocs(new InstanceStepsFactory(new MostUsefulConfiguration(), AnnotationProcessor.defaultAnnotationProcessor(), mySteps).createCandidateSteps());
+		List<Stepdoc> stepdocs = finder.stepdocs(new InstanceStepsFactory(new MostUsefulConfiguration(), mySteps).createCandidateSteps());
 		Collections.sort(stepdocs);
 		assertThat(stepdocs.size(), equalTo(3));
 		assertThatStepdocIs(stepdocs.get(0), "givenFoo", "givenFoo(java.lang.String)", "foo named $name", "Given", GIVEN, mySteps);

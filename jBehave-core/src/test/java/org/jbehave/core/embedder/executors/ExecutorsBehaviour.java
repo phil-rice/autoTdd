@@ -1,13 +1,12 @@
 package org.jbehave.core.embedder.executors;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+
 import java.util.concurrent.ExecutorService;
 
 import org.jbehave.core.embedder.EmbedderControls;
 import org.junit.Test;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import static org.hamcrest.Matchers.instanceOf;
 
 public class ExecutorsBehaviour {
 

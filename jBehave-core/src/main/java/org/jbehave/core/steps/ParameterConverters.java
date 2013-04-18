@@ -1,5 +1,7 @@
 package org.jbehave.core.steps;
 
+import static java.util.Arrays.asList;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -20,12 +22,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang.BooleanUtils;
-import org.jbehave.core.configuration.AnnotationProcessor;
 import org.jbehave.core.configuration.MostUsefulConfiguration;
 import org.jbehave.core.model.ExamplesTable;
 import org.jbehave.core.model.ExamplesTableFactory;
-
-import static java.util.Arrays.asList;
 
 /**
  * <p>
@@ -651,7 +650,7 @@ public class ParameterConverters {
         public MethodReturningConverter(Method method, Object instance) {
             this.method = method;
             this.stepsType = instance.getClass();
-            this.stepsFactory = new InstanceStepsFactory(new MostUsefulConfiguration(),AnnotationProcessor.defaultAnnotationProcessor(), instance);
+            this.stepsFactory = new InstanceStepsFactory(new MostUsefulConfiguration(),instance);
         }
 
         public MethodReturningConverter(Method method, Class<?> stepsType, InjectableStepsFactory stepsFactory) {

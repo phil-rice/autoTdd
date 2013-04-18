@@ -1,13 +1,13 @@
 package org.jbehave.core.model;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
+
 import org.jbehave.core.configuration.Configuration;
 import org.jbehave.core.configuration.Keywords;
 import org.jbehave.core.i18n.LocalizedKeywords;
 import org.jbehave.core.io.LoadFromClasspath;
 import org.jbehave.core.io.ResourceLoader;
 import org.jbehave.core.steps.ParameterConverters;
-
-import static org.apache.commons.lang.StringUtils.isBlank;
 
 /**
  * Factory that creates instances of ExamplesTable from different type of

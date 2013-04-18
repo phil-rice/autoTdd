@@ -1,10 +1,11 @@
-package org.autoTdd.jbehave;
+package org.autoTdd.jbehave.internal;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.autoTdd.jbehave.annotations.Because;
+import org.autoTdd.jbehave.because.IBecause;
+import org.jbehave.core.annotations.Because;
 
 public class BecauseForConstraint {
 

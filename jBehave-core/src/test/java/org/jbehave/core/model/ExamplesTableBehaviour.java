@@ -1,5 +1,11 @@
 package org.jbehave.core.model;
 
+import static java.util.Arrays.asList;
+import static org.codehaus.plexus.util.StringUtils.isBlank;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -24,14 +30,6 @@ import org.jbehave.core.steps.ParameterConverters;
 import org.jbehave.core.steps.ParameterConverters.MethodReturningConverter;
 import org.jbehave.core.steps.Parameters;
 import org.junit.Test;
-
-import static java.util.Arrays.asList;
-import static org.codehaus.plexus.util.StringUtils.isBlank;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
 
 public class ExamplesTableBehaviour {
 

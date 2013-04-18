@@ -1,6 +1,6 @@
 package org.autoTdd;
 
-public interface ISystemSpecification extends ITyped{
+public interface IEngineSpecification extends ITyped{
 
 	IEngineStrategy engineStrategy();
 

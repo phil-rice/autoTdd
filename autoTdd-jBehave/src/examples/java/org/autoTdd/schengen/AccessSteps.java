@@ -1,9 +1,9 @@
 package org.autoTdd.schengen;
 
-import org.autoTdd.jbehave.IBecause2;
-import org.autoTdd.jbehave.annotations.Because;
-import org.autoTdd.jbehave.annotations.Called;
+import org.autoTdd.jbehave.because.IBecause2;
+import org.jbehave.core.annotations.Because;
 import org.jbehave.core.annotations.BeforeScenario;
+import org.jbehave.core.annotations.Called;
 import org.jbehave.core.annotations.Given;
 import org.jbehave.core.annotations.Then;
 import org.jbehave.core.annotations.When;
@@ -40,7 +40,7 @@ public class AccessSteps implements IEngineSteps {
 	public IBecause2<Schengen, Person> BecauseThatsTheDefault() {
 		return new IBecause2<Schengen, Person>() {
 			@Override
-			public boolean evaluate(Schengen server, Person value) {
+			public boolean evaluate(Schengen value1, Person value2) {
 				return true;
 			}
 		};
@@ -50,8 +50,8 @@ public class AccessSteps implements IEngineSteps {
 	public IBecause2<Schengen, Person> becauseThePersonHasALotOfMoney() {
 		return new IBecause2<Schengen, Person>() {
 			@Override
-			public boolean evaluate(Schengen server, Person value) {
-				return value.money >= aLotOfMoney;
+			public boolean evaluate(Schengen value1, Person value2) {
+				return value2.money >= aLotOfMoney;
 			}
 		};
 	}

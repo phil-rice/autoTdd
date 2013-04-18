@@ -1,5 +1,9 @@
 package org.jbehave.core.model;
 
+import static java.lang.Boolean.parseBoolean;
+import static java.util.regex.Pattern.DOTALL;
+import static java.util.regex.Pattern.compile;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -21,10 +25,6 @@ import org.jbehave.core.steps.ConvertedParameters;
 import org.jbehave.core.steps.ParameterConverters;
 import org.jbehave.core.steps.Parameters;
 import org.jbehave.core.steps.Row;
-
-import static java.lang.Boolean.parseBoolean;
-import static java.util.regex.Pattern.DOTALL;
-import static java.util.regex.Pattern.compile;
 
 /**
  * <p>

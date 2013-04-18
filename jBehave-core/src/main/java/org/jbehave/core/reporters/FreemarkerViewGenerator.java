@@ -40,7 +40,8 @@ public class FreemarkerViewGenerator extends TemplateableViewGenerator {
         super(nameResolver, new FreemarkerProcessor());
     }
 
-    public Properties defaultViewProperties() {
+    @Override
+	public Properties defaultViewProperties() {
         Properties properties = new Properties();
         properties.setProperty("views", "ftl/jbehave-views.ftl");
         properties.setProperty("maps", "ftl/jbehave-maps.ftl");

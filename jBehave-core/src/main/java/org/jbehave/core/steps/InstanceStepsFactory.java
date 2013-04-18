@@ -1,14 +1,14 @@
 package org.jbehave.core.steps;
 
+import static java.util.Arrays.asList;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jbehave.core.configuration.AnnotationProcessor;
 import org.jbehave.core.configuration.Configuration;
-
-import static java.util.Arrays.asList;
+import org.jbehave.core.configuration.IAnnotationProcessor;
 
 /**
  * An {@link InjectableStepsFactory} that is provided Object instances.
@@ -17,12 +17,12 @@ public class InstanceStepsFactory extends AbstractStepsFactory {
 
 	private final Map<Class<?>, Object> stepsInstances = new HashMap<Class<?>, Object>();
 
-	public InstanceStepsFactory(Configuration configuration, AnnotationProcessor annotationProcessor, Object... stepsInstances) {
-		this(configuration, annotationProcessor, asList(stepsInstances));
+	public InstanceStepsFactory(Configuration configuration, Object... stepsInstances) {
+		this(configuration,  asList(stepsInstances));
 	}
 
-	public InstanceStepsFactory(Configuration configuration, AnnotationProcessor annotationProcessor, List<Object> stepsInstances) {
-		super(configuration, annotationProcessor);
+	public InstanceStepsFactory(Configuration configuration, List<Object> stepsInstances) {
+		super(configuration);
 		for (Object instance : stepsInstances) {
 			this.stepsInstances.put(instance.getClass(), instance);
 		}

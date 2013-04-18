@@ -10,7 +10,6 @@ import org.jbehave.core.model.GivenStory;
 import org.jbehave.core.model.Meta;
 import org.jbehave.core.model.Scenario;
 import org.jbehave.core.model.Story;
-import org.jbehave.core.reporters.StoryExecutor;
 import org.jbehave.core.steps.CandidateSteps;
 import org.jbehave.core.steps.InjectableStepsFactory;
 import org.jbehave.core.steps.Step;
@@ -49,10 +48,6 @@ public class RunContext {
 		this.givenStory = givenStory;
 		this.parentContext = parentContext;
 		resetState();
-	}
-
-	public StoryExecutor storyExecutor() {
-		return configuration.storyExecutor();
 	}
 
 	public void interruptIfCancelled() throws InterruptedException {

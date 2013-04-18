@@ -1,13 +1,14 @@
 package org.jbehave.core.steps;
 
+import static java.text.MessageFormat.format;
+import static java.util.Arrays.asList;
+
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+
 import org.jbehave.core.model.StepPattern;
 import org.jbehave.core.reporters.Format;
-
-import static java.text.MessageFormat.format;
-import static java.util.Arrays.asList;
 
 /**
  * StepMonitor that prints to a {@link PrintStream}, defaulting to

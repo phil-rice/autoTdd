@@ -3,7 +3,7 @@ package org.autoTdd.engine.internal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.autoTdd.ISystemSpecification;
+import org.autoTdd.IEngineSpecification;
 import org.autoTdd.builder.internal.Node;
 import org.autoTdd.engine.IEngineAsTree;
 import org.autoTdd.internal.AbstractNodeHolder;
@@ -12,15 +12,17 @@ public class Engine extends AbstractNodeHolder implements IEngineAsTree {
 
 	private final Node root;
 
-	public Engine(ISystemSpecification specification, Node root) {
+	public Engine(IEngineSpecification specification, Node root) {
 		super(specification);
 		this.root = root;
 	}
 
+	@Override
 	public Node getRoot() {
 		return root;
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public <Result> Result transformRaw(Object... inputs) {
 		Node node = findNode(root, inputs);

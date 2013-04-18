@@ -4,6 +4,6 @@ import org.autoTdd.builder.IEngineBuilder;
 
 public interface IAutoTddFactory {
 
-	 IEngineBuilder builderFor(ISystemSpecification specification, String systemName);
+	 IEngineBuilder builderFor(String engineName, IEngineSpecification specification);
 
 }

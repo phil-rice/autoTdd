@@ -1,13 +1,13 @@
 package org.jbehave.core.model;
 
+import static java.lang.Boolean.parseBoolean;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
-import static java.lang.Boolean.parseBoolean;
 
 /**
  * <p>

@@ -9,7 +9,7 @@ import org.jbehave.core.annotations.Given;
 import org.jbehave.core.annotations.Pending;
 import org.jbehave.core.annotations.Then;
 import org.jbehave.core.annotations.When;
-import org.jbehave.core.configuration.AnnotationProcessor;
+import org.jbehave.core.configuration.IAnnotationProcessor;
 import org.jbehave.core.configuration.Keywords;
 import org.jbehave.core.configuration.Keywords.StartingWordNotFound;
 import org.jbehave.core.parsers.StepMatcher;
@@ -37,11 +37,11 @@ public class StepCandidate {
     private final StepCreator stepCreator;
     private String[] composedSteps;
     private StepMonitor stepMonitor = new SilentStepMonitor();
-	private AnnotationProcessor annotationProcessor;
+	private IAnnotationProcessor annotationProcessor;
 
     public StepCandidate(String patternAsString, int priority, StepType stepType, Method method, Class<?> stepsType,
             InjectableStepsFactory stepsFactory, Keywords keywords, StepPatternParser stepPatternParser,
-            ParameterConverters parameterConverters, ParameterControls parameterControls, AnnotationProcessor annotationProcessor) {
+            ParameterConverters parameterConverters, ParameterControls parameterControls, IAnnotationProcessor annotationProcessor) {
         this.patternAsString = patternAsString;
         this.priority = priority;
         this.stepType = stepType;
@@ -74,6 +74,7 @@ public class StepCandidate {
     public Class<?> getStepsType() {
         return stepsType;
     }
+    
     
     public StepType getStepType() {
         return stepType;

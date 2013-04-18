@@ -31,7 +31,8 @@ public interface EmbedderMonitor {
     void storiesSkipped(List<String> storyPaths);
 
     /** @deprecated Use #storiesNotAllowed(List<String>, MetaFilter, boolean) */
-    void storiesNotAllowed(List<Story> notAllowed, MetaFilter filter);
+    @Deprecated
+	void storiesNotAllowed(List<Story> notAllowed, MetaFilter filter);
 
     void storiesNotAllowed(List<Story> notAllowed, MetaFilter filter, boolean verbose);
 

@@ -1,7 +1,5 @@
 package org.jbehave.core.configuration;
 
-import java.lang.reflect.Method;
-
 import org.jbehave.core.steps.StepCandidate;
 import org.jbehave.core.steps.StepType;
 

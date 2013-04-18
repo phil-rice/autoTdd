@@ -1,5 +1,23 @@
 package org.jbehave.core.steps;
 
+import static java.util.Arrays.asList;
+import static junit.framework.Assert.fail;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.jbehave.core.steps.StepCreator.PARAMETER_VALUE_END;
+import static org.jbehave.core.steps.StepCreator.PARAMETER_VALUE_START;
+import static org.jbehave.core.steps.StepType.GIVEN;
+import static org.jbehave.core.steps.StepType.IGNORABLE;
+import static org.jbehave.core.steps.StepType.THEN;
+import static org.jbehave.core.steps.StepType.WHEN;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -32,27 +50,6 @@ import com.thoughtworks.paranamer.BytecodeReadingParanamer;
 import com.thoughtworks.paranamer.CachingParanamer;
 import com.thoughtworks.paranamer.Paranamer;
 
-import static java.util.Arrays.asList;
-import static junit.framework.Assert.fail;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
-
-import static org.jbehave.core.steps.StepCreator.PARAMETER_VALUE_END;
-import static org.jbehave.core.steps.StepCreator.PARAMETER_VALUE_START;
-import static org.jbehave.core.steps.StepType.GIVEN;
-import static org.jbehave.core.steps.StepType.IGNORABLE;
-import static org.jbehave.core.steps.StepType.THEN;
-import static org.jbehave.core.steps.StepType.WHEN;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-
 public class StepCandidateBehaviour {
 
     private Map<String, String> namedParameters = new HashMap<String, String>();
@@ -66,7 +63,7 @@ public class StepCandidateBehaviour {
     private StepCandidate candidateWith(String patternAsString, StepType stepType, Method method, Object instance, ParameterControls parameterControls) {
         Class<?> stepsType = instance.getClass();
         AnnotationProcessor defaultAnnotationProcessor = AnnotationProcessor.defaultAnnotationProcessor();
-		InjectableStepsFactory stepsFactory = new InstanceStepsFactory(new MostUsefulConfiguration(),defaultAnnotationProcessor, instance);
+		InjectableStepsFactory stepsFactory = new InstanceStepsFactory(new MostUsefulConfiguration(),instance);
         return new StepCandidate(patternAsString, 0, stepType, method, stepsType, stepsFactory, keywords,
                 new RegexPrefixCapturingPatternParser(), new ParameterConverters(), parameterControls, defaultAnnotationProcessor);
     }

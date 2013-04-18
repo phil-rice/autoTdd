@@ -7,6 +7,7 @@ import org.jbehave.core.configuration.Keywords;
 /**
  * @deprecated Use {@link XmlTemplateOutput}
  */
+@Deprecated
 public class XmlTemplateOuput extends XmlTemplateOutput {
 	
     public XmlTemplateOuput(File file, Keywords keywords) {

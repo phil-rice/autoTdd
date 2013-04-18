@@ -1,5 +1,10 @@
 package org.jbehave.core.reporters;
 
+import static org.jbehave.core.steps.StepCreator.PARAMETER_TABLE_END;
+import static org.jbehave.core.steps.StepCreator.PARAMETER_TABLE_START;
+import static org.jbehave.core.steps.StepCreator.PARAMETER_VALUE_END;
+import static org.jbehave.core.steps.StepCreator.PARAMETER_VALUE_START;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.Writer;
@@ -26,11 +31,6 @@ import org.jbehave.core.model.StoryDuration;
 import freemarker.ext.beans.BeansWrapper;
 import freemarker.template.TemplateHashModel;
 import freemarker.template.TemplateModelException;
-
-import static org.jbehave.core.steps.StepCreator.PARAMETER_TABLE_END;
-import static org.jbehave.core.steps.StepCreator.PARAMETER_TABLE_START;
-import static org.jbehave.core.steps.StepCreator.PARAMETER_VALUE_END;
-import static org.jbehave.core.steps.StepCreator.PARAMETER_VALUE_START;
 
 /**
  * <p>

@@ -1,5 +1,10 @@
 package org.jbehave.core.configuration;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.jbehave.core.configuration.PropertyBasedConfiguration.FAIL_ON_PENDING;
+import static org.jbehave.core.configuration.PropertyBasedConfiguration.SILENT_SUCCESS;
+
 import org.jbehave.core.failures.FailingUponPendingStep;
 import org.jbehave.core.failures.PassingUponPendingStep;
 import org.jbehave.core.reporters.ConsoleOutput;
@@ -7,13 +12,6 @@ import org.jbehave.core.reporters.SilentSuccessFilter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import static org.hamcrest.Matchers.instanceOf;
-
-import static org.jbehave.core.configuration.PropertyBasedConfiguration.FAIL_ON_PENDING;
-import static org.jbehave.core.configuration.PropertyBasedConfiguration.SILENT_SUCCESS;
 
 public class PropertyBasedConfigurationBehaviour {
 

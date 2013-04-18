@@ -2,8 +2,8 @@ package org.autoTdd.system.internal;
 
 import junit.framework.TestCase;
 
+import org.autoTdd.IEngineSpecification;
 import org.autoTdd.IEngineStrategy;
-import org.autoTdd.ISystemSpecification;
 import org.autoTdd.internal.AutoTddFactory;
 import org.autoTdd.internal.Constraint;
 import org.autoTdd.internal.SystemSpecification;
@@ -13,23 +13,24 @@ import org.softwarefm.utilities.tests.Tests;
 public class AutoTddFactoryTest extends TestCase {
 
 	private AutoTddFactory factory;
-	private ISystemSpecification spec1;
-	private ISystemSpecification spec2;
+	private IEngineSpecification spec1;
+	private IEngineSpecification spec2;
 
 	public void testReturnsSameObjectIfSameName() {
-		assertNotNull(factory.builderFor(spec1, "name"));
-		assertSame(factory.builderFor(spec1, "name"), factory.builderFor(spec1, "name"));
-		assertSame(factory.builderFor(spec1, "name1"), factory.builderFor(spec1, "name1"));
-		assertSame(factory.builderFor(spec2, "otherName"), factory.builderFor(spec2, "otherName"));
+		assertNotNull(factory.builderFor("name", spec1));
+		assertSame(factory.builderFor("name", spec1), factory.builderFor("name", spec1));
+		assertSame(factory.builderFor("name1", spec1), factory.builderFor("name1", spec1));
+		assertSame(factory.builderFor("otherName", spec2), factory.builderFor("otherName", spec2));
 
-		assertNotSame(factory.builderFor(spec1, "name"), factory.builderFor(spec2, "otherName"));
+		assertNotSame(factory.builderFor("name", spec1), factory.builderFor("otherName", spec2));
 	}
 
 	public void testThrowsExceptionIfDifferentEngineStrategy() {
-		factory.builderFor(spec1, "name");
+		factory.builderFor("name", spec1);
 		Tests.assertThrows(IllegalArgumentException.class, new Runnable() {
+			@Override
 			public void run() {
-				factory.builderFor(spec2, "name");
+				factory.builderFor("name", spec2);
 			}
 		});
 	}

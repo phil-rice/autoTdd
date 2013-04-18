@@ -30,7 +30,6 @@ public class EmbedderClassLoader extends URLClassLoader {
         super(classpathURLs(classpathElements), parent);
     }
 
-    @SuppressWarnings("unchecked")
     public <T> T newInstance(Class<T> type, String className) {
         try {
             Thread.currentThread().setContextClassLoader(this);

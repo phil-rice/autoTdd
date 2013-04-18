@@ -1,5 +1,7 @@
 package org.autoTdd.jbehave.annotations;
 
+import org.jbehave.core.annotations.Because;
+import org.jbehave.core.annotations.Called;
 import org.jbehave.core.annotations.Given;
 import org.jbehave.core.annotations.Then;
 import org.jbehave.core.annotations.When;

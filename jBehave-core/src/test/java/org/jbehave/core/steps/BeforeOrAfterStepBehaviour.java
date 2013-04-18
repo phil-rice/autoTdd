@@ -1,15 +1,15 @@
 package org.jbehave.core.steps;
 
-import org.jbehave.core.annotations.AfterScenario;
-import org.jbehave.core.model.Meta;
-import org.junit.Test;
+import static org.jbehave.core.steps.SomeSteps.methodFor;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.lang.reflect.Method;
 
-import static org.jbehave.core.steps.SomeSteps.methodFor;
-import static org.jbehave.core.steps.StepCollector.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import org.jbehave.core.annotations.AfterScenario;
+import org.jbehave.core.model.Meta;
+import org.jbehave.core.steps.StepCollector.Stage;
+import org.junit.Test;
 
 public class BeforeOrAfterStepBehaviour {
     @Test

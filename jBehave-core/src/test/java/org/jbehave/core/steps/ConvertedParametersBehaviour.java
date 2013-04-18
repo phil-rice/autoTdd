@@ -1,16 +1,13 @@
 package org.jbehave.core.steps;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jbehave.core.steps.ConvertedParameters;
-import org.jbehave.core.steps.ParameterConverters;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import static org.hamcrest.Matchers.is;
 
 public class ConvertedParametersBehaviour {
 

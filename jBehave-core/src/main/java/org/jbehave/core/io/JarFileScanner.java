@@ -1,5 +1,8 @@
 package org.jbehave.core.io;
 
+import static java.util.Arrays.asList;
+import static org.apache.commons.lang.StringUtils.isBlank;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -13,9 +16,6 @@ import java.util.jar.JarFile;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.codehaus.plexus.util.SelectorUtils;
-
-import static java.util.Arrays.asList;
-import static org.apache.commons.lang.StringUtils.isBlank;
 
 /**
  * Find all matching file entries in a jar.

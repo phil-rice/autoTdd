@@ -1,4 +1,3 @@
-
 Narrative:
 In order to communicate effectively to the business some functionality
 As a development team
@@ -12,10 +11,7 @@ When I assess the person
 Then the person should be allowed   
 Because I said so                   
 
-
-
 Scenario:  Person with a lot of money
-
 Given a person with a lot of money
 Called Francisco
 When I assess the person

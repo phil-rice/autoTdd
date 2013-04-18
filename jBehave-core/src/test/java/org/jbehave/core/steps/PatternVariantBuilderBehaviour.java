@@ -5,7 +5,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
 
-import org.jbehave.core.steps.PatternVariantBuilder;
 import org.junit.Test;
 
 public class PatternVariantBuilderBehaviour {

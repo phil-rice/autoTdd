@@ -1,5 +1,11 @@
 package org.jbehave.core.reporters;
 
+import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
@@ -11,15 +17,6 @@ import org.jbehave.core.reporters.TemplateableViewGenerator.Report;
 import org.jbehave.core.reporters.TemplateableViewGenerator.ReportCreationFailed;
 import org.jbehave.core.reporters.TemplateableViewGenerator.TimeFormatter;
 import org.junit.Test;
-
-import static java.util.Arrays.asList;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import static org.hamcrest.Matchers.equalTo;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class FreemarkerViewGeneratorBehaviour {
 

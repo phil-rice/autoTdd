@@ -1,22 +1,22 @@
 package org.jbehave.core.reporters;
 
-import org.apache.commons.lang.StringUtils;
-import org.jbehave.core.model.ExamplesTable;
-import org.jbehave.core.model.GivenStories;
-import org.jbehave.core.model.Meta;
-import org.jbehave.core.model.Scenario;
-import org.jbehave.core.model.Story;
-import org.jbehave.core.failures.UUIDExceptionWrapper;
-import org.junit.Test;
-import org.mockito.InOrder;
-
-import java.util.List;
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.jbehave.core.failures.UUIDExceptionWrapper;
+import org.jbehave.core.model.ExamplesTable;
+import org.jbehave.core.model.GivenStories;
+import org.jbehave.core.model.Meta;
+import org.jbehave.core.model.Scenario;
+import org.jbehave.core.model.Story;
+import org.junit.Test;
+import org.mockito.InOrder;
 
 public class DelegatingStoryReporterBehaviour {
 

@@ -1,13 +1,13 @@
 package org.jbehave.core.steps;
 
+import static java.text.MessageFormat.format;
+
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.jbehave.core.annotations.Pending;
 import org.jbehave.core.configuration.Keywords;
 import org.jbehave.core.steps.StepCreator.PendingStep;
-
-import static java.text.MessageFormat.format;
 
 public class PendingStepMethodGenerator {
 

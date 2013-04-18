@@ -24,6 +24,7 @@ public class EngineType implements ITyped {
 		return parameters;
 	}
 
+	@Override
 	public void assertTypesMatch(ITyped type) {
 		assertMatchesResultClass(type.resultClass());
 		assertMatchesInputClasses(type.parameters());
@@ -40,7 +41,7 @@ public class EngineType implements ITyped {
 
 	private void assertIsAssignableFrom(Class<?> master, Class<?> beingChecked) {
 		if (!master.isAssignableFrom(beingChecked))
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("Expected " + master.getSimpleName() + " had " + beingChecked.getSimpleName());
 	}
 
 	/** matches if they, or their class, matches */

@@ -1,7 +1,7 @@
 package org.softwarefm.jbehavesample;
 
-import org.autoTdd.jbehave.annotations.Because;
-import org.autoTdd.jbehave.annotations.Called;
+import org.jbehave.core.annotations.Because;
+import org.jbehave.core.annotations.Called;
 import org.jbehave.core.annotations.Given;
 import org.jbehave.core.annotations.Then;
 import org.jbehave.core.annotations.When;

@@ -1,11 +1,11 @@
 package org.jbehave.core.steps;
 
+import static org.mockito.Mockito.mock;
+
 import org.jbehave.core.steps.ParameterConverters.ParameterConverter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import static org.mockito.Mockito.mock;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConcurrencyBehaviour {

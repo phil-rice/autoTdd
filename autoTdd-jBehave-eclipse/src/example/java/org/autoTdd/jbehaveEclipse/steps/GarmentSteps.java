@@ -21,6 +21,7 @@ public class GarmentSteps implements IEngineSteps {
 		Assert.assertEquals(colour, garmentType.colour);
 		Assert.assertEquals(name, garmentType.name);
 	} 
+	
 
 	@Override
 	public Object[] getInputs() {

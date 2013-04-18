@@ -1,5 +1,7 @@
 package org.autoTdd.internal;
 
+import java.util.Arrays;
+
 import org.softwarefm.utilities.arrays.ArrayHelper;
 
 public class Constraint extends EngineType {
@@ -27,6 +29,11 @@ public class Constraint extends EngineType {
 
 	public Object[] getInputs() {
 		return inputs;
+	}
+
+	@Override
+	public String toString() {
+		return "Constraint [result=" + result + ", because=" + because + ", inputs=" + Arrays.toString(inputs) + "]";
 	}
 
 }

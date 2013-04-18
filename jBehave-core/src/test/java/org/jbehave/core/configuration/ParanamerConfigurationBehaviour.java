@@ -1,12 +1,11 @@
 package org.jbehave.core.configuration;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+
 import org.junit.Test;
 
 import com.thoughtworks.paranamer.CachingParanamer;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import static org.hamcrest.Matchers.instanceOf;
 
 public class ParanamerConfigurationBehaviour {
 

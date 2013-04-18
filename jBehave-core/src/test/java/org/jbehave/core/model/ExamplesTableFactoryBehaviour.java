@@ -1,14 +1,12 @@
 package org.jbehave.core.model;
 
-import org.jbehave.core.io.ResourceLoader;
-import org.junit.Test;
-
 import static org.hamcrest.MatcherAssert.assertThat;
-
 import static org.hamcrest.Matchers.equalTo;
-
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import org.jbehave.core.io.ResourceLoader;
+import org.junit.Test;
 
 public class ExamplesTableFactoryBehaviour {
 

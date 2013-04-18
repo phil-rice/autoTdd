@@ -1,9 +1,10 @@
 package org.autoTdd.builder.internal;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import org.autoTdd.ISystemSpecification;
+import org.autoTdd.IEngineSpecification;
 import org.autoTdd.builder.IEngineBuilder;
 import org.autoTdd.engine.IEngine1;
 import org.autoTdd.engine.IEngine2;
@@ -19,11 +20,11 @@ public class EngineBuilder extends AbstractNodeHolder implements IEngineBuilder 
 
 	private final List<Constraint> constraints;
 
-	public EngineBuilder(ISystemSpecification specification) {
+	public EngineBuilder(IEngineSpecification specification) {
 		this(specification, new ArrayList<Constraint>());
 	}
 
-	public EngineBuilder(ISystemSpecification specification, List<Constraint> constraints) {
+	public EngineBuilder(IEngineSpecification specification, List<Constraint> constraints) {
 		super(specification);
 		this.constraints = constraints;
 		assertClassMatchesResultClass(defaultOutput);
@@ -31,7 +32,6 @@ public class EngineBuilder extends AbstractNodeHolder implements IEngineBuilder 
 			assertTypesMatch(constraint);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public IEngineBuilder addConstraint(Object result, Object because, Object... inputs) {
 		return add(new Constraint(result, because, inputs));
@@ -39,16 +39,20 @@ public class EngineBuilder extends AbstractNodeHolder implements IEngineBuilder 
 
 	@Override
 	public IEngineBuilder add(Constraint... constraints) {
-		final List<Constraint> newConstraints = new ArrayList<Constraint>(this.constraints);
-		for (Constraint constraint : constraints) {
-			engineStrategy.validateConstraint(constraint);
-			assertTypesMatch(constraint);
-			assertClassesMatchesInputClasses(constraint.getInputs());
-			assertClassMatchesResultClass(constraint.getResult());
+			final List<Constraint> newConstraints = new ArrayList<Constraint>(this.constraints);
+			for (Constraint constraint : constraints) {
+				try {
+				engineStrategy.validateConstraint(constraint);
+				assertTypesMatch(constraint);
+				assertClassesMatchesInputClasses(constraint.getInputs());
+				assertClassMatchesResultClass(constraint.getResult());
 
-			newConstraints.add(constraint);
-		}
-		return new EngineBuilder(specification, newConstraints);
+				newConstraints.add(constraint);
+				} catch (IllegalArgumentException e) {
+					throw new IllegalArgumentException("Constrains: " + constraint, e);
+				}
+			}
+			return new EngineBuilder(specification, newConstraints);
 	}
 
 	@Override

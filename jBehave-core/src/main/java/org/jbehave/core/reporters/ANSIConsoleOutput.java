@@ -1,10 +1,5 @@
 package org.jbehave.core.reporters;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import org.jbehave.core.configuration.Keywords;
-
 import static org.jbehave.core.reporters.ANSIConsoleOutput.SGRCode.BLUE;
 import static org.jbehave.core.reporters.ANSIConsoleOutput.SGRCode.BOLD;
 import static org.jbehave.core.reporters.ANSIConsoleOutput.SGRCode.GREEN;
@@ -14,6 +9,12 @@ import static org.jbehave.core.reporters.ANSIConsoleOutput.SGRCode.RESET;
 import static org.jbehave.core.reporters.ANSIConsoleOutput.SGRCode.YELLOW;
 import static org.jbehave.core.steps.StepCreator.PARAMETER_VALUE_END;
 import static org.jbehave.core.steps.StepCreator.PARAMETER_VALUE_START;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import org.jbehave.core.configuration.Keywords;
 
 /**
  * <p>

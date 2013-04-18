@@ -1,5 +1,10 @@
 package org.jbehave.core.steps;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -8,7 +13,6 @@ import java.util.Map;
 import org.hamcrest.Matchers;
 import org.jbehave.core.annotations.AfterScenario;
 import org.jbehave.core.annotations.ScenarioType;
-import org.jbehave.core.configuration.AnnotationProcessor;
 import org.jbehave.core.configuration.Configuration;
 import org.jbehave.core.configuration.Keywords.StartingWordNotFound;
 import org.jbehave.core.configuration.MostUsefulConfiguration;
@@ -20,13 +24,6 @@ import org.jbehave.core.steps.AbstractStepResult.Failed;
 import org.jbehave.core.steps.StepCollector.Stage;
 import org.jbehave.core.steps.Steps.DuplicateCandidateFound;
 import org.junit.Test;
-
-import static org.hamcrest.Matchers.equalTo;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
 
 public class StepsBehaviour {
 
@@ -75,7 +72,7 @@ public class StepsBehaviour {
     public void shouldListCandidateStepsFromAnnotatedMethodsInPojo() {
         PojoSteps steps = new PojoSteps();
         Configuration configuration = new MostUsefulConfiguration();
-		List<StepCandidate> candidates = new InstanceStepsFactory(configuration,AnnotationProcessor.defaultAnnotationProcessor(), steps).createCandidateSteps().get(0).listCandidates();
+		List<StepCandidate> candidates = new InstanceStepsFactory(configuration,steps).createCandidateSteps().get(0).listCandidates();
         assertThat(candidates.size(), equalTo(6));
 
         findCandidate(candidates, "GIVEN a given").createMatchedStep("Given a given", tableRow).perform(null);

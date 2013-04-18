@@ -1,7 +1,16 @@
 package org.jbehave.core.reporters;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.jbehave.core.failures.FailingUponPendingStep;
 import org.jbehave.core.failures.PassingUponPendingStep;
@@ -17,17 +26,8 @@ import org.jbehave.core.steps.NullStepMonitor;
 import org.jbehave.core.steps.StepMonitor;
 import org.jbehave.core.steps.StepType;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
 
 public class CrossReference extends Format {
 
@@ -251,7 +251,8 @@ public class CrossReference extends Format {
             stepsPerformed.add(currentStory.get().getPath());
         }
 
-        public void stepMatchesPattern(String step, boolean matches, StepPattern pattern, Method method,
+        @Override
+		public void stepMatchesPattern(String step, boolean matches, StepPattern pattern, Method method,
                 Object stepsInstance) {
             Story story = currentStory.get();
             if (story == null) {

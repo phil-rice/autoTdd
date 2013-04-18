@@ -2,6 +2,8 @@ package org.autoTdd.jbehave;
 
 import org.autoTdd.AbstractEngineStrategy;
 import org.autoTdd.internal.Constraint;
+import org.autoTdd.jbehave.because.IBecause;
+import org.autoTdd.jbehave.internal.BecauseForConstraint;
 import org.softwarefm.utilities.indent.Indent;
 
 public class JbehaveEngineStrategy extends AbstractEngineStrategy {

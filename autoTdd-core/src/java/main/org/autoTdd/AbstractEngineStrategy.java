@@ -19,6 +19,7 @@ public abstract class AbstractEngineStrategy implements IEngineStrategy{
 			throw new IllegalStateException("Because if of class: " + constraint.getClass().getName() +" and it should be a " + becauseClass.getSimpleName());
 		
 	}
+	@Override
 	public String displayBecause(Indent indent, Constraint constraint) {
 		return constraint.getBecause().toString();
 	}

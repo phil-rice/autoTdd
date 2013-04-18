@@ -1,16 +1,14 @@
 package org.jbehave.core.steps;
 
+import static org.apache.commons.lang.StringEscapeUtils.escapeJava;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+
 import java.beans.IntrospectionException;
 
 import org.jbehave.core.i18n.LocalizedKeywords;
 import org.jbehave.core.steps.StepCreator.PendingStep;
 import org.junit.Test;
-
-import static org.apache.commons.lang.StringEscapeUtils.escapeJava;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import static org.hamcrest.Matchers.equalTo;
 
 
 public class PendingStepMethodGeneratorBehaviour {

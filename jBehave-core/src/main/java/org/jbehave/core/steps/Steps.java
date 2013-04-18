@@ -26,6 +26,7 @@ import org.jbehave.core.annotations.Then;
 import org.jbehave.core.annotations.When;
 import org.jbehave.core.configuration.AnnotationProcessor;
 import org.jbehave.core.configuration.Configuration;
+import org.jbehave.core.configuration.IAnnotationProcessor;
 import org.jbehave.core.configuration.MostUsefulConfiguration;
 import org.jbehave.core.configuration.StepCandidateCreator;
 import org.jbehave.core.parsers.RegexPrefixCapturingPatternParser;
@@ -79,7 +80,7 @@ public class Steps implements CandidateSteps {
 	private final Configuration configuration;
 	private Class<?> type;
 	private InjectableStepsFactory stepsFactory;
-	private final AnnotationProcessor annotationProcessor;
+	private final IAnnotationProcessor annotationProcessor;
 
 	/**
 	 * Creates Steps with default configuration for a class extending this instance and containing the candidate step methods
@@ -97,7 +98,7 @@ public class Steps implements CandidateSteps {
 	public Steps(Configuration configuration) {
 		this.configuration = configuration;
 		this.type = this.getClass();
-		this.stepsFactory = new InstanceStepsFactory(configuration,AnnotationProcessor.defaultAnnotationProcessor(), this);
+		this.stepsFactory = new InstanceStepsFactory(configuration,this);
 		this.annotationProcessor = AnnotationProcessor.defaultAnnotationProcessor();
 	}
 
@@ -112,7 +113,7 @@ public class Steps implements CandidateSteps {
 	public Steps(Configuration configuration, Object instance) {
 		this.configuration = configuration;
 		this.type = instance.getClass();
-		this.stepsFactory = new InstanceStepsFactory(configuration,AnnotationProcessor.defaultAnnotationProcessor(), instance);
+		this.stepsFactory = new InstanceStepsFactory(configuration,instance);
 		this.annotationProcessor = AnnotationProcessor.defaultAnnotationProcessor();
 	}
 
@@ -126,7 +127,7 @@ public class Steps implements CandidateSteps {
 	 * @param stepsFactory
 	 *            the {@link InjectableStepsFactory}
 	 */
-	public Steps(Configuration configuration, Class<?> type, InjectableStepsFactory stepsFactory, AnnotationProcessor annotationProcessor) {
+	public Steps(Configuration configuration, Class<?> type, InjectableStepsFactory stepsFactory, IAnnotationProcessor annotationProcessor) {
 		this.configuration = configuration;
 		this.type = type;
 		this.stepsFactory = stepsFactory;

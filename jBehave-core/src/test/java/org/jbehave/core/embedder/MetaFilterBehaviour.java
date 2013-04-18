@@ -1,5 +1,11 @@
 package org.jbehave.core.embedder;
 
+import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Properties;
 
 import org.hamcrest.Matchers;
@@ -7,15 +13,6 @@ import org.jbehave.core.embedder.MetaFilter.DefaultMetaMatcher;
 import org.jbehave.core.embedder.MetaFilter.MetaMatcher;
 import org.jbehave.core.model.Meta;
 import org.junit.Test;
-
-import static java.util.Arrays.asList;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import static org.hamcrest.Matchers.equalTo;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class MetaFilterBehaviour {
 

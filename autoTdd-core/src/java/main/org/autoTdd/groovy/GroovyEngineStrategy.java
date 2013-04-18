@@ -6,7 +6,6 @@ import groovy.lang.Script;
 import java.util.concurrent.Callable;
 
 import org.autoTdd.AbstractEngineStrategy;
-import org.autoTdd.IEngineStrategy;
 import org.autoTdd.internal.Constraint;
 import org.softwarefm.utilities.indent.Indent;
 import org.softwarefm.utilities.maps.Maps;
@@ -29,6 +28,7 @@ public class GroovyEngineStrategy extends AbstractEngineStrategy {
 	public boolean match(final Object contextAsObject, final Constraint constraint, Object... input) {
 		final GroovyEngineContext context = (GroovyEngineContext) contextAsObject;
 		Script script = Maps.findOrCreate(context.scriptCache, constraint, new Callable<Script>() {
+			@Override
 			public Script call() throws Exception {
 				return context.shell.parse((String) constraint.getBecause());
 			}

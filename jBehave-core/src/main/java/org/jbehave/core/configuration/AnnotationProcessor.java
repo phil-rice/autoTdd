@@ -10,21 +10,16 @@ import java.util.Map.Entry;
 
 import org.jbehave.core.annotations.Alias;
 import org.jbehave.core.annotations.Aliases;
-import org.jbehave.core.annotations.Composite;
 import org.jbehave.core.annotations.Given;
 import org.jbehave.core.annotations.Then;
 import org.jbehave.core.annotations.When;
-import org.jbehave.core.steps.CandidateSteps;
 import org.jbehave.core.steps.PatternVariantBuilder;
 import org.jbehave.core.steps.Step;
 import org.jbehave.core.steps.StepCandidate;
-import org.jbehave.core.steps.StepCreator;
 import org.jbehave.core.steps.StepType;
 import org.jbehave.core.steps.Steps.DuplicateCandidateFound;
 
-import com.google.common.collect.Maps;
-
-public class AnnotationProcessor {
+public class AnnotationProcessor implements IAnnotationProcessor {
 	public static AnnotationProcessor defaultAnnotationProcessor() {
 		AnnotationProcessor processor = new AnnotationProcessor();
 		processor.register(Given.class, new DefaultAnnotationStrategy<Given>(StepType.GIVEN) {
@@ -36,14 +31,22 @@ public class AnnotationProcessor {
 			public String value(Given annotation) {
 				return annotation.value();
 			}
+
+			public String typeWord() {
+				return "Given";
+			}
 		});
-		processor.register(Then.class, new DefaultAnnotationStrategy<Then>( StepType.THEN) {
+		processor.register(Then.class, new DefaultAnnotationStrategy<Then>(StepType.THEN) {
 			public int priority(Then annotation) {
 				return annotation.priority();
 			}
 
 			public String value(Then annotation) {
 				return annotation.value();
+			}
+
+			public String typeWord() {
+				return "Then";
 			}
 
 		});
@@ -57,14 +60,25 @@ public class AnnotationProcessor {
 				return annotation.value();
 			}
 
+			public String typeWord() {
+				return "When";
+			}
+
 		});
 		return processor;
 	}
 
 	private final Map<Class<? extends Annotation>, AnnotationStrategy<?>> annotationClassToStrategy = new HashMap<Class<? extends Annotation>, AnnotationStrategy<?>>();
+	private final Map<StepType, AnnotationStrategy<?>> stepTypeToStrategy = new HashMap<StepType, AnnotationStrategy<?>>();
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.jbehave.core.configuration.IAnnotationProcessor#register(java.lang.Class, org.jbehave.core.configuration.AnnotationStrategy)
+	 */
 	public <A extends Annotation> void register(Class<A> annotationClass, AnnotationStrategy<A> strategy) {
 		annotationClassToStrategy.put(annotationClass, strategy);
+		stepTypeToStrategy.put(strategy.stepType(), strategy);
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -85,11 +99,17 @@ public class AnnotationProcessor {
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.jbehave.core.configuration.IAnnotationProcessor#execute(org.jbehave.core.steps.Step, java.lang.reflect.Method, java.lang.Object, java.lang.Object[])
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void execute(Step step, Method method, Object object, Object[] parameters) throws Exception {
 		for (Entry<Class<? extends Annotation>, AnnotationStrategy<?>> entry : annotationClassToStrategy.entrySet()) {
 			Annotation annotation = method.getAnnotation(entry.getKey());
 			if (annotation != null)
-				entry.getValue().execute(step,method, object, parameters);
+				((AnnotationStrategy) entry.getValue()).execute(step, method, annotation, object, parameters);
 		}
 
 	}
@@ -128,4 +148,18 @@ public class AnnotationProcessor {
 		}
 	}
 
+	public String typeWord(StepType stepType) {
+		AnnotationStrategy<?> annotationStrategy = stepTypeToStrategy.get(stepType);
+		if (annotationStrategy == null)
+			throw new IllegalArgumentException("Step type: " + stepType + " not registered. Legal values are " + stepTypeToStrategy.keySet());
+		return annotationStrategy.typeWord();
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public <T> List<T> mapRegistered(IAnnotationMapper<T> mapper) {
+		List<T> result = new ArrayList<T>();
+		for (Entry<Class<? extends Annotation>, AnnotationStrategy<?>> entry : annotationClassToStrategy.entrySet())
+			result.add((T) mapper.transform((Class) entry.getKey(), (AnnotationStrategy) entry.getValue()));
+		return result;
+	}
 }

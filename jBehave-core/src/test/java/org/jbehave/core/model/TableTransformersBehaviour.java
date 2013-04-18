@@ -1,13 +1,12 @@
 package org.jbehave.core.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+
 import java.util.Properties;
 
 import org.jbehave.core.model.TableTransformers.TableTransformer;
 import org.junit.Test;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import static org.hamcrest.Matchers.equalTo;
 
 public class TableTransformersBehaviour {
 

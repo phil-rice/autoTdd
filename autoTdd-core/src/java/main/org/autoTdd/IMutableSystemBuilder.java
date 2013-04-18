@@ -1,16 +1,10 @@
 package org.autoTdd;
 
-import java.util.List;
+public interface IMutableSystemBuilder extends ISystem {
 
-import org.autoTdd.builder.IEngineBuilder;
+	void specify(String engineName, IEngineSpecification specification);
 
-public interface IMutableSystemBuilder {
+	void addConstraint(String engineName, Object result, Object because, Object... inputs);
 
-	void specify(String systemName, ISystemSpecification specification);
-
-	IEngineBuilder builderFor(String systemName);
-	
-	List<String> systemNames();
-
-	 void addConstraint(String systemName, Object result, Object because, Object... inputs);
+	ISystem build();
 }

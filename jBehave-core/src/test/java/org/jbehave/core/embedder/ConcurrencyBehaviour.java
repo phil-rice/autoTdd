@@ -1,11 +1,16 @@
 package org.jbehave.core.embedder;
 
+import static java.util.Arrays.asList;
+import static org.jbehave.core.io.CodeLocations.codeLocationFromClass;
+import static org.jbehave.core.reporters.Format.CONSOLE;
+import static org.jbehave.core.reporters.Format.HTML;
+import static org.jbehave.core.reporters.Format.XML;
+
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jbehave.core.annotations.When;
-import org.jbehave.core.configuration.AnnotationProcessor;
 import org.jbehave.core.configuration.Configuration;
 import org.jbehave.core.configuration.MostUsefulConfiguration;
 import org.jbehave.core.embedder.Embedder.RunningEmbeddablesFailed;
@@ -16,12 +21,6 @@ import org.jbehave.core.reporters.StoryReporterBuilder;
 import org.jbehave.core.steps.InjectableStepsFactory;
 import org.jbehave.core.steps.InstanceStepsFactory;
 import org.junit.Test;
-
-import static java.util.Arrays.asList;
-import static org.jbehave.core.io.CodeLocations.codeLocationFromClass;
-import static org.jbehave.core.reporters.Format.CONSOLE;
-import static org.jbehave.core.reporters.Format.HTML;
-import static org.jbehave.core.reporters.Format.XML;
 
 public class ConcurrencyBehaviour {
 
@@ -42,7 +41,7 @@ public class ConcurrencyBehaviour {
 
         @Override
         public InjectableStepsFactory stepsFactory() {
-            return new InstanceStepsFactory(configuration(), AnnotationProcessor.defaultAnnotationProcessor(), new ThreadsSteps());
+            return new InstanceStepsFactory(configuration(), new ThreadsSteps());
         }
 
         @Override

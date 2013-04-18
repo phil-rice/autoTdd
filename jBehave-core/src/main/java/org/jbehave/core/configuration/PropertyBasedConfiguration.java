@@ -29,6 +29,8 @@ public class PropertyBasedConfiguration extends MostUsefulConfiguration {
 	 * </p>
 	 * @deprecated Use StoryReporterBuilder()
 	 */
+	@Deprecated
+	@Override
 	public StoryReporter defaultStoryReporter() {
 		StoryReporter storyReporter = super.defaultStoryReporter();
 		if (System.getProperty(SILENT_SUCCESS) == null) {
@@ -49,6 +51,7 @@ public class PropertyBasedConfiguration extends MostUsefulConfiguration {
 	 * implemented.
 	 * </p>
 	 */
+	@Override
 	public PendingStepStrategy pendingStepStrategy() {
 		if (System.getProperty(FAIL_ON_PENDING) == null) {
 			return super.pendingStepStrategy();

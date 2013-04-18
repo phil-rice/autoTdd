@@ -201,6 +201,8 @@ public class Embedder {
             // run stories
             storyManager.runStories(storyPaths, filter, failures);
 
+            validateSystem(failures);
+            
             // handle any failures
             handleFailures(failures);
 
@@ -216,7 +218,11 @@ public class Embedder {
         }
     }
 
-    private void handleFailures(BatchFailures failures) {
+    private void validateSystem(BatchFailures failures) {
+		
+	}
+
+	private void handleFailures(BatchFailures failures) {
         if (failures.size() > 0) {
             if (embedderControls.ignoreFailureInStories()) {
                 embedderMonitor.batchFailed(failures);

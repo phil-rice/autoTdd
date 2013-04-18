@@ -1,13 +1,13 @@
 package org.jbehave.core.model;
 
+import static java.util.Collections.unmodifiableList;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-
-import static java.util.Collections.unmodifiableList;
 
 public class Story {
 

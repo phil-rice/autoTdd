@@ -32,49 +32,60 @@ public class PrintStreamEmbedderMonitor extends NullEmbedderMonitor {
         this.output = output;
     }
 
-    public void batchFailed(BatchFailures failures) {
+    @Override
+	public void batchFailed(BatchFailures failures) {
         print("Failed to run batch " + failures);
     }
 
-    public void beforeOrAfterStoriesFailed() {
+    @Override
+	public void beforeOrAfterStoriesFailed() {
         print("Failed to run before or after stories steps");
     }
 
-    public void embeddableFailed(String name, Throwable cause) {
+    @Override
+	public void embeddableFailed(String name, Throwable cause) {
         print("Failed to run embeddable " + name);
         printStackTrace(cause);
     }
 
-    public void embeddableNotConfigurable(String name) {
+    @Override
+	public void embeddableNotConfigurable(String name) {
         print("Embeddable " + name + " must be an instance of " + ConfigurableEmbedder.class);
     }
 
-    public void embeddablesSkipped(List<String> classNames) {
+    @Override
+	public void embeddablesSkipped(List<String> classNames) {
         print("Skipped embeddables " + classNames);
     }
 
-    public void metaNotAllowed(Meta meta, MetaFilter filter) {
+    @Override
+	public void metaNotAllowed(Meta meta, MetaFilter filter) {
         print(meta + " excluded by filter '" + filter.asString() + "'");
     }
 
-    public void runningEmbeddable(String name) {
+    @Override
+	public void runningEmbeddable(String name) {
         print("Running embeddable " + name);
     }
 
-    public void runningStory(String path) {
+    @Override
+	public void runningStory(String path) {
         print("Running story " + path);
     }
 
-    public void storyFailed(String path, Throwable cause) {
+    @Override
+	public void storyFailed(String path, Throwable cause) {
         print("Failed to run story " + path);
         printStackTrace(cause);
     }
 
-    public void storiesSkipped(List<String> storyPaths) {
+    @Override
+	public void storiesSkipped(List<String> storyPaths) {
         print("Skipped stories " + storyPaths);
     }
 
-    public void storiesNotAllowed(List<Story> stories, MetaFilter filter, boolean verbose) {
+    @Override
+	public void storiesNotAllowed(List<Story> stories, MetaFilter filter, boolean verbose) {
         StringBuffer sb = new StringBuffer();
         sb.append(stories.size() + " stories excluded by filter: " + filter.asString() + "\n");
         if (verbose) {
@@ -85,26 +96,31 @@ public class PrintStreamEmbedderMonitor extends NullEmbedderMonitor {
         print(sb.toString());
     }
 
-    public void runningWithAnnotatedEmbedderRunner(String className) {
+    @Override
+	public void runningWithAnnotatedEmbedderRunner(String className) {
         print("Running with AnnotatedEmbedderRunner '" + className + "'");
     }
 
-    public void annotatedInstanceNotOfType(Object annotatedInstance, Class<?> type) {
+    @Override
+	public void annotatedInstanceNotOfType(Object annotatedInstance, Class<?> type) {
         print("Annotated instance " + annotatedInstance + " if not of type " + type);
     }
 
-    public void generatingReportsView(File outputDirectory, List<String> formats, Properties viewProperties) {
+    @Override
+	public void generatingReportsView(File outputDirectory, List<String> formats, Properties viewProperties) {
         print("Generating reports view to '" + outputDirectory + "' using formats '" + formats + "'"
                 + " and view properties '" + viewProperties + "'");
     }
 
-    public void reportsViewGenerationFailed(File outputDirectory, List<String> formats, Properties viewProperties,
+    @Override
+	public void reportsViewGenerationFailed(File outputDirectory, List<String> formats, Properties viewProperties,
             Throwable cause) {
         print("Failed to generate reports view to '" + outputDirectory + "' using formats '" + formats
                 + "' and view properties '" + viewProperties + "'");
     }
 
-    public void reportsViewGenerated(ReportsCount count) {
+    @Override
+	public void reportsViewGenerated(ReportsCount count) {
         print("Reports view generated with " + count.getStories() + " stories (of which " + count.getStoriesPending()
                 + " pending) containing " + count.getScenarios() + " scenarios (of which " + count.getScenariosPending() + " pending)");
         if (count.getStoriesNotAllowed() > 0 || count.getScenariosNotAllowed() > 0) {
@@ -113,66 +129,80 @@ public class PrintStreamEmbedderMonitor extends NullEmbedderMonitor {
         }
     }
 
-    public void reportsViewFailures(ReportsCount count) {
+    @Override
+	public void reportsViewFailures(ReportsCount count) {
         print("Failures in reports view: " + count.getScenariosFailed() + " scenarios failed");
     }
 
-    public void reportsViewNotGenerated() {
+    @Override
+	public void reportsViewNotGenerated() {
         print("Reports view not generated");
     }
 
-    public void mappingStory(String storyPath, List<String> metaFilters) {
+    @Override
+	public void mappingStory(String storyPath, List<String> metaFilters) {
         print("Mapping story " + storyPath + " with meta filters " + metaFilters);
     }
 
-    public void generatingMapsView(File outputDirectory, StoryMaps storyMaps, Properties viewProperties) {
+    @Override
+	public void generatingMapsView(File outputDirectory, StoryMaps storyMaps, Properties viewProperties) {
         print("Generating maps view to '" + outputDirectory + "' using story maps '" + storyMaps + "'"
                 + " and view properties '" + viewProperties + "'");
     }
 
-    public void mapsViewGenerationFailed(File outputDirectory, StoryMaps storyMaps, Properties viewProperties,
+    @Override
+	public void mapsViewGenerationFailed(File outputDirectory, StoryMaps storyMaps, Properties viewProperties,
             Throwable cause) {
         print("Failed to generating maps view to '" + outputDirectory + "' using story maps '" + storyMaps + "'"
                 + " and view properties '" + viewProperties + "'");
         printStackTrace(cause);
     }
 
-    public void generatingNavigatorView(File outputDirectory, Properties viewProperties) {
+    @Override
+	public void generatingNavigatorView(File outputDirectory, Properties viewProperties) {
         print("Generating navigator view to '" + outputDirectory + "' using view properties '" + viewProperties + "'");
     }
 
-    public void navigatorViewGenerationFailed(File outputDirectory, Properties viewProperties, Throwable cause) {
+    @Override
+	public void navigatorViewGenerationFailed(File outputDirectory, Properties viewProperties, Throwable cause) {
         print("Failed to generating navigator view to '" + outputDirectory + "' using view properties '"
                 + viewProperties + "'");
         printStackTrace(cause);
     }
 
-    public void navigatorViewNotGenerated() {
+    @Override
+	public void navigatorViewNotGenerated() {
         print("Navigator view not generated, as the CrossReference has not been declared in the StoryReporterBuilder");
     }
 
-    public void processingSystemProperties(Properties properties) {
+    @Override
+	public void processingSystemProperties(Properties properties) {
         print("Processing system properties " + properties);
     }
 
-    public void systemPropertySet(String name, String value) {
+    @Override
+	public void systemPropertySet(String name, String value) {
         print("System property '" + name + "' set to '" + value + "'");
     }
 
-    public void storyTimeout(Story story, StoryDuration storyDuration) {
+    @Override
+	public void storyTimeout(Story story, StoryDuration storyDuration) {
         print("Story " + story.getPath() + " duration of " + storyDuration.getDurationInSecs()
                 + " seconds has exceeded timeout of " + storyDuration.getTimeoutInSecs() + " seconds");
     }
 
-    public void usingThreads(int threads) {
+    @Override
+	public void usingThreads(int threads) {
         print("Using " + threads + " threads");
     }
 
-    public void usingExecutorService(ExecutorService executorService) {
+    @Override
+	public void usingExecutorService(ExecutorService executorService) {
         print("Using executor service " + executorService);
     }
 
-    public void usingControls(EmbedderControls embedderControls) {
+    @Override
+	public void usingControls(EmbedderControls embedderControls) {
         print("Using controls " + embedderControls);
     }
 

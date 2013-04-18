@@ -58,7 +58,8 @@ public class StoryLoaderBehaviour {
         public InputStream getResourceAsStream(String name) {
             return new InputStream() {
 
-                public int available() throws IOException {
+                @Override
+				public int available() throws IOException {
                     return 1;
                 }
 

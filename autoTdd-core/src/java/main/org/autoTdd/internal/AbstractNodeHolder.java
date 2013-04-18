@@ -1,21 +1,18 @@
 package org.autoTdd.internal;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.autoTdd.IEngineSpecification;
 import org.autoTdd.IEngineStrategy;
-import org.autoTdd.ISystemSpecification;
 import org.autoTdd.builder.internal.Node;
 import org.softwarefm.utilities.indent.Indent;
 
 abstract public class AbstractNodeHolder extends EngineType {
 
-	protected final ISystemSpecification specification;
+	protected final IEngineSpecification specification;
 	protected final Object defaultOutput;
 	protected final IEngineStrategy engineStrategy;
 	protected final Object context;
 
-	public AbstractNodeHolder(ISystemSpecification specification) {
+	public AbstractNodeHolder(IEngineSpecification specification) {
 		super(specification.resultClass(), specification.parameters());
 		this.specification = specification;
 		this.engineStrategy = specification.engineStrategy();

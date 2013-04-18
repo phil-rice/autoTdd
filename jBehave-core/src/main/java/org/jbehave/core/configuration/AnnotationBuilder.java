@@ -144,13 +144,13 @@ public class AnnotationBuilder {
             for (Class<Object> stepsClass : stepsClasses) {
                 stepsInstances.add(instanceOf(Object.class, stepsClass));
             }
-            factory = new InstanceStepsFactory(configuration,AnnotationProcessor.defaultAnnotationProcessor(),  stepsInstances);
+            factory = new InstanceStepsFactory(configuration,stepsInstances);
         } else {
             annotationMonitor.annotationNotFound(UsingSteps.class, annotatedClass);
         }
 
         if (factory == null) {
-			factory = new InstanceStepsFactory(configuration, AnnotationProcessor.defaultAnnotationProcessor() );
+			factory = new InstanceStepsFactory(configuration );
         }
         return factory;
     }
@@ -193,7 +193,6 @@ public class AnnotationBuilder {
         return embedder;
     }
 
-    @SuppressWarnings("unchecked")
     private Embedder embedder() {
         return instanceOf(Embedder.class,
                 (Class<? extends Embedder>) finder.getAnnotatedValue(UsingEmbedder.class, Class.class, "embedder"));
@@ -210,7 +209,6 @@ public class AnnotationBuilder {
         return storyFinder().findPaths(searchIn, includes, excludes);
     }
 
-    @SuppressWarnings("unchecked")
     private StoryFinder storyFinder() {
         return instanceOf(StoryFinder.class, (Class<? extends StoryFinder>)finder.getAnnotatedValue(UsingPaths.class, Class.class, "storyFinder"));
     }
@@ -224,7 +222,6 @@ public class AnnotationBuilder {
         return instanceOf(type, implementation);
     }
 
-    @SuppressWarnings("unchecked")
     private <T> Class<T> elementImplementation(AnnotationFinder finder, String name) {
         return finder.getAnnotatedValue(Configure.class, Class.class, name);
     }
@@ -269,7 +266,8 @@ public class AnnotationBuilder {
         return injectEmbedder(buildEmbedder(), annotatedClass);
     }
 
-    protected Object injectEmbedder(Embedder embedder, Class<?> annotatedClass) {
+    @SuppressWarnings("deprecation")
+	protected Object injectEmbedder(Embedder embedder, Class<?> annotatedClass) {
         try {
             Object instance = annotatedClass.newInstance();
             if (instance instanceof Embeddable) {

@@ -1,5 +1,11 @@
 package org.jbehave.core.reporters;
 
+import static java.util.Arrays.asList;
+import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import java.util.List;
 import java.util.Map;
 
@@ -13,15 +19,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
-import org.mockito.Mockito;
-
-import static java.util.Arrays.asList;
-
-import static org.hamcrest.Matchers.equalTo;
-
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import org.mockito.Matchers;
 
 public class StepFailureDecoratorBehaviour {
 
@@ -86,8 +84,8 @@ public class StepFailureDecoratorBehaviour {
         decorator.failedOutcomes("When outcomes fail", table);
 
         // Then
-        verify(delegate).failed(Mockito.eq("When I have a bad idea"), Mockito.eq(t));
-        verify(delegate).failedOutcomes(Mockito.eq("When outcomes fail"), Mockito.eq(table));
+        verify(delegate).failed(Matchers.eq("When I have a bad idea"), Matchers.eq(t));
+        verify(delegate).failedOutcomes(Matchers.eq("When outcomes fail"), Matchers.eq(table));
     }
 
     @Test

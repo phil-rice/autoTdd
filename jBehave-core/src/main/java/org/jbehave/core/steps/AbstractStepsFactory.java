@@ -9,39 +9,41 @@ import java.util.List;
 import org.jbehave.core.annotations.AsParameterConverter;
 import org.jbehave.core.configuration.AnnotationProcessor;
 import org.jbehave.core.configuration.Configuration;
+import org.jbehave.core.configuration.IAnnotationProcessor;
 import org.jbehave.core.steps.ParameterConverters.MethodReturningConverter;
 import org.jbehave.core.steps.ParameterConverters.ParameterConverter;
 
+import com.thoughtworks.paranamer.AnnotationParanamer;
+
 /**
  * <p>
- * An abstract implementation of {@link InjectableStepsFactory} that is provided
- * by concrete subclasses Object instances which contain the candidate steps
- * methods. The Object instances are wrapped by {@link Steps}.
+ * An abstract implementation of {@link InjectableStepsFactory} that is provided by concrete subclasses Object instances which contain the candidate steps methods. The Object instances are wrapped by {@link Steps}.
  * </p>
  * <p>
- * The object instances are also inspected for methods annotated by {@link AsParameterConverter}
- * and the {@link ParameterConverter} is configured accordingly.
+ * The object instances are also inspected for methods annotated by {@link AsParameterConverter} and the {@link ParameterConverter} is configured accordingly.
  * </p>
  */
 public abstract class AbstractStepsFactory implements InjectableStepsFactory {
 
-    private final Configuration configuration;
-	private AnnotationProcessor annotationProcessor;
+	private final Configuration configuration;
 
-	public AbstractStepsFactory(Configuration configuration, AnnotationProcessor annotationProcessor) {
+	public AbstractStepsFactory(Configuration configuration) {
 		this.configuration = configuration;
-		this.annotationProcessor = annotationProcessor;
 	}
-	
+
 	public List<CandidateSteps> createCandidateSteps() {
+		IAnnotationProcessor annotationProcessor = createAnnotationProcessor();
 		List<Class<?>> types = stepsTypes();
 		List<CandidateSteps> steps = new ArrayList<CandidateSteps>();
 		for (Class<?> type : types) {
-			configuration.parameterConverters().addConverters(
-					methodReturningConverters(type));
+			configuration.parameterConverters().addConverters(methodReturningConverters(type));
 			steps.add(new Steps(configuration, type, this, annotationProcessor));
 		}
 		return steps;
+	}
+
+	protected IAnnotationProcessor createAnnotationProcessor() {
+		return AnnotationProcessor.defaultAnnotationProcessor();
 	}
 
 	protected abstract List<Class<?>> stepsTypes();
@@ -62,18 +64,17 @@ public abstract class AbstractStepsFactory implements InjectableStepsFactory {
 	}
 
 	/**
-	 * Determines if the given type is a {@link Class} containing at least one method 
-     * annotated with annotations from package "org.jbehave.core.annotations".
+	 * Determines if the given type is a {@link Class} containing at least one method annotated with annotations from package "org.jbehave.core.annotations".
 	 * 
-	 * @param type the Type of the steps instance
+	 * @param type
+	 *            the Type of the steps instance
 	 * @return A boolean, <code>true</code> if at least one annotated method is found.
 	 */
-    protected boolean hasAnnotatedMethods(Type type) {
+	protected boolean hasAnnotatedMethods(Type type) {
 		if (type instanceof Class<?>) {
 			for (Method method : ((Class<?>) type).getMethods()) {
 				for (Annotation annotation : method.getAnnotations()) {
-					if (annotation.annotationType().getName().startsWith(
-							"org.jbehave.core.annotations")) {
+					if (annotation.annotationType().getName().startsWith("org.jbehave.core.annotations")) {
 						return true;
 					}
 				}
@@ -82,12 +83,12 @@ public abstract class AbstractStepsFactory implements InjectableStepsFactory {
 		return false;
 	}
 
-    @SuppressWarnings("serial")
-    public static class StepsInstanceNotFound extends RuntimeException {
+	@SuppressWarnings("serial")
+	public static class StepsInstanceNotFound extends RuntimeException {
 
-        public StepsInstanceNotFound(Class<?> type, InjectableStepsFactory stepsFactory) {
-            super("Steps instance not found for type "+type+" in factory "+stepsFactory);
-        }
-        
-    }
+		public StepsInstanceNotFound(Class<?> type, InjectableStepsFactory stepsFactory) {
+			super("Steps instance not found for type " + type + " in factory " + stepsFactory);
+		}
+
+	}
 }

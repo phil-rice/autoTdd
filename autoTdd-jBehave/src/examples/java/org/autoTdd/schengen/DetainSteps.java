@@ -1,6 +1,6 @@
  package org.autoTdd.schengen;
 
-import org.autoTdd.jbehave.annotations.Because;
+import org.jbehave.core.annotations.Because;
 import org.jbehave.core.annotations.Then;
 import org.jbehave.core.annotations.When;
 import org.softwarefm.schengen.IEngineSteps;

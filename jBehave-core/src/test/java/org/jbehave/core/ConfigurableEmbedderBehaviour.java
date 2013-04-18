@@ -21,7 +21,7 @@ import org.jbehave.core.junit.JUnitStories;
 import org.jbehave.core.junit.JUnitStory;
 import org.jbehave.core.steps.CandidateSteps;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.mockito.Matchers;
 
 public class ConfigurableEmbedderBehaviour {
 
@@ -89,7 +89,7 @@ public class ConfigurableEmbedderBehaviour {
 
         // Then
         verify(embedder).useConfiguration(configuration);
-        verify(embedder).useCandidateSteps(Mockito.eq(Arrays.asList(steps)));
+        verify(embedder).useCandidateSteps(Matchers.eq(Arrays.asList(steps)));
         verify(embedder).runStoriesAsPaths(asList(storyPath));
     }
 
@@ -115,15 +115,17 @@ public class ConfigurableEmbedderBehaviour {
         verify(embedder).runStoriesAsPaths(asList(storyPath));
     }
 
+	@SuppressWarnings("deprecation")
     private class MyStory extends JUnitStory {
 
-        public MyStory(Configuration configuration, CandidateSteps steps) {
+		public MyStory(Configuration configuration, CandidateSteps steps) {
             useConfiguration(configuration);
             addSteps(steps);
         }
         
     }
 
+	@SuppressWarnings("deprecation")
     private class MyStories extends JUnitStories {
         
         public MyStories(Configuration configuration, CandidateSteps steps) {

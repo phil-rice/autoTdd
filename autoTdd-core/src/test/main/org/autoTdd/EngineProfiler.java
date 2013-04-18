@@ -14,7 +14,6 @@ public class EngineProfiler {
 	public static int warmup = 10000;
 	public static int times = 10000;
 
-	@SuppressWarnings("unchecked")
 	public static void main(String[] args) {
 		IEngine1<String, Integer> engine = DSL.simple(String.class, Integer.class, "Zero", "x").//
 				add(pos, bigPos, neg, bigNeg, vBigNeg, vBigPos).engine1(String.class, Integer.class);

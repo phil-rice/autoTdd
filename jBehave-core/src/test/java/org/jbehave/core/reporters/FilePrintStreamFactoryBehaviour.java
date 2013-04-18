@@ -12,8 +12,8 @@ import org.jbehave.core.io.CodeLocations;
 import org.jbehave.core.io.StoryLocation;
 import org.jbehave.core.reporters.FilePrintStreamFactory.FileConfiguration;
 import org.jbehave.core.reporters.FilePrintStreamFactory.FilePathResolver;
-import org.jbehave.core.reporters.FilePrintStreamFactory.ResolveToSimpleName;
 import org.jbehave.core.reporters.FilePrintStreamFactory.PrintStreamCreationFailed;
+import org.jbehave.core.reporters.FilePrintStreamFactory.ResolveToSimpleName;
 import org.junit.Test;
 
 
@@ -98,7 +98,8 @@ public class FilePrintStreamFactoryBehaviour {
         String storyPath = "org/jbehave/examples/trader/stories/my_given.story";
         FileConfiguration configuration = new FileConfiguration("ext");
         FilePrintStreamFactory factory = new FilePrintStreamFactory(new StoryLocation(codeLocation, storyPath), configuration){
-            protected File outputDirectory() {
+            @Override
+			protected File outputDirectory() {
                 return new File((String)null);
             }
         };

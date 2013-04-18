@@ -1,10 +1,11 @@
 package org.jbehave.core.reporters;
 
+import static java.text.MessageFormat.format;
+
 import java.io.PrintStream;
 import java.util.List;
-import org.jbehave.core.steps.Stepdoc;
 
-import static java.text.MessageFormat.format;
+import org.jbehave.core.steps.Stepdoc;
 
 public class PrintStreamStepdocReporter implements StepdocReporter {
 

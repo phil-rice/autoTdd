@@ -61,7 +61,7 @@ public class StepCreatorBehaviour {
         // Given
         SomeSteps stepsInstance = new SomeSteps();
         MostUsefulConfiguration configuration = new MostUsefulConfiguration();
-        InjectableStepsFactory stepsFactory = new InstanceStepsFactory(configuration,AnnotationProcessor.defaultAnnotationProcessor(), stepsInstance);
+        InjectableStepsFactory stepsFactory = new InstanceStepsFactory(configuration,stepsInstance);
         StepCreator stepCreator = new StepCreator(stepsInstance.getClass(), stepsFactory,
                 configuration.parameterConverters(), new ParameterControls(), null, new SilentStepMonitor());
 
@@ -84,7 +84,7 @@ public class StepCreatorBehaviour {
     public void shouldDescribeStepToReporterBeforeExecutingParametrisedStep() throws IntrospectionException {
         // Given
         SomeSteps stepsInstance = new SomeSteps();
-        InjectableStepsFactory stepsFactory = new InstanceStepsFactory(new MostUsefulConfiguration(),AnnotationProcessor.defaultAnnotationProcessor(), stepsInstance);
+        InjectableStepsFactory stepsFactory = new InstanceStepsFactory(new MostUsefulConfiguration(),stepsInstance);
         StepCreator stepCreator = new StepCreator(stepsInstance.getClass(), stepsFactory, null,
                 new ParameterControls(), null, new SilentStepMonitor());
         StoryReporter storyReporter = mock(StoryReporter.class);
@@ -101,7 +101,7 @@ public class StepCreatorBehaviour {
     public void shouldHandleTargetInvocationFailureInParametrisedStep() throws IntrospectionException {
         // Given
         SomeSteps stepsInstance = new SomeSteps();
-        InjectableStepsFactory stepsFactory = new InstanceStepsFactory(new MostUsefulConfiguration(),AnnotationProcessor.defaultAnnotationProcessor(), stepsInstance);
+        InjectableStepsFactory stepsFactory = new InstanceStepsFactory(new MostUsefulConfiguration(),stepsInstance);
         StepCreator stepCreator = new StepCreator(stepsInstance.getClass(), stepsFactory, null,
                 new ParameterControls(), null, new SilentStepMonitor());
 
@@ -117,7 +117,7 @@ public class StepCreatorBehaviour {
     public void shouldHandleFailureInParametrisedStep() throws IntrospectionException {
         // Given
         SomeSteps stepsInstance = new SomeSteps();
-        InjectableStepsFactory stepsFactory = new InstanceStepsFactory(new MostUsefulConfiguration(),AnnotationProcessor.defaultAnnotationProcessor(), stepsInstance);
+        InjectableStepsFactory stepsFactory = new InstanceStepsFactory(new MostUsefulConfiguration(),stepsInstance);
         StepCreator stepCreator = new StepCreator(stepsInstance.getClass(), stepsFactory, null,
                 new ParameterControls(), null, new SilentStepMonitor());
 
@@ -134,7 +134,7 @@ public class StepCreatorBehaviour {
         // Given
         SomeSteps stepsInstance = new SomeSteps();
         StepMatcher stepMatcher = mock(StepMatcher.class);
-        InjectableStepsFactory stepsFactory = new InstanceStepsFactory(new MostUsefulConfiguration(),AnnotationProcessor.defaultAnnotationProcessor(), stepsInstance);
+        InjectableStepsFactory stepsFactory = new InstanceStepsFactory(new MostUsefulConfiguration(),stepsInstance);
         StepCreator stepCreator = new StepCreator(stepsInstance.getClass(), stepsFactory, new ParameterConverters(),
                 new ParameterControls(), stepMatcher, new SilentStepMonitor());
 
@@ -515,7 +515,7 @@ public class StepCreatorBehaviour {
     }
 
     private StepCreator stepCreatorUsing(SomeSteps stepsInstance, StepMatcher stepMatcher, ParameterControls parameterControls) {
-        InjectableStepsFactory stepsFactory = new InstanceStepsFactory(new MostUsefulConfiguration(),AnnotationProcessor.defaultAnnotationProcessor(), stepsInstance);
+        InjectableStepsFactory stepsFactory = new InstanceStepsFactory(new MostUsefulConfiguration(),stepsInstance);
         return new StepCreator(stepsInstance.getClass(), stepsFactory, parameterConverters, parameterControls,
                 stepMatcher, new SilentStepMonitor());
     }

@@ -1,5 +1,12 @@
 package org.jbehave.core.steps;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.jbehave.core.steps.StepCandidateBehaviour.candidateMatchingStep;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,15 +21,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.thoughtworks.paranamer.BytecodeReadingParanamer;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-
-import static org.jbehave.core.steps.StepCandidateBehaviour.candidateMatchingStep;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class CompositeStepCandidateBehaviour {
 

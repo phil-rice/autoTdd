@@ -481,7 +481,7 @@ public class StoryRunner {
 		for (Step step : steps) {
 			try {
 				context.interruptIfCancelled();
-				state = context.storyExecutor().run(state, step);
+				state = state.run(step);
 			} catch (RestartingScenarioFailure e) {
 				reporter.get().restarted(step.toString(), e);
 				throw e;

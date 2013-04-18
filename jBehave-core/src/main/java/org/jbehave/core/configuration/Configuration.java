@@ -24,7 +24,6 @@ import org.jbehave.core.reporters.ConsoleOutput;
 import org.jbehave.core.reporters.FreemarkerViewGenerator;
 import org.jbehave.core.reporters.PrintStreamStepdocReporter;
 import org.jbehave.core.reporters.StepdocReporter;
-import org.jbehave.core.reporters.StoryExecutor;
 import org.jbehave.core.reporters.StoryReporter;
 import org.jbehave.core.reporters.StoryReporterBuilder;
 import org.jbehave.core.reporters.ViewGenerator;
@@ -151,7 +150,6 @@ public abstract class Configuration {
 	 */
 	private PathCalculator pathCalculator = new AbsolutePathCalculator();
 
-	private StoryExecutor storyExecutor = new DefaultStoryExecutor();
 
 	public Keywords keywords() {
 		return keywords;
@@ -188,6 +186,7 @@ public abstract class Configuration {
 	/**
 	 * @deprecated Use {@link StoryReporterBuilder}
 	 */
+	@Deprecated
 	public StoryReporter defaultStoryReporter() {
 		return defaultStoryReporter;
 	}
@@ -239,6 +238,7 @@ public abstract class Configuration {
 	public PathCalculator pathCalculator() {
 		return pathCalculator;
 	}
+	
 
 	public Configuration useKeywords(Keywords keywords) {
 		this.keywords = keywords;
@@ -300,10 +300,6 @@ public abstract class Configuration {
 		return this;
 	}
 
-	public Configuration useStoryExecutor(StoryExecutor storyExecutor) {
-		this.storyExecutor = storyExecutor;
-		return this;
-	}
 
 	public Configuration useStepdocReporter(StepdocReporter stepdocReporter) {
 		this.stepdocReporter = stepdocReporter;
@@ -344,9 +340,6 @@ public abstract class Configuration {
 		this.pathCalculator = pathCalculator;
 		return this;
 	}
-
-	public StoryExecutor storyExecutor() {
-		return storyExecutor;
-	}
+	
 
 }

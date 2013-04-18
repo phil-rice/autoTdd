@@ -4,24 +4,24 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import org.autoTdd.IAutoTddFactory;
-import org.autoTdd.ISystemSpecification;
+import org.autoTdd.IEngineSpecification;
 import org.autoTdd.builder.IEngineBuilder;
 import org.autoTdd.builder.internal.EngineBuilder;
 import org.softwarefm.utilities.maps.Maps;
 
 public class AutoTddFactory implements IAutoTddFactory {
 
-	private final Map<String, ISystemSpecification> strategyMap = Maps.newMap();
+	private final Map<String, IEngineSpecification> strategyMap = Maps.newMap();
 	private final Map<String, IEngineBuilder> builderMap = Maps.newMap();
 
 	@Override
-	public IEngineBuilder builderFor(final ISystemSpecification specification, String systemName) {
-		ISystemSpecification existing = strategyMap.get(systemName);
+	public IEngineBuilder builderFor(String engineName, final IEngineSpecification specification) {
+		IEngineSpecification existing = strategyMap.get(engineName);
 		if (existing == null)
-			strategyMap.put(systemName, specification);
+			strategyMap.put(engineName, specification);
 		else if (existing != specification)
 			throw new IllegalArgumentException();
-		return (IEngineBuilder) Maps.findOrCreate(builderMap, systemName, new Callable<IEngineBuilder>() {
+		return Maps.findOrCreate(builderMap, engineName, new Callable<IEngineBuilder>() {
 			@Override
 			public IEngineBuilder call() throws Exception {
 				return new EngineBuilder(specification);

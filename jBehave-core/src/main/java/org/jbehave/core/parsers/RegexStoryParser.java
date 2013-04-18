@@ -1,5 +1,9 @@
 package org.jbehave.core.parsers;
 
+import static java.util.regex.Pattern.DOTALL;
+import static java.util.regex.Pattern.compile;
+import static org.apache.commons.lang.StringUtils.removeStart;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +21,6 @@ import org.jbehave.core.model.Meta;
 import org.jbehave.core.model.Narrative;
 import org.jbehave.core.model.Scenario;
 import org.jbehave.core.model.Story;
-
-import static java.util.regex.Pattern.DOTALL;
-import static java.util.regex.Pattern.compile;
-import static org.apache.commons.lang.StringUtils.removeStart;
 
 /**
  * Pattern-based story parser, which uses the keywords provided to parse the

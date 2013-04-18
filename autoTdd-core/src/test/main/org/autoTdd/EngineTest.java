@@ -6,7 +6,6 @@ import org.autoTdd.engine.IEngine1;
 import org.autoTdd.groovy.DSL;
 import org.autoTdd.internal.Constraint;
 
-@SuppressWarnings("unchecked")
 public class EngineTest extends TestCase {
 
 	public final static Constraint pos = DSL.constraint("Positive", "x>0", 1);

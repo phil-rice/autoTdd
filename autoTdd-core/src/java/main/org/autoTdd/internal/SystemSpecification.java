@@ -1,9 +1,9 @@
 package org.autoTdd.internal;
 
+import org.autoTdd.IEngineSpecification;
 import org.autoTdd.IEngineStrategy;
-import org.autoTdd.ISystemSpecification;
 
-public class SystemSpecification extends EngineType implements ISystemSpecification {
+public class SystemSpecification extends EngineType implements IEngineSpecification {
 
 	private final IEngineStrategy engineStrategy;
 	private final Object defaultOutput;

@@ -1,10 +1,12 @@
 package org.jbehave.core.io;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+
 import java.net.MalformedURLException;
 import java.net.URL;
-import org.junit.*;
-import static org.junit.Assert.*;
-import static org.hamcrest.Matchers.*;
+
+import org.junit.Test;
 
 public class LoadFromRelativeFileBehaviour {
 
