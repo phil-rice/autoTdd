@@ -33,7 +33,7 @@ public class StockSteps implements IEngineSteps {
 		customersGarmentType = new GarmentType(nameAndColour);
 	}
 
-	@Given("{I currently have|I have} $count of $items {left|} in stock")
+	@Given("{I currently have|I have} $count of $items in stock")
 	public void iCurrentlyHaveCountItemsLeftInstock(int count, String item) {
 		stock.setStockForTest(count, item);
 	}

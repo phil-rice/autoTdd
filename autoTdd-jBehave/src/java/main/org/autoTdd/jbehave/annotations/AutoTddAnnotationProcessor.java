@@ -74,6 +74,10 @@ public class AutoTddAnnotationProcessor extends AnnotationProcessor implements I
 				lastThens = new ArrayList<Object>();
 				return super.execute(step, method, given, object, parameters);
 			}
+
+			public String typeWord() {
+				return "Given";
+			}
 		});
 		register(When.class, new DefaultAnnotationStrategy<When>(StepType.WHEN) {
 			@Override
@@ -91,6 +95,12 @@ public class AutoTddAnnotationProcessor extends AnnotationProcessor implements I
 				lastEngineName = when.value();
 				return super.execute(step, method, when, object, parameters);
 			}
+
+			@Override
+			public String typeWord() {
+				return "When";
+			}
+
 		});
 		register(Because.class, new DefaultAnnotationStrategy<Because>(AutoTddStepTypes.BECAUSE) {
 			@Override
@@ -101,6 +111,11 @@ public class AutoTddAnnotationProcessor extends AnnotationProcessor implements I
 			@Override
 			public String value(Because annotation) {
 				return annotation.value();
+			}
+
+			@Override
+			public String typeWord() {
+				return "Because";
 			}
 
 			@Override
@@ -181,6 +196,10 @@ public class AutoTddAnnotationProcessor extends AnnotationProcessor implements I
 					((Runnable) result).run();
 				return result;
 			}
+
+			public String typeWord() {
+				return "Then";
+			}
 		});
 		register(Called.class, new DefaultAnnotationStrategy<Called>(AutoTddStepTypes.CALLED) {
 			@Override
@@ -191,6 +210,12 @@ public class AutoTddAnnotationProcessor extends AnnotationProcessor implements I
 			@Override
 			public String value(Called annotation) {
 				return annotation.value();
+			}
+
+			@Override
+			public String typeWord() {
+				// TODO Auto-generated method stub
+				return "Called";
 			}
 
 		});

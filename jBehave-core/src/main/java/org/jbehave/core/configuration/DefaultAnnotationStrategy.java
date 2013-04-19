@@ -18,7 +18,7 @@ abstract public class DefaultAnnotationStrategy<A extends Annotation> implements
 		return stepType;
 	}
 
-	public Object execute(Step step, Method method,A annotation, Object object, Object[] parameters) throws Exception {
+	public Object execute(Step step, Method method, A annotation, Object object, Object[] parameters) throws Exception {
 		Object result = method.invoke(object, parameters);
 		return result;
 	}
