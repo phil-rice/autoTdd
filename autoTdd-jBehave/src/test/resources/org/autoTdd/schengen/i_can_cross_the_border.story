@@ -5,18 +5,26 @@ I want to use Behaviour-Driven Development
      
 Scenario:  Ordinary person
 
-Given a normal person 
+Given a person
 Called Deborah
-When I assess the person            
+When I assess the person
 Then the person should be allowed   
-Because I said so                   
+Because I said so
+
+Scenario:  Person with drugs
+
+Given the person has a lot of money
+And the person is carrying drugs
+Called Gary
+When I assess the person
+Then the person should be arrested
+Because the person is carrying drugs
 
 Scenario:  Person with a lot of money
-Given a person with a lot of money
+
+Given the person has a lot of money
 Called Francisco
 When I assess the person
-Then the person should be detained 
+Then the person should be detained
 Because the person has a lot of money
 
-
-	

@@ -4,10 +4,10 @@ import java.util.List;
 
 import org.autoTdd.builder.internal.Node;
 
-public interface IEngineAsTree extends IEngine {
-
-	Node getRoot();
+public interface IEngineAsTree extends IEngine , IRooted{
 
 	List<Node> allNodes();
+	
+	Object defaultOutput();
 
 }

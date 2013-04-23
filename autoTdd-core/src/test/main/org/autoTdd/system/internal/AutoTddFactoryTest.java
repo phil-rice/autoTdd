@@ -6,7 +6,7 @@ import org.autoTdd.IEngineSpecification;
 import org.autoTdd.IEngineStrategy;
 import org.autoTdd.internal.AutoTddFactory;
 import org.autoTdd.internal.Constraint;
-import org.autoTdd.internal.SystemSpecification;
+import org.autoTdd.internal.EngineSpecification;
 import org.softwarefm.utilities.indent.Indent;
 import org.softwarefm.utilities.tests.Tests;
 
@@ -39,8 +39,8 @@ public class AutoTddFactoryTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		factory = new AutoTddFactory();
-		spec1 = new SystemSpecification(Object.class, new Class[0], new DummyEngineStrategy(), "default");
-		spec2 = new SystemSpecification(Object.class, new Class[0], new DummyEngineStrategy(), "default");
+		spec1 = new EngineSpecification(Object.class, new Class[0], new DummyEngineStrategy(), "default");
+		spec2 = new EngineSpecification(Object.class, new Class[0], new DummyEngineStrategy(), "default");
 	}
 
 	static class DummyEngineStrategy implements IEngineStrategy {

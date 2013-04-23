@@ -16,6 +16,8 @@ import org.autoTdd.engine.IEngineAsTree;
 import org.autoTdd.internal.AutoTddFactory;
 import org.autoTdd.internal.Constraint;
 import org.autoTdd.jbehave.ISpecifiesEngines;
+import org.autoTdd.jbehave.JBehaveSessionManager;
+import org.autoTdd.jbehave.internal.BecauseForConstraint;
 import org.jbehave.core.ConfigurableEmbedder;
 import org.jbehave.core.configuration.Configuration;
 import org.jbehave.core.embedder.Embedder;
@@ -32,6 +34,7 @@ import org.jbehave.core.steps.NullStepMonitor;
 import org.jbehave.core.steps.StepMonitor;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
+import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 
 public class AutoTddJUnitReportingRunner extends Runner {
@@ -90,14 +93,27 @@ public class AutoTddJUnitReportingRunner extends Runner {
 				junitReporter.logger.info("Building system");
 				junitReporter.notifier.fireTestStarted(verifyDescription);
 				ISystem system = specifiesEngines.systemBuilder().build();
-				for (String engineName: system.engineNames()){
-					junitReporter.logger.info("Checking engine " + engineName);
-					IEngineAsTree tree = system.tree(engineName);
-					for (Node node: tree.allNodes()){
-						Constraint constraint = node.constraint;
-						Object actual = tree.transformRaw(constraint.getInputs());
-						Assert.assertEquals(constraint.getResult(), actual);
-						System.out.println("Checked [" + engineName + "] " + Arrays.asList(constraint.getInputs()) + " -- > "+ constraint.getResult());
+				for (String engineName : system.engineNames()) {
+					Description engineDescription = findEngineDescription(engineName);
+					if (engineDescription != null) {
+						junitReporter.notifier.fireTestStarted(engineDescription);
+						junitReporter.logger.info("Checking engine " + engineName);
+						IEngineAsTree tree = system.tree(engineName);
+						System.out.println("Engine: " + engineName + "\n" + tree);
+						for (Node node : tree.allNodes()) {
+							Constraint constraint = node.constraint;
+							Description constraintDescription = findConstrantDescription(engineDescription, (BecauseForConstraint) constraint.getBecause());
+							junitReporter.notifier.fireTestStarted(constraintDescription);
+							try {
+								Object actual = tree.transformRaw(constraint.getInputs());
+								Assert.assertEquals(constraint.getResult(), actual);
+								junitReporter.notifier.fireTestFinished(constraintDescription);
+								System.out.println("Checked [" + engineName + "] " + Arrays.asList(constraint.getInputs()) + " -- > " + constraint.getResult());
+							} catch (Throwable e) {
+								junitReporter.notifier.fireTestFailure(new Failure(constraintDescription, e));
+							}
+						}
+						junitReporter.notifier.fireTestFinished(engineDescription);
 					}
 				}
 				junitReporter.logger.info("Now running the verifications");
@@ -106,6 +122,21 @@ public class AutoTddJUnitReportingRunner extends Runner {
 		} finally {
 			configuredEmbedder.generateCrossReference();
 		}
+	}
+
+	private Description findConstrantDescription(Description engineDescription, BecauseForConstraint constraint) {
+		String situationString = constraint.situationString();
+		for (Description description : engineDescription.getChildren())
+			if (situationString.equals(description.getDisplayName()))
+				return description;
+		return null;
+	}
+
+	private Description findEngineDescription(String engineName) {
+		for (Description description : verifyDescription.getChildren())
+			if (engineName.equals(description.getDisplayName()))
+				return description;
+		return null;
 	}
 
 	public static EmbedderControls recommandedControls(Embedder embedder) {
@@ -183,6 +214,7 @@ public class AutoTddJUnitReportingRunner extends Runner {
 		storyReporterBuilder.withFormats(junitReportFormat);
 	}
 
+	@SuppressWarnings("unchecked")
 	private List<Description> buildDescriptionFromStories() {
 		AutoTddJUnitDescriptionGenerator descriptionGenerator = new AutoTddJUnitDescriptionGenerator(candidateSteps, configuration);
 		StoryRunner storyRunner = new StoryRunner();
@@ -191,10 +223,26 @@ public class AutoTddJUnitReportingRunner extends Runner {
 		addSuite(storyDescriptions, "BeforeStories");
 		addStories(storyDescriptions, storyRunner, descriptionGenerator);
 		addSuite(storyDescriptions, "AfterStories");
-		if (configurableEmbedder instanceof ISpecifiesEngines)
-			verifyDescription= addSuite(storyDescriptions, "Verifying AutoTddEngines");
-
-		numberOfTestCases += descriptionGenerator.getTestCases();
+		int extraTests = 0;
+		if (configurableEmbedder instanceof ISpecifiesEngines) {
+			storyDescriptions.add(verifyDescription = Description.createSuiteDescription("Verifying AutoTddEngines"));
+			try {
+				ISystem system = JBehaveSessionManager.makeEnginesFor(configurableEmbedder.getClass());
+				for (String engineName : system.engineNames()) {
+					IEngineAsTree tree = system.tree(engineName);
+					Description engineDescription = Description.createSuiteDescription(engineName);
+					verifyDescription.addChild(engineDescription);
+					for (Node node : tree.allNodes()) {
+						extraTests++;
+						BecauseForConstraint constraint = (BecauseForConstraint) node.constraint.getBecause();
+						engineDescription.addChild(Description.createSuiteDescription(constraint.situationString()));
+					}
+				}
+			} catch (Exception e) {
+				throw new IllegalStateException("Cannot make engine for " + configurableEmbedder.getClass(), e);
+			}
+		}
+		numberOfTestCases += descriptionGenerator.getTestCases() +  extraTests;
 
 		return storyDescriptions;
 	}

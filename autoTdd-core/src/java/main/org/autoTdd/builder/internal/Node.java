@@ -3,7 +3,7 @@ package org.autoTdd.builder.internal;
 import org.autoTdd.internal.Constraint;
 
 public class Node {
-	public final Constraint constraint;
+	public  Constraint constraint;
 	public Node noMatch;
 	public Node match;
 	public final Node lastMatch;

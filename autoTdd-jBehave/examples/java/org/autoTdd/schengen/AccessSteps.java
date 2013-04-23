@@ -11,24 +11,27 @@ import org.softwarefm.schengen.IEngineSteps;
 
 public class AccessSteps implements IEngineSteps {
 
-	int aLotOfMoney = 10000;
+	static int aLotOfMoney = 10000;
 	private Schengen schengen;
 	private Person person;
 
 	@BeforeScenario
 	public void beforeScenario() {
 		schengen = new Schengen();
-	}
-
-	@Given("a normal person")
-	public void aNormalperson() {
 		person = new Person();
 	}
 
-	@Given("a person with a lot of money")
-	public void anpersonWithALotofMoney() {
-		aNormalperson();
+	@Given("a person")
+	public void aNormalperson() {
+	}
+
+	@Given("the person has a lot of money")
+	public void personWithALotofMoney() {
 		person.setMoney(aLotOfMoney);
+	}
+	@Given("the person is carrying drugs")
+	public void personCarryingDrugs() {
+		person.setCarryingDrugs(true);
 	}
 
 	@Called("$name")
@@ -38,22 +41,16 @@ public class AccessSteps implements IEngineSteps {
 
 	@Because("I said so")
 	public IBecause2<Schengen, Person> BecauseThatsTheDefault() {
-		return new IBecause2<Schengen, Person>() {
-			@Override
-			public boolean evaluate(Schengen value1, Person value2) {
-				return true;
-			}
-		};
+		return new BecauseDefault();
 	}
 
 	@Because("the person has a lot of money")
 	public IBecause2<Schengen, Person> becauseThePersonHasALotOfMoney() {
-		return new IBecause2<Schengen, Person>() {
-			@Override
-			public boolean evaluate(Schengen value1, Person value2) {
-				return value2.money >= aLotOfMoney;
-			}
-		};
+		return new BecauseMoney();
+	}
+	@Because("the person is carrying drugs")
+	public IBecause2<Schengen, Person> becauseThePersonIsCarryingDrugs() {
+		return new BecauseDrugs();
 	}
 
 	@When("I assess the person")

@@ -1,5 +1,11 @@
 package org.autoTdd;
 
+import static org.autoTdd.ConstraintsForTests.bigNeg;
+import static org.autoTdd.ConstraintsForTests.bigPos;
+import static org.autoTdd.ConstraintsForTests.neg;
+import static org.autoTdd.ConstraintsForTests.pos;
+import static org.autoTdd.ConstraintsForTests.vBigNeg;
+import static org.autoTdd.ConstraintsForTests.vBigPos;
 import junit.framework.TestCase;
 
 import org.autoTdd.engine.IEngine1;
@@ -7,13 +13,6 @@ import org.autoTdd.groovy.DSL;
 import org.autoTdd.internal.Constraint;
 
 public class EngineTest extends TestCase {
-
-	public final static Constraint pos = DSL.constraint("Positive", "x>0", 1);
-	public final static Constraint bigPos = DSL.constraint("BigPositive", "x>10", 20);
-	public final static Constraint vBigPos = DSL.constraint("VBigPositive", "x>1000", 2000);
-	public final static Constraint neg = DSL.constraint("Negative", "x<0", -1);
-	public final static Constraint bigNeg = DSL.constraint("BigNegative", "x<-10", -20);
-	public final static Constraint vBigNeg = DSL.constraint("VBigNegative", "x<-1000", -2000);
 
 	public void testEngineWithNoConstraints() {
 		IEngine1<String, Integer> engine = DSL.simple(String.class, Integer.class, "Default", "x").engine1(String.class, Integer.class);

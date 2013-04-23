@@ -6,7 +6,7 @@ import org.autoTdd.ITyped;
 
 public class EngineType implements ITyped {
 
-	private final Class<?> resultClass;
+	protected final Class<?> resultClass;
 	private final Class<?>[] parameters;
 
 	public EngineType(Class<?> resultClass, Class<?>[] parameters) {
@@ -32,7 +32,8 @@ public class EngineType implements ITyped {
 
 	/** matches if it, or its class, matches */
 	public void assertClassMatchesResultClass(Object result) {
-		assertMatchesResultClass(result.getClass());
+		if (result != null)
+			assertMatchesResultClass(result.getClass());
 	}
 
 	public void assertMatchesResultClass(Class<?> result) {

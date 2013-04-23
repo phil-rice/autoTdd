@@ -48,6 +48,7 @@ public class StockSteps implements IEngineSteps {
 	}
 
 	@Then("the $item should be returned to stock")
+	/** Comment about the item being returned to stock */
 	public Runnable returnItemToStock(String item) {
 		Assert.assertNotNull(customersGarmentType);
 		return new Runnable() {
@@ -55,7 +56,7 @@ public class StockSteps implements IEngineSteps {
 				stock.addToStockLevel(1, customersGarmentType);
 			}
 		};
-	}
+	} 
 
 	@Then("The customer should be given a $item")
 	public Runnable customerGivenItem(final String item) {

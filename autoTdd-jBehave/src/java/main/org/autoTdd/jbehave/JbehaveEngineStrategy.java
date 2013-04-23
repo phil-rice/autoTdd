@@ -20,7 +20,7 @@ public class JbehaveEngineStrategy extends AbstractEngineStrategy {
 	@Override
 	public String displayBecause(Indent indent, Constraint constraint) {
 		BecauseForConstraint because = (BecauseForConstraint) constraint.getBecause();
-		return because.becauseAnnotation.value() + because.parameters;
+		return because.becauseAnnotationValue + because.parameters;
 	}
 
 	@Override

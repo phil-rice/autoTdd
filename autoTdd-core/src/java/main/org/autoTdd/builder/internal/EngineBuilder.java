@@ -1,7 +1,6 @@
 package org.autoTdd.builder.internal;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.autoTdd.IEngineSpecification;
@@ -12,7 +11,6 @@ import org.autoTdd.engine.IEngineAsTree;
 import org.autoTdd.engine.internal.Engine;
 import org.autoTdd.engine.internal.Engine1;
 import org.autoTdd.engine.internal.Engine2;
-import org.autoTdd.exceptions.ConstraintConflictException;
 import org.autoTdd.internal.AbstractNodeHolder;
 import org.autoTdd.internal.Constraint;
 
@@ -39,45 +37,43 @@ public class EngineBuilder extends AbstractNodeHolder implements IEngineBuilder 
 
 	@Override
 	public IEngineBuilder add(Constraint... constraints) {
-			final List<Constraint> newConstraints = new ArrayList<Constraint>(this.constraints);
-			for (Constraint constraint : constraints) {
-				try {
+		final List<Constraint> newConstraints = new ArrayList<Constraint>(this.constraints);
+		for (Constraint constraint : constraints) {
+			try {
 				engineStrategy.validateConstraint(constraint);
 				assertTypesMatch(constraint);
 				assertClassesMatchesInputClasses(constraint.getInputs());
 				assertClassMatchesResultClass(constraint.getResult());
 
 				newConstraints.add(constraint);
-				} catch (IllegalArgumentException e) {
-					throw new IllegalArgumentException("Constrains: " + constraint, e);
-				}
+			} catch (IllegalArgumentException e) {
+				throw new IllegalArgumentException(constraint.toString(), e);
 			}
-			return new EngineBuilder(specification, newConstraints);
+		}
+		return new EngineBuilder(specification, newConstraints);
 	}
 
 	@Override
 	public IEngineAsTree tree() {
 		Node root = null;
-		for (Constraint constraint : constraints)
+		for (Constraint constraint : constraints) {
 			if (root == null)
 				root = new Node(constraint, null, null, null);
-			else {
-				Node leafNode = findNode(root, constraint.getInputs());
-				if (leafNode == null) {
-					Node lastAllFalseNode = findAllfalseNode(root);
-					lastAllFalseNode.noMatch = new Node(constraint, null, null, null);
-				} else {
-					boolean leafMatchesConstraint = engineStrategy.match(context, constraint, leafNode.constraint.getInputs());
-					if (leafMatchesConstraint)
-						throw new ConstraintConflictException(leafNode.constraint, constraint); // there is nothing in the condition to differentiate us
-					boolean match = engineStrategy.match(context, leafNode.constraint, constraint.getInputs());
-					if (match)
-						leafNode.match = new Node(constraint, leafNode, null, null);
-					else
-						leafNode.noMatch = new Node(constraint, null, null, null);
-				}
-			}
+			else
+				addConstraint(root, constraint);
+		}
 		return new Engine(specification, root);
+	}
+
+	private void addConstraint(Node root, Constraint constraint) {
+		Node lastMatchNode = findLastMatchNode(root, constraint.getInputs());
+		Node newNode = new Node(constraint, lastMatchNode, null, null);
+		if (lastMatchNode == null || lastMatchNode.match != null) {
+			Node base = lastMatchNode == null ? root : lastMatchNode.match;
+			Node lastAllFalseNode = findAllfalseNode(base);
+			lastAllFalseNode.noMatch = new Node(constraint, lastMatchNode, null, null);
+		} else
+			lastMatchNode.match = newNode;
 	}
 
 	@Override
@@ -98,7 +94,7 @@ public class EngineBuilder extends AbstractNodeHolder implements IEngineBuilder 
 
 	@Override
 	public String toString() {
-		return getClass().getSimpleName() +"\n "+asString(tree().getRoot());
+		return getClass().getSimpleName() + "\n " + asString(tree().getRoot());
 	}
 
 }

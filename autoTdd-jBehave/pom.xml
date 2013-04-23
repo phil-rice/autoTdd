@@ -15,7 +15,7 @@
 					<target>1.6</target>
 				</configuration>
 			</plugin>
-		</plugins>
+		</plugins> 
 	</build>
 	<dependencies>
 		<dependency>

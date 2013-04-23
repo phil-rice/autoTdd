@@ -32,4 +32,26 @@ public class Schengen {
 		return "Schengen [sarsState=" + sarsState + "]";
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (sarsState ? 1231 : 1237);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Schengen other = (Schengen) obj;
+		if (sarsState != other.sarsState)
+			return false;
+		return true;
+	}
+
 }

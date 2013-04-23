@@ -23,35 +23,42 @@ public class Engine extends AbstractNodeHolder implements IEngineAsTree {
 	}
 
 	@Override
+	public Object defaultOutput() {
+		return specification.defaultOutput();
+	}
+
+	@Override
 	@SuppressWarnings("unchecked")
 	public <Result> Result transformRaw(Object... inputs) {
-		Node node = findNode(root, inputs);
+		Node node = findLastMatchNode(root, inputs);
 		if (node == null)
 			return (Result) defaultOutput;
-		//TODO we could avoid this match by returning it from findNode, but that would require object creation... 
+		// TODO we could avoid this match by returning it from findNode, but that would require object creation...
 		Boolean match = engineStrategy.match(context, node.constraint, inputs);
 		if (match != null && match)
 			return (Result) resultFrom(node);
 		else
 			return (Result) resultFrom(node.lastMatch);
 	}
+
 	@Override
 	public List<Node> allNodes() {
 		List<Node> result = new ArrayList<Node>();
 		addNodeAndChildren(result, root);
 		return result;
 	}
+
 	protected void addNodeAndChildren(List<Node> result, Node node) {
-		if (node != null){
+		if (node != null) {
 			result.add(node);
 			addNodeAndChildren(result, node.match);
 			addNodeAndChildren(result, node.noMatch);
 		}
 	}
+
 	@Override
 	public String toString() {
 		return getClass().getSimpleName() + "\n " + asString(root);
 	}
-
 
 }

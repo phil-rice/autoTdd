@@ -6,12 +6,19 @@ import org.softwarefm.utilities.arrays.ArrayHelper;
 
 public class Constraint extends EngineType {
 
+	public static Constraint withResult(Constraint raw, Object result) {
+		return new Constraint(result, raw.because, raw.inputs);
+	}
+	public static Constraint withInputs(Constraint raw, Object[] inputs) {
+		return new Constraint(raw.result, raw.because, inputs);
+	}
+
 	private final Object result;
 	private final Object because;
 	private final Object[] inputs;
 
 	public Constraint(Object result, Object because, Object[] inputs) {
-		super(result.getClass(), ArrayHelper.classArray(inputs));
+		super(result== null ? null : result.getClass(), ArrayHelper.classArray(inputs));
 		assertClassesMatchesInputClasses(inputs);
 		assertClassMatchesResultClass(result);
 		this.result = result;
@@ -35,5 +42,6 @@ public class Constraint extends EngineType {
 	public String toString() {
 		return "Constraint [result=" + result + ", because=" + because + ", inputs=" + Arrays.toString(inputs) + "]";
 	}
+
 
 }

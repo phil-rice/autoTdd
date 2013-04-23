@@ -2,6 +2,7 @@ package org.autoTdd.jbehave.because;
 
 import java.util.Arrays;
 
+import org.autoTdd.jbehave.exceptions.IllegalCaseException;
 import org.jbehave.core.steps.Step;
 import org.jbehave.core.steps.StepCreator.ParameterisedStep;
 import org.softwarefm.jbehavesample.StepsHelper;
@@ -24,7 +25,6 @@ public interface IBecause {
 			throw new IllegalStateException("Don't know how to execute because clause of " + because.getClass());
 		}
 
-		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public static boolean execute(IBecause because, Step step) {
 			if (!(step instanceof ParameterisedStep))
 				throw new IllegalArgumentException("Cannot execute because as step is of " + step.getClass());
@@ -32,6 +32,16 @@ public interface IBecause {
 			IEngineSteps engineSteps = StepsHelper.findEngineStepsFor(step);
 			Object[] inputs = engineSteps.getInputs();
 			return execute(because, inputs);
+		}
+
+		public static void executeExceptionIfNotTrue(IBecause because, Step step) {
+			if (!(step instanceof ParameterisedStep))
+				throw new IllegalArgumentException("Cannot execute because as step is of " + step.getClass());
+
+			IEngineSteps engineSteps = StepsHelper.findEngineStepsFor(step);
+			Object[] inputs = engineSteps.getInputs();
+			if (!execute(because, inputs))
+				throw new IllegalCaseException("The because was not true for the parameters. Offending method is " + ((ParameterisedStep) step).getMethod() + " parameters are " + Arrays.asList(inputs));
 		}
 
 		private static void checkInputs(Object[] parameters, int expected) {

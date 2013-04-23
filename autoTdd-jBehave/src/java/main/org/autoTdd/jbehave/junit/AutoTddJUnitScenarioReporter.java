@@ -79,7 +79,7 @@ public class AutoTddJUnitScenarioReporter implements StoryReporter {
 						currentScenario = scenarioDescriptions.next();
 					}
 					currentStep = currentStoryDescription;
-				} else if (storyDescription.isTest() && storyDescription.getMethodName().equals(story.getName())) {
+				} else if (storyDescription.isTest() && storyDescription.getMethodName()!= null && storyDescription.getMethodName().equals(story.getName())) {
 					// Story BeforeStories or After Stories
 					currentStoryDescription = storyDescription;
 					notifier.fireTestStarted(currentStoryDescription);

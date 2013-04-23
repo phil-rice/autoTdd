@@ -1,11 +1,11 @@
 package org.autoTdd;
 
-import static org.autoTdd.EngineTest.bigNeg;
-import static org.autoTdd.EngineTest.bigPos;
-import static org.autoTdd.EngineTest.neg;
-import static org.autoTdd.EngineTest.pos;
-import static org.autoTdd.EngineTest.vBigNeg;
-import static org.autoTdd.EngineTest.vBigPos;
+import static org.autoTdd.ConstraintsForTests.bigNeg;
+import static org.autoTdd.ConstraintsForTests.bigPos;
+import static org.autoTdd.ConstraintsForTests.neg;
+import static org.autoTdd.ConstraintsForTests.pos;
+import static org.autoTdd.ConstraintsForTests.vBigNeg;
+import static org.autoTdd.ConstraintsForTests.vBigPos;
 
 import org.autoTdd.engine.IEngine1;
 import org.autoTdd.groovy.DSL;

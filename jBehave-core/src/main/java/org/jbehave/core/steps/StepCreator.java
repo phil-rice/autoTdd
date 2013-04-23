@@ -534,6 +534,14 @@ public class StepCreator {
 			storyReporter.beforeStep(stepAsString);
 		}
 
+		public String getStepAsString() {
+			return stepAsString;
+		}
+
+		public String getStepWithoutStartingWord() {
+			return stepWithoutStartingWord;
+		}
+
 		public StepResult perform(UUIDExceptionWrapper storyFailureIfItHappened) {
 			try {
 				parametriseStep();

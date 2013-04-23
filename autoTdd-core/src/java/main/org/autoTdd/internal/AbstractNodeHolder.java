@@ -20,7 +20,7 @@ abstract public class AbstractNodeHolder extends EngineType {
 		this.context = engineStrategy.makeContext();
 	}
 
-	protected Node findNode(Node root, Object... inputs) {
+	protected Node findLastMatchNode(Node root, Object... inputs) {
 		Node lastMatch = null;
 		Node nextNode = root;
 		while (nextNode != null) {

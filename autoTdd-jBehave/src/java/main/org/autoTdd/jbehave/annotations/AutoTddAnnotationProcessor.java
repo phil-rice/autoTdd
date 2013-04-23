@@ -11,6 +11,7 @@ import org.autoTdd.ISystem;
 import org.autoTdd.engine.IEngine;
 import org.autoTdd.engine.IEngineAsTree;
 import org.autoTdd.jbehave.because.IBecause;
+import org.autoTdd.jbehave.exceptions.IllegalCaseException;
 import org.autoTdd.jbehave.internal.BecauseForConstraint;
 import org.autoTdd.steps.AutoTddStepTypes;
 import org.jbehave.core.ConfigurableEmbedder;
@@ -22,6 +23,7 @@ import org.jbehave.core.annotations.When;
 import org.jbehave.core.configuration.AnnotationProcessor;
 import org.jbehave.core.configuration.DefaultAnnotationStrategy;
 import org.jbehave.core.steps.Step;
+import org.jbehave.core.steps.StepCreator.ParameterisedStep;
 import org.jbehave.core.steps.StepType;
 import org.softwarefm.jbehavesample.StepsHelper;
 import org.softwarefm.schengen.IEngineSteps;
@@ -36,6 +38,7 @@ public class AutoTddAnnotationProcessor extends AnnotationProcessor implements I
 	private Class<? extends ConfigurableEmbedder> clazz;
 	private boolean hasBuilt;
 	private IMutableSystemBuilder systemBuilder;
+	private String lastCalled;
 
 	public ISystem build() {
 		return systemBuilder.build();
@@ -72,6 +75,9 @@ public class AutoTddAnnotationProcessor extends AnnotationProcessor implements I
 			@Override
 			public Object execute(Step step, Method method, Given given, Object object, Object[] parameters) throws Exception {
 				lastThens = new ArrayList<Object>();
+				lastCalled = null;
+				lastEngineName = null;
+				lastThenText = null;
 				return super.execute(step, method, given, object, parameters);
 			}
 
@@ -93,6 +99,7 @@ public class AutoTddAnnotationProcessor extends AnnotationProcessor implements I
 			@Override
 			public Object execute(Step step, Method method, When when, Object object, Object[] parameters) throws Exception {
 				lastEngineName = when.value();
+				
 				return super.execute(step, method, when, object, parameters);
 			}
 
@@ -125,9 +132,7 @@ public class AutoTddAnnotationProcessor extends AnnotationProcessor implements I
 					throw new IllegalStateException("Results from @Because methods must be of type IBecause. Offending method is " + method);
 				}
 				IBecause because = (IBecause) result;
-				boolean actual = IBecause.Utils.execute(because, step);
-				if (!actual)
-					throw new IllegalStateException("The because was not true for the parameters. Offending method is " + method + " parameters are " + Arrays.asList(parameters));
+				IBecause.Utils.executeExceptionIfNotTrue(because, step);
 
 				// System.out.println("Running " + method);
 				IEngineSteps engineSteps = StepsHelper.findEngineStepsFor(step);
@@ -139,7 +144,9 @@ public class AutoTddAnnotationProcessor extends AnnotationProcessor implements I
 					// System.out.println("  Context " + context);
 					// System.out.println("  Value " + value);
 					Object[] copyOfInputs = ICloner.Utils.copyArray(cloner, inputs);
-					BecauseForConstraint becauseForConstraint = new BecauseForConstraint((IBecause) result, annotation, StepsHelper.findParametersFor(step));
+					if (lastCalled == null)
+						lastCalled = Arrays.asList(copyOfInputs).toString();
+					BecauseForConstraint becauseForConstraint = new BecauseForConstraint((IBecause) result, annotation.value(), lastCalled, StepsHelper.findParametersFor(step));
 					addConstraint(lastEngineName, then(), becauseForConstraint, copyOfInputs);
 				}
 				return result;
@@ -214,8 +221,16 @@ public class AutoTddAnnotationProcessor extends AnnotationProcessor implements I
 
 			@Override
 			public String typeWord() {
-				// TODO Auto-generated method stub
 				return "Called";
+			}
+
+			@Override
+			public Object execute(Step step, Method method, Called annotation, Object object, Object[] parameters) throws Exception {
+				if (step instanceof ParameterisedStep) {
+					lastCalled = ((ParameterisedStep) step).getStepWithoutStartingWord();
+				} else
+					lastCalled = step.toString();
+				return super.execute(step, method, annotation, object, parameters);
 			}
 
 		});
