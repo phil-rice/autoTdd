@@ -11,6 +11,7 @@ import org.autoTdd.engine.IEngineAsTree;
 import org.autoTdd.engine.internal.Engine;
 import org.autoTdd.engine.internal.Engine1;
 import org.autoTdd.engine.internal.Engine2;
+import org.autoTdd.exceptions.ConstraintConflictException;
 import org.autoTdd.internal.AbstractNodeHolder;
 import org.autoTdd.internal.Constraint;
 
@@ -56,12 +57,11 @@ public class EngineBuilder extends AbstractNodeHolder implements IEngineBuilder 
 	@Override
 	public IEngineAsTree tree() {
 		Node root = null;
-		for (Constraint constraint : constraints) {
+		for (Constraint constraint : constraints)
 			if (root == null)
 				root = new Node(constraint, null, null, null);
 			else
 				addConstraint(root, constraint);
-		}
 		return new Engine(specification, root);
 	}
 
@@ -72,8 +72,12 @@ public class EngineBuilder extends AbstractNodeHolder implements IEngineBuilder 
 			Node base = lastMatchNode == null ? root : lastMatchNode.match;
 			Node lastAllFalseNode = findAllfalseNode(base);
 			lastAllFalseNode.noMatch = new Node(constraint, lastMatchNode, null, null);
-		} else
+		} else {
+			boolean lastMatchNodeAlsoMatchesConstraint = engineStrategy.match(context, constraint, lastMatchNode.constraint.getInputs());
+			if (lastMatchNodeAlsoMatchesConstraint)
+				throw new ConstraintConflictException( lastMatchNode.constraint, constraint);
 			lastMatchNode.match = newNode;
+		}
 	}
 
 	@Override

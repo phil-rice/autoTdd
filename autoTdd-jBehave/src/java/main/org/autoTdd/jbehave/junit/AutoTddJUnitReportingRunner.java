@@ -1,5 +1,6 @@
 package org.autoTdd.jbehave.junit;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ import org.junit.runner.Description;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
+import org.softwarefm.utilities.collections.Files;
 
 public class AutoTddJUnitReportingRunner extends Runner {
 	private List<Description> storyDescriptions;
@@ -88,39 +90,47 @@ public class AutoTddJUnitReportingRunner extends Runner {
 
 		try {
 			configuredEmbedder.runStoriesAsPaths(storyPaths);
-			if (configurableEmbedder instanceof ISpecifiesEngines && verifyDescription != null) {
-				ISpecifiesEngines specifiesEngines = (ISpecifiesEngines) configurableEmbedder;
-				junitReporter.logger.info("Building system");
-				junitReporter.notifier.fireTestStarted(verifyDescription);
-				ISystem system = specifiesEngines.systemBuilder().build();
-				for (String engineName : system.engineNames()) {
-					Description engineDescription = findEngineDescription(engineName);
-					if (engineDescription != null) {
-						junitReporter.notifier.fireTestStarted(engineDescription);
-						junitReporter.logger.info("Checking engine " + engineName);
-						IEngineAsTree tree = system.tree(engineName);
-						System.out.println("Engine: " + engineName + "\n" + tree);
-						for (Node node : tree.allNodes()) {
-							Constraint constraint = node.constraint;
-							Description constraintDescription = findConstrantDescription(engineDescription, (BecauseForConstraint) constraint.getBecause());
-							junitReporter.notifier.fireTestStarted(constraintDescription);
-							try {
-								Object actual = tree.transformRaw(constraint.getInputs());
-								Assert.assertEquals(constraint.getResult(), actual);
-								junitReporter.notifier.fireTestFinished(constraintDescription);
-								System.out.println("Checked [" + engineName + "] " + Arrays.asList(constraint.getInputs()) + " -- > " + constraint.getResult());
-							} catch (Throwable e) {
-								junitReporter.notifier.fireTestFailure(new Failure(constraintDescription, e));
-							}
-						}
-						junitReporter.notifier.fireTestFinished(engineDescription);
-					}
-				}
-				junitReporter.logger.info("Now running the verifications");
-				junitReporter.notifier.fireTestFinished(verifyDescription);
-			}
+			runAutoTddTests(junitReporter);
 		} finally {
 			configuredEmbedder.generateCrossReference();
+		}
+	}
+
+	private void runAutoTddTests(AutoTddJUnitScenarioReporter junitReporter) {
+		if (configurableEmbedder instanceof ISpecifiesEngines && verifyDescription != null) {
+			File root = new File("target/autoTdd");
+			ISpecifiesEngines specifiesEngines = (ISpecifiesEngines) configurableEmbedder;
+			junitReporter.logger.info("Building system");
+			junitReporter.notifier.fireTestStarted(verifyDescription);
+			ISystem system = specifiesEngines.systemBuilder().build();
+			for (String engineName : system.engineNames()) {
+				File engineFile = new File(root, engineName +".atdd");
+				root.mkdirs();
+				Description engineDescription = findEngineDescription(engineName);
+				if (engineDescription != null) {
+					junitReporter.notifier.fireTestStarted(engineDescription);
+					junitReporter.logger.info("Checking engine " + engineName);
+					IEngineAsTree tree = system.tree(engineName);
+					Files.setText(engineFile, tree.toString());
+					System.out.println("Engine: " + engineName + "\n" + tree);
+					for (Node node : tree.allNodes()) {
+						Constraint constraint = node.constraint;
+						Description constraintDescription = findConstrantDescription(engineDescription, (BecauseForConstraint) constraint.getBecause());
+						junitReporter.notifier.fireTestStarted(constraintDescription);
+						try {
+							Object actual = tree.transformRaw(constraint.getInputs());
+							Assert.assertEquals(constraint.getResult(), actual);
+							junitReporter.notifier.fireTestFinished(constraintDescription);
+							System.out.println("Checked [" + engineName + "] " + Arrays.asList(constraint.getInputs()) + " -- > " + constraint.getResult());
+						} catch (Throwable e) {
+							junitReporter.notifier.fireTestFailure(new Failure(constraintDescription, e));
+						}
+					}
+					junitReporter.notifier.fireTestFinished(engineDescription);
+				}
+			}
+			junitReporter.logger.info("Now running the verifications");
+			junitReporter.notifier.fireTestFinished(verifyDescription);
 		}
 	}
 
