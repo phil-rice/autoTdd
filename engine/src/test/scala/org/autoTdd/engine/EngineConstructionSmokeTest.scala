@@ -2,10 +2,12 @@ package org.autoTdd.engine
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
-import org.autoTdd.engine.katas._
 
 class EngineConstructionSmokeTest extends FlatSpec with ShouldMatchers with PosNegTestTrait {
-
+  sealed abstract class Frame(val first: Int, val second: Int, val third: Int = 0, val size: Int = 2)
+  case class NormalFrame(f: Int, s: Int) extends Frame(f, s);
+  case class SpareFrame(f: Int, s: Int, t: Int) extends Frame(f, s, t);
+  case class StrikeFrame(f: Int, s: Int, t: Int) extends Frame(f, s, t, 1);
   "The bowling kata get engine" should "build correctly" in {
     val get = Engine2[List[Int], Int, Int](0);
 

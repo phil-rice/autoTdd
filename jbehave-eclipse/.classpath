@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<classpath>
-	<classpathentry excluding="org/jbehave/eclipse/src/|org.jbehave.eclipse/src/|org/jbehave/eclipse/examples/user-account/src/|org.jbehave.eclipse/examples/user-account/src/" kind="src" path=""/>
-	<classpathentry kind="src" path="org.jbehave.eclipse/src"/>
-	<classpathentry kind="src" path="org.jbehave.eclipse/examples/user-account/src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="output" path="bin"/>
-</classpath>
