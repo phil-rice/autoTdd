@@ -24,6 +24,7 @@ object CodeFn {
 
 case class Because[B](val because: B, val becauseString: String) {
   private val index = becauseString.indexOf("=>");
+  //TODO Need better extraction of parameters as the parameters could be functions
   val parameters = index match {
     case -1 => ""
     case i => becauseString.substring(0, index)
@@ -37,7 +38,6 @@ object Because {
   def b_to_because_imp[B: c.WeakTypeTag](c: Context)(b: c.Expr[B]): c.Expr[Because[B]] = {
     import c.universe._
     val becauseString = show(b.tree)
-    //TODO Need better extraction of parameters as the parameters could be functions
     reify { Because[B](b.splice, c.literal(becauseString).splice) }
   }
 

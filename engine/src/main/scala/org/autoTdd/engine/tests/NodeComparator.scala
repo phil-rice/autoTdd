@@ -1,11 +1,9 @@
-package org.autoTdd.engine.tests
+package org.autotdd.engine.tests
 
 
 import org.autotdd.constraints.CodeFn
 import java.text.MessageFormat
-import org.autoTdd.engine.Engine1Types
-import org.autoTdd.engine.EngineTypes
-import org.autoTdd.engine.Engine2Types
+import org.autotdd.engine._
 
 object NodeComparator {
   def comparator1[P, R] = new NodeComparator[R] with Engine1Types[P, R]

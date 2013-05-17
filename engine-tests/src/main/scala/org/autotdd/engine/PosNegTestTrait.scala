@@ -1,4 +1,4 @@
-package org.autoTdd.engine
+package org.autotdd.engine
 
 
 trait PosNegTestTrait {

@@ -1,4 +1,4 @@
-package org.autoTdd.engine
+package org.autotdd.engine
 
 import scala.util.Either
 import scala.util.Left
@@ -6,11 +6,11 @@ import org.autotdd.constraints.CodeFn
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 import org.autotdd.constraints.Because
-import org.autoTdd.engine.tests.NodeComparator
-import org.autoTdd.engine.tests.IfThenParser
+import org.autotdd.engine.tests._
 
 trait IfThenParserTestTrait extends Engine1Types[String, String] with ShouldMatchers {
 
+  implicit def string_to_becauseFn(s: String) = (x: String) => x contains s
   implicit def string_to_because(s: String) = new Because[B]((x) => x contains s, s.toString())
   implicit def string_to_result(s: String) = new CodeFn[RFn, C]((x) => s, s.toString())
   implicit def string_to_constraint(s: String) = new Constraint1[String, String](s, s, s, Some(s))

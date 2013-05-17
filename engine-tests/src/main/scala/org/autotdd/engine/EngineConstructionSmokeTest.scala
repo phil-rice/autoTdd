@@ -1,4 +1,4 @@
-package org.autoTdd.engine
+package org.autotdd.engine
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
@@ -27,22 +27,22 @@ class EngineConstructionSmokeTest extends FlatSpec with ShouldMatchers with PosN
   }
 
   "The bowling kata makeFrame engine" should "build correctly" in {
-    val get = Engine2[List[Int], Int, Int](0);
+    val get = Engine2((rolls: List[Int], i: Int) => 0);
     get constraint (List(7, 10, 4, 3), 0, 7,
-      (rolls: List[Int], i: Int) => rolls.apply(i),
-      (rolls: List[Int], i: Int) => i >= 0 && i < rolls.length)
+      (rolls, i) => rolls.apply(i),
+      (rolls, i) => i >= 0 && i < rolls.length)
 
     val makeFrame = Engine2[List[Int], Int, Frame]((rolls: List[Int], i: Int) => NormalFrame(get(rolls, i), get(rolls, i + 1)))
 
     makeFrame.constraint(List(7, 2, 5, 5, 3, 0, 10, 2, 4), 0, NormalFrame(7, 2))
 
     makeFrame.constraint(List(7, 2, 5, 5, 3, 0, 10, 2, 4), 6, StrikeFrame(10, 2, 4),
-      (rolls: List[Int], i: Int) => StrikeFrame(rolls(i), get(rolls, i + 1), get(rolls, i + 2)),
-      because = (rolls: List[Int], i: Int) => get(rolls, i) == 10)
+      (rolls, i) => StrikeFrame(rolls(i), get(rolls, i + 1), get(rolls, i + 2)),
+      (rolls, i) => get(rolls, i) == 10)
 
     makeFrame.constraint(List(7, 2, 5, 5, 3, 0, 10, 2, 4), 2, SpareFrame(5, 5, 3),
-      (rolls: List[Int], i: Int) => SpareFrame(get(rolls, i), get(rolls, i + 1), get(rolls, i + 2)),
-      because = (rolls: List[Int], i: Int) => get(rolls, i) + get(rolls, i + 1) == 10)
+      (rolls, i) => SpareFrame(get(rolls, i), get(rolls, i + 1), get(rolls, i + 2)),
+      (rolls, i) => get(rolls, i) + get(rolls, i + 1) == 10)
 
     makeFrame.constraint(List(7, 2, 5, 5, 3, 0, 10, 2, 4), 4, NormalFrame(3, 0))
 

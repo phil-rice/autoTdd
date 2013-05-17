@@ -1,9 +1,10 @@
-package org.autoTdd.engine
+package org.autotdd.engine
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
+import org.autotdd.engine._
 
-class Engine1Test extends FlatSpec with ShouldMatchers with PosNegTestTrait {
+class Engine1Test extends FlatSpec with ShouldMatchers with PosNegTestTrait with EngineTests {
 
   "An empty Engine" should "return the default value" in {
     val engine_1 = Engine1[Int, Int](default = 1);
@@ -30,7 +31,7 @@ class Engine1Test extends FlatSpec with ShouldMatchers with PosNegTestTrait {
 
   "A constraint without a result" should "return expected value when it applies" in {
     val engine = Engine1[Int, String](default = "Negative");
-    val actual: String = engine.constraint(1, "Positive", because = (x: Int) => x >= 0);
+    val actual: String = engine.constraint(1, "Positive",  (x) => x >= 0);
     assert(actual == "Positive")
     assert(engine(0) == "Positive")
     assert(engine(1) == "Positive")
@@ -51,7 +52,7 @@ class Engine1Test extends FlatSpec with ShouldMatchers with PosNegTestTrait {
 
   "A constraint " should "have a becauseString that is the AST of the because parameter serialized" in {
     val engine: MutableEngine1[Int, String] = Engine1[Int, String](default = "Negative").asInstanceOf[MutableEngine1[Int, String]];
-    engine.constraint(1, "P1", (p: Int) => "P" + p, because = (x: Int) => x >= 0)
+    engine.constraint(1, "P1", (p: Int) => "P" + p,  (x: Int) => x >= 0)
     assert(engine.constraints.size == 1)
     val c = engine.constraints.head
     assert(c.becauseString == "((x: Int) => x.>=(0))", c.becauseString) //Note I don't know why I have an extra () and a '.' but I'm not complaining 
@@ -59,7 +60,7 @@ class Engine1Test extends FlatSpec with ShouldMatchers with PosNegTestTrait {
 
   it should "ignore constraints if the result is already derived " in {
     val engine = Engine1[Int, String](default = "Negative");
-    engine.constraint(1, "Positive", because = (x: Int) => x >= 0);
+    engine.constraint(1, "Positive",  (x: Int) => x >= 0);
     engine.constraint(2, "Positive");
     assert(engine(1) == "Positive")
     assert(engine(2) == "Positive")
@@ -91,44 +92,6 @@ class Engine1Test extends FlatSpec with ShouldMatchers with PosNegTestTrait {
     makeAndCheck(vBigPos, vBigNeg, bigNeg, neg, bigPos, pos);
   }
 
-  it should "have a decent to string " in {
-    makeAndCheckToString(
-      "if(((x: Int) => x.>(0)))\n" +
-        " if(((x: Int) => x.>(50)))\n" +
-        "  ((x: Int) => \"VBigPos\")\n" +
-        " else\n" +
-        "  if(((x: Int) => x.>(5)))\n" +
-        "   ((x: Int) => \"BigPos\")\n" +
-        "  else\n" +
-        "   ((x: Int) => \"Pos\")\n" +
-        "else\n" +
-        " if(((x: Int) => x.<(-50)))\n" +
-        "  ((x: Int) => \"VBigNeg\")\n" +
-        " else\n" +
-        "  if(((x: Int) => x.<(-5)))\n" +
-        "   ((x: Int) => \"BigNeg\")\n" +
-        "  else\n" +
-        "   if(((x: Int) => x.<(0)))\n" +
-        "    ((x: Int) => \"Neg\")\n" +
-        "   else\n" +
-        "    Zero\n", pos, vBigPos, vBigNeg, bigNeg, neg, bigPos);
-  }
+ 
 
-  def makeAndCheckToString(expected: String, constraints: Constraint1[Int, String]*) = {
-    val engine = Engine1[Int, String](default = "Zero");
-    for (c <- constraints)
-      engine.addConstraint(c);
-    val actual = engine.toString
-    assert(expected == actual, "Expected\n[" + expected + "]\nActual:\n[" + actual + "]")
-  }
-
-  def makeAndCheck(constraints: Constraint1[Int, String]*) = {
-    val engine = Engine1[Int, String](default = "Zero");
-    for (c <- constraints)
-      engine.addConstraint(c);
-    for (c <- constraints) {
-      val p = c.param
-      assert(c.expected == engine(p), "\nEngine:\n" + engine + "\nConstraint: " + c);
-    }
-  }
 }

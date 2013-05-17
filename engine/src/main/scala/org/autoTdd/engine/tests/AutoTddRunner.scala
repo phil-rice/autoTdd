@@ -1,31 +1,17 @@
-package org.autoTdd.engine.tests
+package org.autotdd.engine.tests
 
 import org.junit.runner.Description
 import scala.collection.JavaConversions._
 import org.junit.runner.Runner
 import org.junit.runner.notification.RunNotifier
-import org.autoTdd.engine._
+import org.autotdd.engine._
 import scala.reflect.runtime.{ universe => ru }
 import java.lang.reflect.Method
 import junit.framework.Assert
 import org.junit.runner.notification.Failure
 import org.autotdd.constraints.Constraint
 
-object EngineTest {
-  def testing = _testing
-  private var _testing = false
 
-  var exceptions: Map[Any, Throwable] = Map()
-
-  def test[T](x: () => T) = {
-    _testing = true;
-    try {
-      x()
-    } finally
-      _testing = false
-  }
-
-}
 
 class AutoTddRunner(val clazz: Class[Any]) extends Runner {
 

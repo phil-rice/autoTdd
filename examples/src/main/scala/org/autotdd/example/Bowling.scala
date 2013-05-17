@@ -1,23 +1,21 @@
 package org.autotdd.example
 
 import org.junit.runner.RunWith
-import org.autoTdd.engine.tests.AutoTddRunner
-import org.autoTdd.engine.Engine2
+
+import org.autotdd.engine.tests.AutoTddRunner
+import org.autotdd.engine._
 
 @RunWith(classOf[AutoTddRunner])
 class Hello2Test {
 
   //get returns the ith ball or zero   
-  val get = Engine2[List[Int], Int, Int](0);
+  val get = Engine2((rolls: List[Int], i: Int) => rolls(i));
 
-  get constraint (List(7, 10, 4, 3), 0,
-    expected = 7,
-    code = (rolls: List[Int], i: Int) => rolls(i),
-    because = (rolls: List[Int], i: Int) => i >= 0 && i < rolls.length)
+  get constraint (List(7, 10, 4, 3), 0, 7)
 
-  get assertion (List(7, 10, 4, 3), -1, 0)
+  get constraint (List(7, 10, 4, 3), -1, 0, (rolls, i) => i < 0)
   get assertion (List(7, 10, 4, 3), 1, 10)
-  get constraint (List(7, 10, 4, 3), 4, 0)
+  get constraint (List(7, 10, 4, 3), 4, 0, (rolls, i) => i >= rolls.length)
   get constraint (List(7, 10, 4, 3), 5, 0)
 
   val makeFrame = Engine2[List[Int], Int, Frame]((rolls: List[Int], i: Int) => NormalFrame(get(rolls, i), get(rolls, i + 1)))
@@ -26,15 +24,14 @@ class Hello2Test {
     expected = NormalFrame(7, 2))
 
   makeFrame.constraint(List(7, 2, 5, 5, 3, 0, 10, 2, 4), 6, StrikeFrame(10, 2, 4),
-    (rolls: List[Int], i: Int) => StrikeFrame(rolls(i), get(rolls, i + 1), get(rolls, i + 2)),
-    because = (rolls: List[Int], i: Int) => get(rolls, i) == 10)
+    (rolls, i) => StrikeFrame(rolls(i), get(rolls, i + 1), get(rolls, i + 2)),
+    (rolls, i) => get(rolls, i) == 10)
 
   makeFrame.constraint(List(7, 2, 5, 5, 3, 0, 10, 2, 4), 2, SpareFrame(5, 5, 3),
-    (rolls: List[Int], i: Int) => SpareFrame(get(rolls, i), get(rolls, i + 1), get(rolls, i + 2)),
-    because = (rolls: List[Int], i: Int) => get(rolls, i) + get(rolls, i + 1) == 10)
+    (rolls, i) => SpareFrame(get(rolls, i), get(rolls, i + 1), get(rolls, i + 2)),
+    (rolls, i) => get(rolls, i) + get(rolls, i + 1) == 10)
 
-  makeFrame.constraint(List(7, 2, 5, 5, 3, 0, 10, 2, 4), 4, NormalFrame(3, 0),
-    (rolls: List[Int], i: Int) => NormalFrame(get(rolls, i), get(rolls, i + 1)))
+  makeFrame.constraint(List(7, 2, 5, 5, 3, 0, 10, 2, 4), 4, NormalFrame(3, 0))
 
   makeFrame.assertion(List(7), 0, NormalFrame(7, 0))
 

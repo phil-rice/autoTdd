@@ -1,4 +1,4 @@
-package org.autoTdd.engine
+package org.autotdd.engine
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers

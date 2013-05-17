@@ -1,4 +1,4 @@
-package org.autoTdd.engine
+package org.autotdd.engine
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
@@ -12,7 +12,7 @@ class EngineParameterTest extends FlatSpec with ShouldMatchers with EngineTests 
 
   "A constraint created by an engine" should "record the parameters used" in {
     val engine = Engine1[String, String](default = "Z");
-    engine.constraint("A", "X", because = (x: String) => true);
+    engine.constraint("A", "X", (x: String) => true);
     val c = engine.constraints.head
     assert("((x: String) " == c.because.get.parameters, c.because.get.parameters)
   }

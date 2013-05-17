@@ -1,11 +1,10 @@
-package org.autoTdd.engine
+package org.autotdd.engine
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 import org.autotdd.constraints.Constraint
 import org.autotdd.constraints.CodeFn
 import org.autotdd.constraints.Because
-import org.autoTdd.engine.tests.EngineTest
 
 class ConstraintBecauseException(msg: String) extends RuntimeException(msg)
 class ConstraintResultException(msg: String) extends RuntimeException(msg)
@@ -114,6 +113,22 @@ trait AddConstraints[R] extends EngineTypesWithRoot[R] {
   def addConstraint(c: C): CR
 }
 
+//TODO Very unhappy with EngineTest. It's a global variable. I don't know how else to interact with Junit though
+object EngineTest {
+  def testing = _testing
+  private var _testing = false
+
+  var exceptions: Map[Any, Throwable] = Map()
+
+  def test[T](x: () => T) = {
+    _testing = true;
+    try {
+      x()
+    } finally
+      _testing = false
+  }
+
+}
 trait Engine[R] extends BuildEngine[R] with AddConstraints[R] with EvaluateEngine[R] {
   def root: RorN
   def constraints: List[C]
@@ -195,7 +210,7 @@ abstract class MutableEngine[R]() extends Engine[R] {
   var constraints = List[C]()
   val defaultRoot: Code
   var root: RorN
-  
+
   def addConstraint(c: C): CR = {
     addConstraintWithChecking(c, (c) => {
       val l = c :: constraints.reverse
