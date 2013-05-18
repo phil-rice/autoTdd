@@ -2,21 +2,26 @@ package org.autotdd.engine
 
 import scala.util.Either
 import scala.util.Left
-import org.autotdd.constraints.CodeFn
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
-import org.autotdd.constraints.Because
 import org.autotdd.engine.tests._
+import org.autotdd.constraints.CodeFn
+import org.autotdd.constraints._
+import org.autotdd.engine._
 
 trait IfThenParserTestTrait extends Engine1Types[String, String] with ShouldMatchers {
 
-  implicit def string_to_becauseFn(s: String) = (x: String) => x contains s
+  //  implicit def string_to_becauseFn(s: String) = (x: String) => x contains s
   implicit def string_to_because(s: String) = new Because[B]((x) => x contains s, s.toString())
   implicit def string_to_result(s: String) = new CodeFn[RFn, C]((x) => s, s.toString())
   implicit def string_to_constraint(s: String) = new Constraint1[String, String](s, s, s, Some(s))
 
   def node(b: B, inputs: List[Any], yes: RorN, no: RorN) = new Node(b, inputs, yes, no);
   def rightNode(b: Because[B], inputs: List[Any], yes: RorN, no: RorN) = Right(new Node(b, inputs, yes, no));
+
+  def addConstraint(e: Engine1[String, String], p: String, expected: String, because: String) {
+    e.raw_constraint(p, expected, (p: String) => expected, new Because[B]((x: String) => x contains because, because))
+  }
 
   val p = IfThenParser.parser1[String, String](
     becauses = Map("a" -> "A", "aa" -> "AA", "b" -> "B", "c" -> "C"),

@@ -2,6 +2,7 @@ package org.autotdd.engine
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
+import org.autotdd.engine._
 
 class EngineConstructionSmokeTest extends FlatSpec with ShouldMatchers with PosNegTestTrait {
   sealed abstract class Frame(val first: Int, val second: Int, val third: Int = 0, val size: Int = 2)
@@ -9,21 +10,21 @@ class EngineConstructionSmokeTest extends FlatSpec with ShouldMatchers with PosN
   case class SpareFrame(f: Int, s: Int, t: Int) extends Frame(f, s, t);
   case class StrikeFrame(f: Int, s: Int, t: Int) extends Frame(f, s, t, 1);
   "The bowling kata get engine" should "build correctly" in {
-    val get = Engine2[List[Int], Int, Int](0);
+    val get = Engine2((p1: List[Int], p2: Int) => 0);
 
     get constraint (List(7, 10, 4, 3), 0, 7,
-      (rolls: List[Int], i: Int) => rolls.apply(i),
-      (rolls: List[Int], i: Int) => i >= 0 && i < rolls.length)
+      (rolls, i) => rolls(i),
+      (rolls, i) => i >= 0 && i < rolls.length)
 
     get constraint (List(7, 10, 4, 3), -1, 0)
     get constraint (List(7, 10, 4, 3), 4, 0)
     get constraint (List(7, 10, 4, 3), 5, 0)
     assert(get.toString()
       ==
-      "if(((rolls: List[Int], i: Int) => i.>=(0).&&(i.<(rolls.length))))\n" +
-      " ((rolls: List[Int], i: Int) => rolls.apply(i))\n" +
+      "if(i.>=(0).&&(i.<(rolls.length)))\n" +
+      " rolls.apply(i)\n" +
       "else\n" +
-      " 0\n", get.toString)
+      " 0\n", "[" + get.toString + "]")
   }
 
   "The bowling kata makeFrame engine" should "build correctly" in {

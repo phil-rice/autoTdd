@@ -178,9 +178,9 @@ trait EngineToString[R] extends EngineTypesWithRoot[R] {
 
   def toString(indent: String, root: RorN): String = {
     root match {
-      case Left(result) => indent + result.description + "\n"
+      case Left(result) => indent + result.pretty + "\n"
       case Right(node) =>
-        indent + "if(" + node.because.becauseString + ")\n" +
+        indent + "if(" + node.because.pretty + ")\n" +
           toString(indent + " ", node.yes) +
           indent + "else\n" +
           toString(indent + " ", node.no)

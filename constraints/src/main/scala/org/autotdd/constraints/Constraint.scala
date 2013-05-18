@@ -7,10 +7,24 @@ abstract class Constraint[B, RFn, R, C](val expected: R, val code: CodeFn[RFn, C
   def params: List[Any]
   def actualValueFromParameters: R
   def hasDefaultBecause = because.isEmpty
-  def becauseString = because match { case Some(b) =>  b.becauseString; case _ => "" }
+  def becauseString = because match { case Some(b) => b.description; case _ => "" }
 }
 
-case class CodeFn[RFn, C](val rfn: RFn, val description: String, val constraints: List[C] = List[C]())
+//TODO Need better extraction of parameters as the parameters could be functions
+abstract class CodeHolder(val description: String) {
+  private val index = description.indexOf("=>");
+  val pretty = index match {
+    case -1 => description
+    case i => description.substring(index + 3, description.length - 1)
+  }
+  val parameters = index match {
+    case -1 => description
+    case i => description.substring(0, index);
+  }
+
+}
+
+case class CodeFn[RFn, C](val rfn: RFn, override val description: String, val constraints: List[C] = List[C]()) extends CodeHolder(description)
 
 object CodeFn {
   implicit def r_to_result[RFn, C](r: RFn): CodeFn[RFn, C] = macro c_to_code_impll[RFn, C]
@@ -22,15 +36,7 @@ object CodeFn {
 
 }
 
-case class Because[B](val because: B, val becauseString: String) {
-  private val index = becauseString.indexOf("=>");
-  //TODO Need better extraction of parameters as the parameters could be functions
-  val parameters = index match {
-    case -1 => ""
-    case i => becauseString.substring(0, index)
-  }
-
-}
+case class Because[B](val because: B, override val description: String) extends CodeHolder(description)
 
 object Because {
   implicit def b_to_because[B](b: B): Because[B] = macro b_to_because_imp[B]

@@ -14,10 +14,14 @@ case class Constraint2[P1, P2, R](val p1: P1, val p2: P2, override val expected:
 
 object Engine2 {
 
-  def apply[P1, P2, R](default: R) = new MutableEngine2[P1, P2, R](CodeFn((p1: P1, p2: P2) => default, default.toString))
-  def apply[P1, P2, R](default: (P1, P2) => R) = new MutableEngine2[P1, P2, R](default)
-  def mutable[P1, P2, R](default: R) = new MutableEngine2[P1, P2, R]((p1: P1, p2: P2) => default)
-  def immutable[P1, P2, R](default: (P1, P2) => R) = new ImmutableEngine2[P1, P2, R](default, List())
+//  def apply[P1, P2, R](default: R) = new MutableEngine2[P1, P2, R](CodeFn((p1: P1, p2: P2) => default, default.toString))
+  def apply[P1, P2, R](default: (P1, P2) => R) = macro create_from_default_function[P1, P2, R]
+
+  def create_from_default_function[P1: c.WeakTypeTag, P2: c.WeakTypeTag, R: c.WeakTypeTag](c: Context)(default: c.Expr[(P1, P2) => R]): c.Expr[MutableEngine2[P1, P2, R]] = {
+    import c.universe._
+    val expr = reify { new MutableEngine2[P1, P2, R](new CodeFn[(P1, P2) => R, Constraint2[P1, P2, R]](default.splice, c.literal(show(default.tree)).splice)) }
+    c.Expr[MutableEngine2[P1, P2, R]](expr.tree)
+  }
 
   def constraint_impl_with_code[P1: c.WeakTypeTag, P2: c.WeakTypeTag, R: c.WeakTypeTag, CR: c.WeakTypeTag](c: Context)(p1: c.Expr[P1], p2: c.Expr[P2], expected: c.Expr[R], code: c.Expr[(P1, P2) => R], because: c.Expr[(P1, P2) => Boolean]): c.Expr[CR] = {
     import c.universe._

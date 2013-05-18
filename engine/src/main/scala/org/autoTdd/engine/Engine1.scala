@@ -65,6 +65,7 @@ trait Engine1[P, R] extends Engine[R] with Function1[P, R] with EngineToString[R
 
   def constraint(p: P, expected: R): CR = raw_constraint(p, expected, null, null)
   def assertion(p: P, expected: R): CR = raw_constraint(p, expected, null, null)
+  def constraint(p: P, expected: R, because: Because[B]): CR = raw_constraint(p, expected, null, because)
 
   def constraint(p: P, expected: R, because: (P) => Boolean): CR = macro Engine1.constraint_impl_with_just_expected[P, R, CR]
   def constraint(p: P, expected: R, code: (P) => R, because: (P) => Boolean): CR = macro Engine1.constraint_impl_with_code[P, R, CR]

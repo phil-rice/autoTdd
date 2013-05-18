@@ -1,6 +1,5 @@
 package org.autotdd.engine.tests
 
-
 import org.autotdd.constraints.CodeFn
 import java.text.MessageFormat
 import org.autotdd.engine._
@@ -34,7 +33,7 @@ trait NodeComparator[R] extends EngineTypes[R] {
       compareConstraints(prefix + "constraints/", c1.constraints, c2.constraints)
   }
   def compare(prefix: String, n1: N, n2: N): List[String] = {
-    check(prefix + "because {0} {1}", n1.because.becauseString, n2.because.becauseString) ++
+    check(prefix + "because {0} {1}", n1.because.description, n2.because.description) ++
       check(prefix + "inputs {0} {1}", n1.inputs, n2.inputs) ++
       compare(prefix + "yes/", n1.yes, n2.yes) ++
       compare(prefix + "no/", n1.no, n2.no)
@@ -42,7 +41,7 @@ trait NodeComparator[R] extends EngineTypes[R] {
 
   def compareConstraints(prefix: String, c1s: List[C], c2s: List[C]): List[String] = {
     val sizeMismatch = c1s.size != c2s.size match { case true => List(prefix + " sizes " + c1s.size + "," + c2s.size); case _ => List() };
-    sizeMismatch ++ (c1s, c2s).zipped.flatMap((c1, c2) => c1 != c2 match { case true => compareConstraint(prefix +"["+c1.becauseString +"]", c1, c2); case _ => List() });
+    sizeMismatch ++ (c1s, c2s).zipped.flatMap((c1, c2) => c1 != c2 match { case true => compareConstraint(prefix + "[" + c1.becauseString + "]", c1, c2); case _ => List() });
   }
 
   def compareConstraint(prefix: String, c1: C, c2: C): List[String] = {

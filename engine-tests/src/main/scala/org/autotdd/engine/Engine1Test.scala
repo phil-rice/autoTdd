@@ -31,7 +31,7 @@ class Engine1Test extends FlatSpec with ShouldMatchers with PosNegTestTrait with
 
   "A constraint without a result" should "return expected value when it applies" in {
     val engine = Engine1[Int, String](default = "Negative");
-    val actual: String = engine.constraint(1, "Positive",  (x) => x >= 0);
+    val actual: String = engine.constraint(1, "Positive",  (x:Int) => x >= 0);
     assert(actual == "Positive")
     assert(engine(0) == "Positive")
     assert(engine(1) == "Positive")

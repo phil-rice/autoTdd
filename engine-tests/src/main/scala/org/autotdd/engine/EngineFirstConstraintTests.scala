@@ -7,7 +7,7 @@ import org.scalatest.matchers.ShouldMatchers
 class EngineFirstConstraintTests extends FlatSpec with ShouldMatchers with EngineTests {
   "An empty engine" should "change from root to if then with one constraint" in {
     val engine = Engine1[String, String](default = "Z");
-    engine.constraint("A", "X",  "A");
+    engine.constraint("A", "X", "A");
     check(engine, "if a/a then x#a/a else z")
     checkConstraints(engine, "A");
   }
