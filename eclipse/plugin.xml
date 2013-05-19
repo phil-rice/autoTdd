@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            name="Auto Tdd"
+            id="org.autotdd.category">
+      </category>
+      <view
+            name="Auto Tdd"
+            icon="icons/sample.gif"
+            category="org.autotdd.category"
+            class="org.autotdd.eclipse.AutoTddView"
+            id="org.autotdd.eclipse.AutoTddView">
+      </view>
+   </extension>
+
+</plugin>

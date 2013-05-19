@@ -10,9 +10,16 @@ import java.lang.reflect.Method
 import junit.framework.Assert
 import org.junit.runner.notification.Failure
 import org.autotdd.constraints.Constraint
+import java.io.File
+import scala.collection.mutable.StringBuilder
+import sys.process._
 
+object AutoTddRunner {
+  val separator = "\n#########\n"
+  val userHome = System.getProperty("user.home");
+  val directory = new File(userHome, ".autoTdd")
 
-
+}
 class AutoTddRunner(val clazz: Class[Any]) extends Runner {
 
   val getDescription = Description.createSuiteDescription("ATDD: " + clazz.getName);
@@ -31,15 +38,26 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner {
     println(engine)
     engineMap = engineMap + (engineDescription -> engine)
     for (c <- engine.constraints) {
-      val name = c.params.reduce((acc, p) => acc + ", " + p) + " => " + c.expected + " "+ c.becauseString
+      val name = c.params.reduce((acc, p) => acc + ", " + p) + " => " + c.expected + " " + c.becauseString
       val cleanedName = name.replace("(", "<").replace(")", ">");
-//      println("   " + cleanedName)
+      //      println("   " + cleanedName)
       val constraintDescription = Description.createSuiteDescription(cleanedName)
       engineDescription.addChild(constraintDescription)
       constraintMap = constraintMap + (constraintDescription -> c.asInstanceOf[Constraint[Any, Any, Any, Any]])
+      saveResults(clazz, engineDescription, engine)
     }
+
   }
 
+  def saveResults(clazz: Class[Any], ed: Description, e: Any) {
+    AutoTddRunner.directory.mkdirs()
+    printToFile(new File(AutoTddRunner.directory, clazz.getName() + "." + ed.getDisplayName() + ".attd"))((pw) => pw.write(e.toString))
+  }
+
+  def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
+    val p = new java.io.PrintWriter(f)
+    try { op(p) } finally { p.close() }
+  }
   def run(notifier: RunNotifier) {
     EngineTest.test(() => {
       notifier.fireTestStarted(getDescription)
@@ -63,9 +81,9 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner {
           }
           notifier.fireTestFinished(ed)
         }
-//        println("Constraints for: " + ed.getDisplayName())
-//        for (c <- engine.constraints)
-//          println("  " + c)
+        //        println("Constraints for: " + ed.getDisplayName())
+        //        for (c <- engine.constraints)
+        //          println("  " + c)
       }
       notifier.fireTestFinished(getDescription)
     })
