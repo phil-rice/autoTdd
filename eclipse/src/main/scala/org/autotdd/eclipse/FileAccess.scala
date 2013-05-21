@@ -1,6 +1,8 @@
 package org.autotdd.eclipse
 
 import java.io.File
+import org.autotdd.engine._
+
 import java.util.ArrayList
 
 import scala.io.Source
@@ -25,7 +27,7 @@ trait FileSystemFileAccess extends FileAccess {
 //check listFiles returns the list of files in the directory
 //check that it returns  empty list if the directory doesn't exist, and that it doesn't create the directory
 //check contents returns the contents of the file
-//last modified is awkward, so I'll probably just rely on inspection.
+//last modified returns the last modified
 
 class MockFileAccess(contentMap: Map[File, String], lastModifiedMap: Map[File, Long]) extends FileAccess {
   def directory: File = null
@@ -40,9 +42,41 @@ case class InsertedFile(val index: Int, val fct: FileContentAndTime) extends Fil
 case class DeletedFile(val index: Int, val fct: FileContentAndTime) extends FileEvent
 case class UpdatedFile(val index: Int, val fct: FileContentAndTime) extends FileEvent
 
-trait FilesTimesAndContents extends FileAccess with ListenerList1[FileEvent] {
+trait FilesForTesting {
+  val f1 = new File("1");
+  val f2 = new File("2");
+  val f3 = new File("3");
+  val fct1 = FileContentAndTime(f1, "contentf1", 1)
+  val fct1b = FileContentAndTime(f1, "contentf1", 10)
+  val fct2 = FileContentAndTime(f2, "contentf2", 1)
+  val fct3 = FileContentAndTime(f3, "contentf3", 1)
+}
+
+trait FilesTimesAndContents extends FileAccess with ListenerList1[FileEvent] with FilesForTesting {
   private var files = List[FileContentAndTime]()
   private def findIndex(f: File) = files.indexWhere((ct) => ct.file == f)
+
+  val updateFileEngine = Engine2[File, List[FileContentAndTime], (Option[FileEvent], List[FileContentAndTime])]((f, l) => (None, l));
+  updateFileEngine.constraint(f1, List(), (Some(InsertedFile(0, fct1)), List(fct1)),
+    (f, l) => {
+      val fct = FileContentAndTime(f, contents(f), lastModified(f));
+      val newL = (fct :: l) sortBy ((f) => f.file.getName);
+      val index = newL.indexOf(fct)
+      (Some(InsertedFile(index, fct)), newL)
+    },
+    (f, l) => l.find((fct) => fct.file == f).isEmpty);
+  updateFileEngine.constraint(f2, List(fct1), (Some(InsertedFile(1, fct2)), List(fct1, fct2)))
+  updateFileEngine.constraint(f1, List(fct2, fct3), (Some(InsertedFile(0, fct1)), List(fct1, fct2, fct3)))
+  
+  val update2 = EngineListenerList2[File, List[FileContentAndTime], List[FileContentAndTime]]((f, l)=> l)
+  update2.constraintWithEvent(f1, List(), List(InsertedFile(0, fct1)), 
+    (f, l) => (FileContentAndTime(f, contents(f), lastModified(f)) :: l) sortBy ((f) => f.file.getName),
+    (f, l) => l.find((fct) => fct.file == f).isEmpty),
+    ((f, l, newL) => 
+      val index = newL.indexWhere((fct)=>fct.file==f); 
+      InsertedFile(index, newL(index)));
+  
+  
 
   def updateFiles {
     listFiles.foreach((f: File) => {
