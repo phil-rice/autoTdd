@@ -13,21 +13,31 @@ class ConstraintConflictException(msg: String) extends RuntimeException(msg)
 class AssertionException(msg: String) extends RuntimeException(msg)
 //class CannotAccessBrokenEngineException(msg: String) extends RuntimeException(msg)
 
-case class Node[B, RFn, R, C <: Constraint[B, RFn, R, C]](val because: Because[B], val inputs: List[Any], val yes: Either[CodeFn[RFn, C], Node[B, RFn, R, C]], no: Either[CodeFn[RFn, C], Node[B, RFn, R, C]])
-
+/** There are a load of generics / types flying around. This class defines classes, and is the mechanism for avoiding code duplication with different arities / shapes of implementations */
 trait EngineTypes[R] {
+  /** B is a function from the parameters of the engine to a boolean. It is effectively in calculating which constraint is to be used */
   type B
+  /** RFn is a function from the parameters of the engine to a result R. It is used to calculate the result of the engine */
   type RFn
+  /** This is a constraint. It has the most complex of generics, but users should never really see constraints */
   type C <: Constraint[B, RFn, R, C]
 
+  /** In order to call a B in the building code, when we don't know anything about the arity, we create a closure holding the parameters and pass the B function to it */
   type BecauseClosure = (B) => Boolean
+  /** In order to call a RFN in the building code, when we don't know anything about the arity, we create a closure holding the parameters and pass the B function to it */
   type ResultClosure = (RFn) => R
 
+  /** This is just a type synonym to save messy code */
   type N = Node[B, RFn, R, C]
+  /** This is just a type synonym to save messy code */
   type Code = CodeFn[RFn, C]
+  /** This is just a type synonym to save messy code */
   type OptN = Option[N]
+  /** This is just a type synonym to save messy code.  This represents the decision tree: either a result or another node which has a condition, and a true/false RorN  */
   type RorN = Either[Code, N]
 }
+
+case class Node[B, RFn, R, C <: Constraint[B, RFn, R, C]](val because: Because[B], val inputs: List[Any], val yes: Either[CodeFn[RFn, C], Node[B, RFn, R, C]], no: Either[CodeFn[RFn, C], Node[B, RFn, R, C]])
 
 trait EvaluateEngine[R] extends EngineTypes[R] {
 
@@ -134,19 +144,23 @@ trait Engine[R] extends BuildEngine[R] with AddConstraints[R] with EvaluateEngin
   def constraints: List[C]
   def realConstraint(c: C): C = c
 
-  private def validateConstraint(c: C) {
+  private def validateBecause(c: C) {
     c.because match {
       case Some(b) =>
         if (!makeClosureForBecause(c.params).apply(b.because))
           throw new ConstraintBecauseException(c.becauseString + " is not true for " + c.params);
       case None =>
     }
+  }
+
+  private def validateConstraint(c: C) {
     val actualFromConstraint = c.actualValueFromParameters
     if (actualFromConstraint != c.expected)
       throw new ConstraintResultException("Wrong result for " + c.code.description + " for " + c.params + "\nActual: " + actualFromConstraint + "\nExpected: " + c.expected);
   }
 
   private def checkConstraint(c: C) {
+    validateBecause(c);
     validateConstraint(c);
     val actualFromEngine = applyParam(c.params);
     if (actualFromEngine != c.expected)
@@ -155,6 +169,7 @@ trait Engine[R] extends BuildEngine[R] with AddConstraints[R] with EvaluateEngin
 
   def addConstraintWithChecking(c: C, addingClosure: (C) => CR, default: CR): CR = {
     try {
+      validateBecause(c)
       val result = addingClosure(c)
       validateConstraint(c)
       if (!EngineTest.testing)

@@ -5,7 +5,12 @@ import scala.reflect.macros.Context
 import org.autotdd.constraints.Constraint
 import org.autotdd.constraints.CodeFn
 import org.autotdd.constraints.Because
+trait Engine2Types[P1, P2, R] extends EngineTypes[R] {
+  type B = (P1, P2) => Boolean
+  type RFn = (P1, P2) => R
+  type C = Constraint2[P1, P2, R]
 
+}
 case class Constraint2[P1, P2, R](val p1: P1, val p2: P2, override val expected: R, override val code: CodeFn[(P1, P2) => R, Constraint2[P1, P2, R]], override val because: Option[Because[(P1, P2) => Boolean]])
   extends Constraint[(P1, P2) => Boolean, (P1, P2) => R, R, Constraint2[P1, P2, R]](expected, code, because) {
   override def params = List(p1, p2)
@@ -45,12 +50,7 @@ object Engine2 {
 
 }
 
-trait Engine2Types[P1, P2, R] extends EngineTypes[R] {
-  type B = (P1, P2) => Boolean
-  type RFn = (P1, P2) => R
-  type C = Constraint2[P1, P2, R]
 
-}
 
 trait Engine2[P1, P2, R] extends Engine[R] with Function2[P1, P2, R] with EngineToString[R] with Engine2Types[P1, P2, R] {
   def apply(p1: P1, p2: P2): R = {

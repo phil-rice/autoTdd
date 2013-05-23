@@ -2,8 +2,6 @@ package org.autotdd.eclipse
 
 import java.io.File
 
-
-
 import scala.collection.JavaConversions._
 import scala.io.Source
 
@@ -24,7 +22,6 @@ import org.junit.runner.RunWith
 import net.miginfocom.swt.MigLayout
 case class EngineDescription(val name: String, val description: String)
 
-@RunWith(classOf[AutoTddRunner])
 object AutoTddParser {
   val itemParse = Engine1((item: String) => {
     val index = item.indexOf("\n")
@@ -83,7 +80,8 @@ class AutoTddView extends ViewPart {
   def createPartControl(parent: Composite) = {
     new AutoTddComposite(parent, new FilesTimesAndContents with FileSystemFileAccess with SwtAwareListenerList {
       val display = parent.getDisplay
-      val directory = AutoTddRunner.directory
+      val userHome = System.getProperty("user.home");
+      val directory = new File(userHome, ".autoTdd")
     }) {
       val job = new Jobs(getDisplay).executeRepeatadlyAsJob(2000, { files.updateFiles });
       override def dispose = {

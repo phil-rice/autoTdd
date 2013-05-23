@@ -2,8 +2,8 @@ package org.autotdd.example
 
 import org.junit.runner.RunWith
 
-import org.autotdd.engine.tests.AutoTddRunner
 import org.autotdd.engine._
+import org.autotdd.engine.tests._
 
 @RunWith(classOf[AutoTddRunner])
 class Hello2Test {

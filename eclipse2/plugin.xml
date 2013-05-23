@@ -9,11 +9,11 @@
             id="org.autotdd.category">
       </category>
       <view
-            name="Auto Tdd"
+            name="Auto Tdd 2"
             icon="icons/AutoTdd.png"
             category="org.autotdd.category"
-            class="org.autotdd.eclipse.AutoTddView"
-            id="org.autotdd.eclipse.AutoTddView">
+            class="org.autotdd.eclipse2.AutoTddView"
+            id="org.autotdd.eclipse2.AutoTddView">
       </view>
    </extension>
 

@@ -3,7 +3,9 @@ Bundle-ManifestVersion: 2
 Bundle-Name: engine
 Bundle-SymbolicName: org.autotdd.engine
 Bundle-Version: 1.0.0.qualifier
-Bundle-ClassPath: engine.jar,
- lib/scalatest_2.10-1.9.1.jar
+Bundle-ClassPath: lib/scalatest_2.10-1.9.1.jar
 Require-Bundle: org.scala-ide.scala.library,
  org.autotdd.constraints;bundle-version="1.0.0";visibility:=reexport
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Export-Package: org.autotdd.engine,
+ org.autotdd.engine.tests

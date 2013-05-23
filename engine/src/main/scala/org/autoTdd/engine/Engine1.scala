@@ -5,6 +5,12 @@ import scala.reflect.macros.Context
 import org.autotdd.constraints.Constraint
 import org.autotdd.constraints.CodeFn
 import org.autotdd.constraints.Because
+trait Engine1Types[P, R] extends EngineTypes[R] {
+  type B = (P) => Boolean
+  type RFn = (P) => R
+  type C = Constraint1[P, R]
+
+}
 
 case class Constraint1[P, R](val param: P, override val expected: R,
   override val code: CodeFn[(P) => R, Constraint1[P, R]],
@@ -49,13 +55,6 @@ object Engine1 {
     }
     c.Expr[CR](expr.tree)
   }
-
-}
-
-trait Engine1Types[P, R] extends EngineTypes[R] {
-  type B = (P) => Boolean
-  type RFn = (P) => R
-  type C = Constraint1[P, R]
 
 }
 

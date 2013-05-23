@@ -56,28 +56,6 @@ trait FilesTimesAndContents extends FileAccess with ListenerList1[FileEvent] wit
   private var files = List[FileContentAndTime]()
   private def findIndex(f: File) = files.indexWhere((ct) => ct.file == f)
 
-  val updateFileEngine = Engine2[File, List[FileContentAndTime], (Option[FileEvent], List[FileContentAndTime])]((f, l) => (None, l));
-  updateFileEngine.constraint(f1, List(), (Some(InsertedFile(0, fct1)), List(fct1)),
-    (f, l) => {
-      val fct = FileContentAndTime(f, contents(f), lastModified(f));
-      val newL = (fct :: l) sortBy ((f) => f.file.getName);
-      val index = newL.indexOf(fct)
-      (Some(InsertedFile(index, fct)), newL)
-    },
-    (f, l) => l.find((fct) => fct.file == f).isEmpty);
-  updateFileEngine.constraint(f2, List(fct1), (Some(InsertedFile(1, fct2)), List(fct1, fct2)))
-  updateFileEngine.constraint(f1, List(fct2, fct3), (Some(InsertedFile(0, fct1)), List(fct1, fct2, fct3)))
-  
-  val update2 = EngineListenerList2[File, List[FileContentAndTime], List[FileContentAndTime]]((f, l)=> l)
-  update2.constraintWithEvent(f1, List(), List(InsertedFile(0, fct1)), 
-    (f, l) => (FileContentAndTime(f, contents(f), lastModified(f)) :: l) sortBy ((f) => f.file.getName),
-    (f, l) => l.find((fct) => fct.file == f).isEmpty),
-    ((f, l, newL) => 
-      val index = newL.indexWhere((fct)=>fct.file==f); 
-      InsertedFile(index, newL(index)));
-  
-  
-
   def updateFiles {
     listFiles.foreach((f: File) => {
       findIndex(f) match {
