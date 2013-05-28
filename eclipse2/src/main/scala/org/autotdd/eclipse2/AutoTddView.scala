@@ -1,6 +1,7 @@
 package org.autotdd.eclipse2
 
 import java.io.File
+
 import scala.collection.JavaConversions._
 import scala.io.Source
 import org.autotdd.engine.Engine1
@@ -20,6 +21,8 @@ import net.miginfocom.swt.MigLayout
 import org.autotdd.engine.Engine3
 import org.eclipse.swt.widgets.Shell
 import org.eclipse.swt.widgets.Display
+import org.eclipse.swt.graphics.Color
+import java.lang.IllegalArgumentException
 
 object AppStateFixture {
   val f1 = new File("1");
@@ -56,10 +59,11 @@ trait UpdateFiles {
 
   val updateGuiAndCacheWhenFileChanges = Engine3[File, AutoTddComposite, AppState, AppState](doNothing) //default is do nothing
 
-  def makeComposite: AutoTddComposite
-  val composite = makeComposite
-  composite.reset
-  updateGuiAndCacheWhenFileChanges.constraint(f1, composite, as_empty_cache,
+  def makeComposite(color: Int): AutoTddComposite
+
+  val composite1 = makeComposite(SWT.COLOR_CYAN)
+
+  updateGuiAndCacheWhenFileChanges.constraint(f1, composite1, as_empty_cache,
     /*expected=*/ fileCacheL.set(as_empty_cache, List(fct1)),
     /* code= */ (f, ac, as) => {
       val fct = fileAccessL(as)(f)
@@ -69,10 +73,12 @@ trait UpdateFiles {
       result
     }, becauseFileIsntInCache);
 
-  composite.reset
-  composite.insert(0, fct1)
-  composite.insert(1, fct2)
-  updateGuiAndCacheWhenFileChanges.constraint(f1, composite, as_fct12_f1_changed_on_file_system,
+  val composite2 = makeComposite(SWT.COLOR_GREEN)
+
+  composite2.insert(0, fct1)
+  composite2.insert(1, fct2)
+  composite2.setSelection(1)
+  updateGuiAndCacheWhenFileChanges.constraint(f1, composite2, as_fct12_f1_changed_on_file_system,
     /*expected=*/ fileCacheL.set(as_fct12_f1_changed_on_file_system, List(fct1b, fct2)),
     /* code = */ (f, ac, as) => {
       val fct = fileAccessL(as)(f)
@@ -80,11 +86,12 @@ trait UpdateFiles {
       fileCacheL.add(as, fct)
     }, becauseFileHasChangedOnFileSystem)
 
-  composite.reset
-  composite.insert(0, fct1)
-  composite.insert(1, fct2)
-  composite.setSelection(0)
-  updateGuiAndCacheWhenFileChanges.constraint(f1, composite, as_fct12_f1_changed_on_file_system,
+  val composite3 = makeComposite(SWT.COLOR_RED)
+
+  composite3.insert(0, fct1)
+  composite3.insert(1, fct2)
+  composite3.setSelection(0)
+  updateGuiAndCacheWhenFileChanges.constraint(f1, composite3, as_fct12_f1_changed_on_file_system,
     /*expected=*/ fileCacheL.set(as_fct12_f1_changed_on_file_system, List(fct1b, fct2)),
     /* code = */ (f, ac, as) => {
       val fct = fileAccessL(as)(f)
@@ -93,43 +100,50 @@ trait UpdateFiles {
       fileCacheL.add(as, fct)
     }, and(becauseFileHasChangedOnFileSystem, becauseFileIsTheSelectedFile))
 
-  composite.dispose()
+  composite1.dispose()
+  composite2.dispose()
+  composite3.dispose()
 }
 
-class AutoTddComposite(parent: Composite) extends Composite(parent, SWT.NULL) {
-
+class AutoTddComposite(parent: Composite, color: Int) extends Composite(parent, SWT.NULL) {
   setLayout(new MigLayout("fill", "[400][grow]", "[grow]"))
   val list = new org.eclipse.swt.widgets.List(this, SWT.WRAP | SWT.READ_ONLY); list.setLayoutData("grow")
   val textArea = new StyledText(this, SWT.WRAP | SWT.READ_ONLY); textArea.setLayoutData("grow")
-  def insert(index: Int, fct: FileContentAndTime) = list.add(fct.file.getName, index)
+  def insert(index: Int, fct: FileContentAndTime) =
+    try {
+      println("List: " + list.getItemCount() + " index " + index + ", " + fct.file.getName())
+      list.add(fct.file.getName, index)
+
+    } catch {
+      case e: Throwable => e.printStackTrace();
+    }
   def setSelection(index: Int) = list.setSelection(index)
-  def currentSelection: Int = list.getSelectionIndex()
-  def reset = list.removeAll()
+  def currentSelection: Int = 0 //list.getSelectionIndex()
+  //  def reset = list.removeAll()
   def setText(s: String) = textArea.setText(s)
 }
 
 object AutoTddComposite {
   def apply(fileAccess: FileAccess, updateFiles: UpdateFiles, parent: Composite) = {
     def directory = AutoTddRunner.directory
-    var state = new AppState(fileAccess, List())
-    def makeComposite = new AutoTddComposite(Display.getDefault().getActiveShell())
-    val composite: AutoTddComposite = new AutoTddComposite(parent) {
-      val job = new Jobs(getDisplay()).executeRepeatadlyAsJob(2000, fileAccess.listFiles.foreach(f => state = updateFiles.updateGuiAndCacheWhenFileChanges(f, this, state)));
-      override def dispose = {
-        job.stop = true;
-        job.cancel()
-        super.dispose
-      }
+    val composite = new AutoTddComposite(parent, SWT.COLOR_BLUE) {
+      var appState = new AppState(fileAccess, List())
       list.addSelectionListener(new SelectionListener() {
         override def widgetDefaultSelected(e: SelectionEvent) = {}
         override def widgetSelected(e: SelectionEvent) = {
           list.getSelectionIndex() match {
             case -1 => textArea.setText("");
-            case i => textArea.setText(state.fileCache(i).content)
+            case i => textArea.setText(appState.fileCache(i).content)
           }
         }
 
       })
+      val job = new Jobs(getDisplay()).executeRepeatadlyAsJob(2000, fileAccess.listFiles.foreach(f => appState = updateFiles.updateGuiAndCacheWhenFileChanges(f, this, appState)));
+      override def dispose = {
+        job.stop = true;
+        job.cancel()
+        super.dispose
+      }
     }
     composite
   }
@@ -142,29 +156,33 @@ object AutoTddComposite {
 //when I start the first item is selected and the text area is populated, if one exists
 //If the directory doesn't exist shows <No Engines> in List
 
-//class AutoTddView extends ViewPart  {
-//  def directory = AutoTddRunner.directory
-//  var state = new AppState(this, List())
-//  def makeComposite = new AutoTddComposite(Display.getDefault().getActiveShell())
-//  def createPartControl(parent: Composite) = {
-//    val composite: AutoTddComposite = new AutoTddComposite(parent) {
-//      val job = new Jobs(getDisplay()).executeRepeatadlyAsJob(2000, listFiles.foreach(f => state = updateGuiAndCacheWhenFileChanges(f, this, state)));
-//      override def dispose = {
-//        job.stop = true;
-//        job.cancel()
-//        super.dispose
-//      }
-//      list.addSelectionListener(new SelectionListener() {
-//        override def widgetDefaultSelected(e: SelectionEvent) = {}
-//        override def widgetSelected(e: SelectionEvent) = {
-//          list.getSelectionIndex() match {
-//            case -1 => textArea.setText("");
-//            case i => textArea.setText(state.fileCache(i).content)
-//          }
-//        }
-//      });
-//
-//    }
-//  }
-//  def setFocus() = {}
-//}
+class AutoTddView extends ViewPart {
+
+  def createPartControl(parent: Composite) = {
+
+    try {
+      val fileAccess = new FileSystemFileAccess() {
+        val userHome = System.getProperty("user.home");
+        val directory = new File(userHome, ".autoTdd")
+      }
+
+      val updateFiles = new UpdateFiles() {
+        def makeComposite(color: Int) = new AutoTddComposite(parent, color)
+      }
+
+      val composite = AutoTddComposite(fileAccess, updateFiles, parent);
+    } catch {
+      case e: Throwable =>
+        e.printStackTrace
+        throw e;
+    }
+
+    println("first")
+    //    composite.appState.fileAccess.listFiles.foreach(f => composite.appState = updateFiles.updateGuiAndCacheWhenFileChanges(f, composite, composite.appState))
+
+    //    val job = new Jobs(parent.getDisplay()).
+    //      executeRepeatadlyAsJob(2000, fileAccess.listFiles.foreach(f => updateFiles.updateGuiAndCacheWhenFileChanges(f, composite, composittate)));
+
+  }
+  def setFocus() = {}
+}

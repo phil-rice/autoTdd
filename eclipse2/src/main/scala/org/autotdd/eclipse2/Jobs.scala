@@ -11,7 +11,9 @@ class Jobs(val display: Display) extends NeedsSwtThread {
   def executeAsJob(calculate: => Unit) = {
     val job = new Job("My Job") {
       def run(monitor: IProgressMonitor): IStatus = {
-        calculate
+        execute(new Runnable() {
+          def run() = calculate
+        })
         Status.OK_STATUS;
       }
     };
@@ -24,7 +26,9 @@ class Jobs(val display: Display) extends NeedsSwtThread {
       var stop = false
       def run(monitor: IProgressMonitor): IStatus = {
         try {
-          calculate
+          execute(new Runnable() {
+            def run() = calculate
+          })
         } finally {
           if (!stop)
             schedule(period)

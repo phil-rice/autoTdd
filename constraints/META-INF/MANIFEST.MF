@@ -6,4 +6,3 @@ Bundle-Version: 1.0.0.qualifier
 Export-Package: org.autotdd.constraints
 Require-Bundle: org.scala-ide.scala.library,
  org.scala-ide.scala.compiler;bundle-version="2.10.1";visibility:=reexport
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7

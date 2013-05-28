@@ -3,19 +3,26 @@ package org.autotdd.eclipse2
 import org.eclipse.swt.widgets.Shell
 import org.eclipse.swt.widgets.Display
 import java.io.File
+import org.eclipse.swt.SWT
 
 object AutoTddViewRunner {
 
   def main(args: Array[String]) {
     val display = new Display
     val shell = new Shell(display)
+    val updateFiles = new UpdateFiles() {
+      def makeComposite(color: Int) = new AutoTddComposite(shell, color)
+    }
     val composite = AutoTddComposite(new FileSystemFileAccess() {
       val userHome = System.getProperty("user.home");
       val directory = new File(userHome, ".autoTdd")
-    }, new UpdateFiles() {
-      def makeComposite = new AutoTddComposite(shell)
-    }, shell);
-    composite.pack
+    }, updateFiles, shell);
+    println("First")
+    //    composite.appState.fileAccess.listFiles.foreach(f => composite.appState = updateFiles.updateGuiAndCacheWhenFileChanges(f, composite, composite.appState))
+    println("Second")
+    //    composite.appState.fileAccess.listFiles.foreach(f => composite.appState = updateFiles.updateGuiAndCacheWhenFileChanges(f, composite, composite.appState))
+
+    //    composite.pack
     shell.pack();
     shell.open();
     while (!shell.isDisposed())
