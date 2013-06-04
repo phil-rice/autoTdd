@@ -48,7 +48,7 @@ trait NodeComparator[R] extends EngineTypes[R] {
     val b = c1.becauseString != c2.becauseString match { case true => List(prefix + "because " + c1.becauseString + ", " + c2.becauseString); case _ => List() }
     val i = c1.params != c2.params match { case true => List(prefix + "params " + c1.params + ", " + c2.params); case _ => List() }
     val e = c1.expected != c2.expected match { case true => List(prefix + "expected " + c1.expected + ", " + c2.expected); case _ => List() }
-    val c = c1.code.description != c2.code.description match { case true => List(prefix + "code " + c1.code.description + ", " + c2.code.description); case _ => List() }
+    val c = c1.actualCode.description != c2.actualCode.description match { case true => List(prefix + "code " + c1.actualCode.description + ", " + c2.actualCode.description); case _ => List() }
     b ++ i ++ e ++ c
   }
   def compareSize(prefix: String, c1s: List[C], c2s: List[C]): List[String] = {

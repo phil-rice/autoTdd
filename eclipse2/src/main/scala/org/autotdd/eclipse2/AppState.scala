@@ -1,6 +1,7 @@
 package org.autotdd.eclipse2
 
 import java.io.File
+import org.autotdd.engine.Lens
 
 case class AppState(fileAccess: FileAccess, fileCache: List[FileContentAndTime])
 

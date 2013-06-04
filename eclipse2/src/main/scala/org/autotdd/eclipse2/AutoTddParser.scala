@@ -1,14 +1,12 @@
 package org.autotdd.eclipse2
 
 import org.junit.runner.RunWith
-import org.autotdd.engine.tests.AutoTddRunner
-import org.autotdd.engine.Engine1
 
-@RunWith(classOf[AutoTddRunner])
+//@RunWith(classOf[AutoTddRunner])
 case class EngineDescription(val name: String, val description: String)
 
 object AutoTddParser {
-  val itemParse = Engine1((item: String) => {
+  val itemParse = Engine((item: String) => {
     val index = item.indexOf("\n")
     index match {
       case -1 => throw new IllegalArgumentException(item);

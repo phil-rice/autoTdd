@@ -1,15 +1,16 @@
 package org.autotdd.engine.tests
 
 import org.junit.runner.Description
+
 import scala.collection.JavaConversions._
 import org.junit.runner.Runner
 import org.junit.runner.notification.RunNotifier
 import org.autotdd.engine._
+import org.autotdd.constraints._
 import scala.reflect.runtime.{ universe => ru }
 import java.lang.reflect.Method
 import junit.framework.Assert
 import org.junit.runner.notification.Failure
-import org.autotdd.constraints.Constraint
 import java.io.File
 import scala.collection.mutable.StringBuilder
 import sys.process._
@@ -27,7 +28,7 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner {
   val instance = EngineTest.test(() => { instantiate(clazz) });
 
   var engineMap: Map[Description, Engine[Any]] = Map()
-  var constraintMap: Map[Description, Constraint[Any, Any, Any, Any]] = Map()
+  var constraintMap: Map[Description, Constraint[Any, Any, Any]] = Map()
   var exceptionMap: Map[Description, Throwable] = Map()
 
   for (m <- clazz.getDeclaredMethods().filter((m) => returnTypeIsEngine(m))) {
@@ -43,7 +44,7 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner {
       //      println("   " + cleanedName)
       val constraintDescription = Description.createSuiteDescription(cleanedName)
       engineDescription.addChild(constraintDescription)
-      constraintMap = constraintMap + (constraintDescription -> c.asInstanceOf[Constraint[Any, Any, Any, Any]])
+      constraintMap = constraintMap + (constraintDescription -> c.asInstanceOf[Constraint[ Any, Any, Any]])
       saveResults(clazz, engineDescription, engine)
     }
 
@@ -71,7 +72,7 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner {
             notifier.fireTestFailure(new Failure(cd, EngineTest.exceptions(constraint)))
           else {
             val b = engine.makeClosureForBecause(constraint.params);
-            val actual = engine.applyParam(constraint.params)
+            val actual = engine.applyParam(engine.root, constraint.params)
             try {
               Assert.assertEquals(constraint.expected, actual)
               notifier.fireTestFinished(cd)
@@ -88,9 +89,10 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner {
       notifier.fireTestFinished(getDescription)
     })
   }
+  
   def returnTypeIsEngine(m: Method): Boolean = {
     val rt = m.getReturnType()
-    val c = classOf[MutableEngine[Any]]
+    val c = classOf[Engine[Any]]
     if (c.isAssignableFrom(rt))
       return true;
     for (t <- rt.getInterfaces())
