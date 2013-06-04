@@ -3,8 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: AutoTdd eclipse plugin
 Bundle-SymbolicName: org.autotdd.eclipse;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Require-Bundle: org.autotdd.engine;bundle-version="1.0.0",
- org.eclipse.ui;bundle-version="3.7.0",
+Require-Bundle: org.eclipse.ui;bundle-version="3.7.0",
  org.eclipse.core.runtime;bundle-version="3.7.0",
  org.scala-ide.scala.library,
  org.junit;bundle-version="4.8.2"

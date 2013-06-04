@@ -269,7 +269,7 @@ object Engine {
   }
 
   def apply[P, R](default: CodeFn[(P) => Boolean, (P) => R, R], constraints: Constraint[(P) => Boolean, (P) => R, R]*): Engine1[P, R] = new Engine1(default, constraints.toList)
-  def apply[P1, P2, R](default: CodeFn[(P1, P2) => Boolean, (P1, P2) => R, R], constraints: Constraint[(P1, P2) => Boolean, (P1, P2) => R, R]*) = new Engine2[P1, P2, R](default, constraints.toList);
+  def apply[P1, P2, R](defaultCode: CodeFn[(P1, P2) => Boolean, (P1, P2) => R, R], constraints: Constraint[(P1, P2) => Boolean, (P1, P2) => R, R]*) = new Engine2[P1, P2, R](defaultCode, constraints.toList);
   def apply[P, R](default: (P) => R, constraints: List[Constraint[(P) => Boolean, (P) => R, R]]): Engine1[P, R] = macro apply_impl[P, R]; //new Engine1[P, R](default, constraints.toList) with Function1[P, R] with EngineToString[R]
   def apply[P1, P2, R](default: (P1, P2) => R, constraints: List[Constraint[(P1, P2) => Boolean, (P1, P2) => R, R]]) = macro apply_impl[P1, P2, R]; // new Engine2[P1, P2, R](default, constraints.toList) with Function2[P1, P2, R] with EngineToString[R]
 }
