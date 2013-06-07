@@ -2,17 +2,19 @@ package org.autotdd.eclipse2
 
 import org.junit.runner.RunWith
 
+import org.autotdd.engine._
+
 //@RunWith(classOf[AutoTddRunner])
 case class EngineDescription(val name: String, val description: String)
 
 object AutoTddParser {
-  val itemParse = Engine((item: String) => {
+  val itemParse = Engine1[String, EngineDescription]((item: String) => {
     val index = item.indexOf("\n")
     index match {
       case -1 => throw new IllegalArgumentException(item);
       case _ => EngineDescription(item.substring(0, index), item.substring(index + 1))
     }
-  })
+  }, List())
   //  itemParse.constraint("abc\ndef", EngineDescription("abc", "def"))
   //  //TODO Need to be able to assert throws exceptions
   //

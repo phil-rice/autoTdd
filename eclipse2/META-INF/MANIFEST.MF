@@ -5,10 +5,17 @@ Bundle-SymbolicName: org.autotdd.eclipse2;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.eclipse.ui;bundle-version="3.7.0",
  org.eclipse.core.runtime;bundle-version="3.7.0",
- org.autotdd.engine;bundle-version="1.0.0",
- org.scala-ide.scala.library,
  org.junit;bundle-version="4.8.2"
 Bundle-ClassPath: .,
- lib/miglayout-4.0-swt.jar
+ lib/constraints-0.0.1-SNAPSHOT.jar,
+ lib/engine-0.0.1-SNAPSHOT.jar,
+ lib/junit-4.8.2.jar,
+ lib/miglayout-core-4.2.jar,
+ lib/miglayout-swt-4.2.jar,
+ lib/scala-actors-2.10.0.jar,
+ lib/scala-compiler-2.10.1.jar,
+ lib/scala-library-2.10.1.jar,
+ lib/scala-reflect-2.10.0.jar,
+ lib/scalatest_2.10-1.9.1.jar
 Bundle-Activator: org.autotdd.eclipse2.Activator
 Bundle-ActivationPolicy: lazy

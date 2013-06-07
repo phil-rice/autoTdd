@@ -9,7 +9,7 @@ trait FileAccess {
 }
 trait FileSystemFileAccess extends FileAccess {
   def directory: File
-  def apply(f: File)= FileContentAndTime(f, Source.fromFile(f).mkString, f.lastModified())
+  def apply(f: File) = FileContentAndTime(f, Source.fromFile(f).mkString, f.lastModified())
   def listFiles = directory.listFiles.filter(_.getName.endsWith(".attd"))
 }
 

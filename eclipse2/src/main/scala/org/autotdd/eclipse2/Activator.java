@@ -23,7 +23,6 @@ public class Activator extends AbstractUIPlugin {
 		plugin = this;
 	}
 
-	
 	public void stop(BundleContext context) throws Exception {
 		plugin = null;
 		super.stop(context);

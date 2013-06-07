@@ -2,11 +2,13 @@ package org.autotdd.engine
 import org.autotdd.constraints.UseCase
 import org.autotdd.engine._
 import org.autotdd.constraints._
-
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+@RunWith(classOf[JUnitRunner])
 class Constraint1Tests extends AbstractConstraintTests[(Int) => Boolean, (Int) => Int, Int] {
 
   def name = "A constraint created by the UseCase 1 method"
-  def constraint = UseCase(description, 1)
+  def constraint = Scenario(1)
   val params: List[Any] = List(1)
   val codeFn = (i: Int) => i + 1
   val because = (i: Int) => true

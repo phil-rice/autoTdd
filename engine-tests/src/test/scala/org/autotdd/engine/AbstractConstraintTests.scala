@@ -19,9 +19,8 @@ abstract class AbstractConstraintTests[B, RFn, R] extends FlatSpec with ShouldMa
   def checkRfn(c: Constraint[B, RFn, R]): Unit
   def checkExpected(c: Constraint[B, RFn, R]): Unit
 
-  name should "remember description, remember parameters and have None for the other parameters" in {
+  name should " remember parameters and have None for the other parameters" in {
     val c = constraint
-    assert(c.description == "Some description")
     assert(c.params == params)
     assert(c.code == None)
     assert(c.because == None)
@@ -29,9 +28,22 @@ abstract class AbstractConstraintTests[B, RFn, R] extends FlatSpec with ShouldMa
     assert(c.configuration == List())
   }
 
+  name should "start with description empty, then get description from scenarioHolder if it has one" in {
+    val c = constraint
+    val sh = new ScenarioHolder {
+      def description = "root";
+      def indexOf[B, RFn, R](c: Constraint[B, RFn, R]) = 2
+    }
+    val c2 = constraint.withScenarioHolder(sh)
+    assert(c.description == "")
+    assert(c.scenarioHolder == null)
+    val x = c2.description;
+    assert(c2.description == "root[2]")
+    assert(c2.scenarioHolder == sh)
+  }
+
   it should "add expected when produces is called" in {
     val c = constraint.produces(firstResult)
-    assert(c.description == "Some description")
     assert(c.params == params)
     assert(c.code == None)
     assert(c.because == None)
@@ -41,7 +53,6 @@ abstract class AbstractConstraintTests[B, RFn, R] extends FlatSpec with ShouldMa
 
   it should "add code when byCalling is called" in {
     val c = constraint.produces(firstResult).byCalling(codeFn)
-    assert(c.description == "Some description")
     assert(c.params == params)
     assert(c.code == Some(new CodeFn(codeFn, "AbstractConstraintTests.this.codeFn", List())), c)
     assert(c.because == None)
@@ -51,7 +62,6 @@ abstract class AbstractConstraintTests[B, RFn, R] extends FlatSpec with ShouldMa
 
   it should "add because when because is called" in {
     val c = constraint.produces(firstResult).because(because)
-    assert(c.description == "Some description")
     assert(c.params == params)
     assert(c.code == None)
     val expected = Some(new Because(because, "AbstractConstraintTests.this.because"))
@@ -64,12 +74,10 @@ abstract class AbstractConstraintTests[B, RFn, R] extends FlatSpec with ShouldMa
     val c = constraint.produces(firstResult)
     checkExpected(c);
   }
-  
 
   it should "use code as actualCode if specified" in {
     val c = constraint.produces(firstResult).byCalling(codeFn)
     checkRfn(c)
   }
-  
-  
+
 }
