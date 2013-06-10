@@ -5,12 +5,12 @@ import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
 import org.autotdd.constraints._
-class ConstraintBecauseException(msg: String) extends RuntimeException(msg)
-class ConstraintResultException(msg: String) extends RuntimeException(msg)
-class EngineResultException(msg: String) extends RuntimeException(msg)
-class ConstraintConflictException(msg: String) extends RuntimeException(msg)
-class AssertionException(msg: String) extends RuntimeException(msg)
-class ExceptionAddingConstraint(msg: String, t: Throwable) extends RuntimeException(msg, t)
+class ConstraintBecauseException(msg: String) extends EngineException(msg)
+class ConstraintResultException(msg: String) extends EngineException(msg)
+class EngineResultException(msg: String) extends EngineException(msg)
+class ConstraintConflictException(msg: String) extends EngineException(msg)
+class AssertionException(msg: String) extends EngineException(msg)
+class ExceptionAddingConstraint(msg: String, t: Throwable) extends EngineException(msg, t)
 //class CannotAccessBrokenEngineException(msg: String) extends RuntimeException(msg)
 
 /** There are a load of generics / types flying around. This class defines classes, and is the mechanism for avoiding code duplication with different arities / shapes of implementations */
@@ -125,6 +125,7 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
       }
       result
     } catch {
+      case e: EngineException => throw e;
       case e: Throwable => throw new ExceptionAddingConstraint("Constraint: " + c.description + "\nFull Details:\n" + c, e)
     }
 
@@ -189,6 +190,7 @@ trait Engine[R] extends BuildEngine[R] with EvaluateEngine[R] {
         } catch {
           case e: Throwable if EngineTest.testing =>
             EngineTest.exceptions = EngineTest.exceptions + (c -> e); root
+          case e: EngineException => throw e;
           case e: Throwable => throw e
         }
       case _ => root
