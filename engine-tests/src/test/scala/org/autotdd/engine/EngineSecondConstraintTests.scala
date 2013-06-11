@@ -8,6 +8,18 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class EngineSecondConstraintTests extends EngineStringStringTests {
+  it should "add to no clause if because is false for root" in {
+    val a = Scenario("A").becauseBecause("A").produces("X")
+    val b = Scenario("B").becauseBecause("B").produces("Y")
+    val engine = Engine1[String, String]("Z", UseCase("", a, b));
+    assertEngineMatches(engine,
+      Right(Node(because = "A", constraintThatCausedNode = a, inputs = List("A"),
+        yes = Left(("X": Code).copy(constraints = List(a))),
+        no = Right(Node(because = "B", constraintThatCausedNode = b, inputs = List("B"),
+          yes = Left(("Y": Code).copy(constraints = List(b))),
+          no = Left("Z": Code))))))
+    checkConstraintsExist(engine, "A", "B");
+  }
 
   "An  engine" should "add to yes clause if because is true for root" in {
     val a = Scenario("A").becauseBecause("A").produces("X")
@@ -22,18 +34,6 @@ class EngineSecondConstraintTests extends EngineStringStringTests {
     checkConstraintsExist(engine, "A", "B");
   }
 
-  it should "add to no clause if because is false for root" in {
-    val a = Scenario("A").becauseBecause("A").produces("X")
-    val b = Scenario("B").becauseBecause("B").produces("Y")
-    val engine = Engine1[String, String]("Z", UseCase("", a, b));
-    assertEngineMatches(engine,
-      Right(Node(because = "A", constraintThatCausedNode = a, inputs = List("A"),
-        yes = Left(("X": Code).copy(constraints = List(a))),
-        no = Right(Node(because = "B", constraintThatCausedNode = b, inputs = List("B"),
-          yes = Left(("Y": Code).copy(constraints = List(b))),
-          no = Left("Z": Code))))))
-    checkConstraintsExist(engine, "A", "B");
-  }
 
   it should "Add assertions to the yes if constraint comes to correct value" in {
     val a = Scenario("A").becauseBecause("A").produces("X")

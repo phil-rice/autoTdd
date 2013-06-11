@@ -29,6 +29,10 @@
 			<name>Scala-tools Maven2 Repository</name>
 			<url>http://scala-tools.org/repo-releases</url>
 		</pluginRepository>
+		<pluginRepository>
+			<id>oss sonatype</id>
+			<url>https://oss.sonatype.org/content/groups/public</url>
+		</pluginRepository>
 	</pluginRepositories>
 
 	<build>
@@ -61,6 +65,33 @@
 						<jvmArg>-Xmx1024m</jvmArg>
 					</jvmArgs>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.7</version>
+				<configuration>
+					<skipTests>true</skipTests><!-- disable surefire -->
+				</configuration>
+			</plugin>
+			<!-- enable scalatest -->
+			<!-- see http://www.scalatest.org/user_guide/using_the_scalatest_maven_plugin -->
+			<plugin>
+				<groupId>org.scalatest</groupId>
+				<artifactId>maven-scalatest-plugin</artifactId>
+				<version>1.0-SNAPSHOT</version>
+				<configuration>
+					<reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+					<junitxml>.</junitxml>
+				</configuration>
+				<executions>
+					<execution>
+						<id>test</id>
+						<goals>
+							<goal>test</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 
 		</plugins>
