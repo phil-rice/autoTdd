@@ -5,12 +5,12 @@ import org.autotdd.constraints._
 import scala.runtime.ZippedTraversable2.zippedTraversable2ToTraversable
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
-
+import scala.language.implicitConversions
 trait EngineTests[R] extends ShouldMatchers with FlatSpec with EngineTypes[R] {
   implicit def string_to_constraint(s: String) = Scenario(s).produces(s).because((x) => x contains s)
 
-  def node(c:C, inputs: List[Any], yes: RorN, no: RorN) = new Node(c.because.get, inputs, yes, no,c);
-  def rightNode(c:C, inputs: List[Any], yes: RorN, no: RorN) = Right(new Node(c.because.get, inputs, yes, no,c));
+  def node(c: C, inputs: List[Any], yes: RorN, no: RorN) = new Node(c.because.get, inputs, yes, no, c);
+  def rightNode(c: C, inputs: List[Any], yes: RorN, no: RorN) = Right(new Node(c.because.get, inputs, yes, no, c));
 
   def checkConstraintsExist[X](engine: Engine1[X, R], expected: String*) {
     assert(engine.constraints.size == expected.size)

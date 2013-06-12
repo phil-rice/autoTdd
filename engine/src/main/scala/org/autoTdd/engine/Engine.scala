@@ -18,6 +18,7 @@ trait EngineTypes[R] {
   /** B is a function from the parameters of the engine to a boolean. It is effectively in calculating which constraint is to be used */
   type B
   /** RFn is a function from the parameters of the engine to a result R. It is used to calculate the result of the engine */
+  type ROrException[R] = Either[R, Class[_]]
   type RFn
   /**  */
   type C = Constraint[B, RFn, R]
@@ -73,7 +74,7 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
     c.configure
     c.because match { case Some(b) => fn(b.because); case _ => throw new IllegalStateException("No because in " + c) }
   }
-  def evaluateResultForConstraint(c: C, params: List[Any]) = {
+  def evaluateResultForConstraint(c: C, params: List[Any]) : ROrException[R]= {
     val fnr = makeClosureForResult(params)
     c.configure
     try {
@@ -83,7 +84,7 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
     }
   }
 
-  private def safeCall(fnr: ResultClosure, rfn: RFn) =
+  private def safeCall(fnr: ResultClosure, rfn: RFn): ROrException[R] =
     try {
       Left(fnr(rfn))
     } catch {
@@ -97,14 +98,14 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
    *  This is asking whether the parameters in p come to the same conclusion as c
    */
   private def resultsSame(l: Code, c: C): Boolean = {
-    val resultFromConstraint = evaluateResultForConstraint(c, c.params)
+    val resultFromConstraint: ROrException[R] = evaluateResultForConstraint(c, c.params)
     val result = l.constraints match {
       case (lc :: tail) =>
-        val resultFromRoot = evaluateResultForConstraint(c, lc.params)
+        val resultFromRoot: ROrException[R] = evaluateResultForConstraint(c, lc.params)
         val resultDifferent = resultFromConstraint == resultFromRoot
         resultDifferent
       case _ => //so I don't have a constraint. But I have a code. 
-        val resultFromRoot= makeClosureForResult(c.params)(l.rfn);
+        val resultFromRoot = makeClosureForResult(c.params)(l.rfn);
         val resultDifferent = resultFromConstraint == resultFromRoot
         resultDifferent
     }
@@ -135,7 +136,7 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
             case None => {
               if (c.expected.isEmpty)
                 throw new NoExpectedException("No expected in " + c)
-              val actualResultIfUseThisNodesCode = evaluateResultForConstraint(c, c.params);
+              val actualResultIfUseThisNodesCode: ROrException[R] = evaluateResultForConstraint(c, c.params);
               actualResultIfUseThisNodesCode match {
                 case Right(e: Throwable) => throw e;
                 case Left(result) if result == c.expected.get => Left(l.copy(constraints = c :: l.constraints))

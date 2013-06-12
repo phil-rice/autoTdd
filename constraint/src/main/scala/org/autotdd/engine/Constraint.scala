@@ -2,7 +2,7 @@ package org.autotdd.constraints
 
 import scala.Option.option2Iterable
 import scala.reflect.macros.Context
-
+import scala.language.implicitConversions
 import scala.language.experimental.macros
 
 class EngineException(msg: String, cause: Throwable) extends Exception(msg, cause) {
