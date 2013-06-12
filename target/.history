@@ -1,7 +1,7 @@
 exit
 compile
-exit
-compile
-tests
-test
-exit
+eclipse
+project eclipse
+project engine-
+project engine-test
+project engine_test

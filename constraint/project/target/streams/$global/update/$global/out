@@ -5,30 +5,58 @@
 [0m[[0mdebug[0m] [0m	refresh = false[0m
 [0m[[0mdebug[0m] [0mresolving dependencies for configuration 'compile'[0m
 [0m[[0mdebug[0m] [0m== resolving dependencies for default#default-775cf2;0.1-SNAPSHOT [compile][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies default#default-775cf2;0.1-SNAPSHOT->default#default-965cb7;0.0 [compile->default(compile)][0m
-[0m[[0minfo[0m] [0mResolving default#default-965cb7;0.0 ...[0m
-[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: default#default-965cb7;0.0 {compile=[default(compile)]}[0m
-[0m[[0mdebug[0m] [0m	found default#default-965cb7;0.0 in inter-project[0m
-[0m[[0mdebug[0m] [0m== resolving dependencies default#default-965cb7;0.0->com.typesafe.sbteclipse#sbteclipse-plugin;2.1.1 [compile->default(compile)][0m
-[0m[[0minfo[0m] [0mResolving com.typesafe.sbteclipse#sbteclipse-plugin;2.1.1 ...[0m
-[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: com.typesafe.sbteclipse#sbteclipse-plugin;2.1.1 {compile=[default(compile)]}[0m
-[0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: com.typesafe.sbteclipse#sbteclipse-plugin;2.1.1[0m
-[0m[[0mdebug[0m] [0m	typesafe-ivy-releases: revision in cache: com.typesafe.sbteclipse#sbteclipse-plugin;2.1.1[0m
-[0m[[0mdebug[0m] [0m	found com.typesafe.sbteclipse#sbteclipse-plugin;2.1.1 in typesafe-ivy-releases[0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-plugin;2.1.1->com.typesafe.sbteclipse#sbteclipse-core;2.1.1 [compile->default(compile)][0m
-[0m[[0minfo[0m] [0mResolving com.typesafe.sbteclipse#sbteclipse-core;2.1.1 ...[0m
-[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: com.typesafe.sbteclipse#sbteclipse-core;2.1.1 {compile=[default(compile)]}[0m
-[0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: com.typesafe.sbteclipse#sbteclipse-core;2.1.1[0m
-[0m[[0mdebug[0m] [0m	typesafe-ivy-releases: revision in cache: com.typesafe.sbteclipse#sbteclipse-core;2.1.1[0m
-[0m[[0mdebug[0m] [0m	found com.typesafe.sbteclipse#sbteclipse-core;2.1.1 in typesafe-ivy-releases[0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#default-775cf2;0.1-SNAPSHOT->com.typesafe.sbteclipse#sbteclipse-plugin;2.2.0 [compile->default(compile)][0m
+[0m[[0minfo[0m] [0mResolving com.typesafe.sbteclipse#sbteclipse-plugin;2.2.0 ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: com.typesafe.sbteclipse#sbteclipse-plugin;2.2.0 {compile=[default(compile)]}[0m
+[0m[[0mdebug[0m] [0m		tried http://repo.typesafe.com/typesafe/ivy-releases/com.typesafe.sbteclipse/sbteclipse-plugin/scala_2.9.2/sbt_0.12/2.2.0/ivys/ivy.xml[0m
+[0m[[0mdebug[0m] [0m	typesafe-ivy-releases: found md file for com.typesafe.sbteclipse#sbteclipse-plugin;2.2.0[0m
+[0m[[0mdebug[0m] [0m		=> http://repo.typesafe.com/typesafe/ivy-releases/com.typesafe.sbteclipse/sbteclipse-plugin/scala_2.9.2/sbt_0.12/2.2.0/ivys/ivy.xml (2.2.0)[0m
+[0m[[0mdebug[0m] [0mdownloading http://repo.typesafe.com/typesafe/ivy-releases/com.typesafe.sbteclipse/sbteclipse-plugin/scala_2.9.2/sbt_0.12/2.2.0/ivys/ivy.xml ...[0m
+[0m[[0mdebug[0m] [0m	typesafe-ivy-releases: downloading http://repo.typesafe.com/typesafe/ivy-releases/com.typesafe.sbteclipse/sbteclipse-plugin/scala_2.9.2/sbt_0.12/2.2.0/ivys/ivy.xml[0m
+[0m[[0mdebug[0m] [0m	typesafe-ivy-releases: downloading http://repo.typesafe.com/typesafe/ivy-releases/com.typesafe.sbteclipse/sbteclipse-plugin/scala_2.9.2/sbt_0.12/2.2.0/ivys/ivy.xml.sha1[0m
+[0m[[0mdebug[0m] [0msha1 OK for http://repo.typesafe.com/typesafe/ivy-releases/com.typesafe.sbteclipse/sbteclipse-plugin/scala_2.9.2/sbt_0.12/2.2.0/ivys/ivy.xml[0m
+[0m[[0mdebug[0m] [0m	[SUCCESSFUL ] com.typesafe.sbteclipse#sbteclipse-plugin;2.2.0!ivy.xml(ivy.original) (696ms)[0m
+[0m[[0mdebug[0m] [0m	found com.typesafe.sbteclipse#sbteclipse-plugin;2.2.0 in typesafe-ivy-releases[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-plugin;2.2.0->com.typesafe.sbteclipse#sbteclipse-core;2.2.0 [compile->default(compile)][0m
+[0m[[0minfo[0m] [0mResolving com.typesafe.sbteclipse#sbteclipse-core;2.2.0 ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: com.typesafe.sbteclipse#sbteclipse-core;2.2.0 {compile=[default(compile)]}[0m
+[0m[[0mdebug[0m] [0m		tried http://repo.typesafe.com/typesafe/ivy-releases/com.typesafe.sbteclipse/sbteclipse-core/scala_2.9.2/sbt_0.12/2.2.0/ivys/ivy.xml[0m
+[0m[[0mdebug[0m] [0m	typesafe-ivy-releases: found md file for com.typesafe.sbteclipse#sbteclipse-core;2.2.0[0m
+[0m[[0mdebug[0m] [0m		=> http://repo.typesafe.com/typesafe/ivy-releases/com.typesafe.sbteclipse/sbteclipse-core/scala_2.9.2/sbt_0.12/2.2.0/ivys/ivy.xml (2.2.0)[0m
+[0m[[0mdebug[0m] [0mdownloading http://repo.typesafe.com/typesafe/ivy-releases/com.typesafe.sbteclipse/sbteclipse-core/scala_2.9.2/sbt_0.12/2.2.0/ivys/ivy.xml ...[0m
+[0m[[0mdebug[0m] [0m	typesafe-ivy-releases: downloading http://repo.typesafe.com/typesafe/ivy-releases/com.typesafe.sbteclipse/sbteclipse-core/scala_2.9.2/sbt_0.12/2.2.0/ivys/ivy.xml[0m
+[0m[[0mdebug[0m] [0m	typesafe-ivy-releases: downloading http://repo.typesafe.com/typesafe/ivy-releases/com.typesafe.sbteclipse/sbteclipse-core/scala_2.9.2/sbt_0.12/2.2.0/ivys/ivy.xml.sha1[0m
+[0m[[0mdebug[0m] [0msha1 OK for http://repo.typesafe.com/typesafe/ivy-releases/com.typesafe.sbteclipse/sbteclipse-core/scala_2.9.2/sbt_0.12/2.2.0/ivys/ivy.xml[0m
+[0m[[0mdebug[0m] [0m	[SUCCESSFUL ] com.typesafe.sbteclipse#sbteclipse-core;2.2.0!ivy.xml(ivy.original) (665ms)[0m
+[0m[[0mdebug[0m] [0m	found com.typesafe.sbteclipse#sbteclipse-core;2.2.0 in typesafe-ivy-releases[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->default(compile)][0m
 [0m[[0minfo[0m] [0mResolving org.scalaz#scalaz-core_2.9.2;6.0.4 ...[0m
 [0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: org.scalaz#scalaz-core_2.9.2;6.0.4 {compile=[default(compile)]}[0m
-[0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: org.scalaz#scalaz-core_2.9.2;6.0.4[0m
-[0m[[0mdebug[0m] [0m	typesafe-ivy-releases: revision in cache: org.scalaz#scalaz-core_2.9.2;6.0.4[0m
+[0m[[0mdebug[0m] [0m		tried http://repo.typesafe.com/typesafe/ivy-releases/org.scalaz/scalaz-core_2.9.2/6.0.4/ivys/ivy.xml[0m
+[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo.typesafe.com/typesafe/ivy-releases/org.scalaz/scalaz-core_2.9.2/6.0.4/ivys/ivy.xml[0m
+[0m[[0mdebug[0m] [0m	typesafe-ivy-releases: no ivy file found for org.scalaz#scalaz-core_2.9.2;6.0.4[0m
+[0m[[0mdebug[0m] [0m		tried http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/org.scalaz/scalaz-core_2.9.2/6.0.4/ivys/ivy.xml[0m
+[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/org.scalaz/scalaz-core_2.9.2/6.0.4/ivys/ivy.xml[0m
+[0m[[0mdebug[0m] [0m	sbt-plugin-releases: no ivy file found for org.scalaz#scalaz-core_2.9.2;6.0.4[0m
+[0m[[0mdebug[0m] [0m		tried C:\Users\Phil\.ivy2\local\org.scalaz\scalaz-core_2.9.2\6.0.4\ivys\ivy.xml[0m
+[0m[[0mdebug[0m] [0m	local: no ivy file found for org.scalaz#scalaz-core_2.9.2;6.0.4[0m
+[0m[[0mdebug[0m] [0m		tried http://repo1.maven.org/maven2/org/scalaz/scalaz-core_2.9.2/6.0.4/scalaz-core_2.9.2-6.0.4.pom[0m
+[0m[[0mdebug[0m] [0m	public: found md file for org.scalaz#scalaz-core_2.9.2;6.0.4[0m
+[0m[[0mdebug[0m] [0m		=> http://repo1.maven.org/maven2/org/scalaz/scalaz-core_2.9.2/6.0.4/scalaz-core_2.9.2-6.0.4.pom (6.0.4)[0m
+[0m[[0mdebug[0m] [0mdownloading http://repo1.maven.org/maven2/org/scalaz/scalaz-core_2.9.2/6.0.4/scalaz-core_2.9.2-6.0.4.pom ...[0m
+[0m[[0mdebug[0m] [0m	public: downloading http://repo1.maven.org/maven2/org/scalaz/scalaz-core_2.9.2/6.0.4/scalaz-core_2.9.2-6.0.4.pom[0m
+[0m[[0mdebug[0m] [0m	public: downloading http://repo1.maven.org/maven2/org/scalaz/scalaz-core_2.9.2/6.0.4/scalaz-core_2.9.2-6.0.4.pom.sha1[0m
+[0m[[0mdebug[0m] [0msha1 OK for http://repo1.maven.org/maven2/org/scalaz/scalaz-core_2.9.2/6.0.4/scalaz-core_2.9.2-6.0.4.pom[0m
+[0m[[0mdebug[0m] [0m	[SUCCESSFUL ] org.scalaz#scalaz-core_2.9.2;6.0.4!scalaz-core_2.9.2.pom(pom.original) (147ms)[0m
+[0m[[0mdebug[0m] [0m		tried http://repo.typesafe.com/typesafe/ivy-releases/org.scalaz/scalaz-core_2.9.2/6.0.4/jars/scalaz-core_2.9.2.jar[0m
+[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo.typesafe.com/typesafe/ivy-releases/org.scalaz/scalaz-core_2.9.2/6.0.4/jars/scalaz-core_2.9.2.jar[0m
+[0m[[0mdebug[0m] [0m		tried http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/org.scalaz/scalaz-core_2.9.2/6.0.4/jars/scalaz-core_2.9.2.jar[0m
+[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/org.scalaz/scalaz-core_2.9.2/6.0.4/jars/scalaz-core_2.9.2.jar[0m
+[0m[[0mdebug[0m] [0m		tried C:\Users\Phil\.ivy2\local\org.scalaz\scalaz-core_2.9.2\6.0.4\jars\scalaz-core_2.9.2.jar[0m
+[0m[[0mdebug[0m] [0m		tried http://repo1.maven.org/maven2/org/scalaz/scalaz-core_2.9.2/6.0.4/scalaz-core_2.9.2-6.0.4.jar[0m
 [0m[[0mdebug[0m] [0m	found org.scalaz#scalaz-core_2.9.2;6.0.4 in public[0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->runtime][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->compile][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [compile->master(*)][0m
 [0m[[0minfo[0m] [0mResolving org.scala-lang#scala-library;2.9.2 ...[0m
 [0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: org.scala-lang#scala-library;2.9.2 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
@@ -38,36 +66,34 @@
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [compile->compile(*)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [runtime->runtime(*)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [runtime->compile][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->master][0m
 [0m[[0mdebug[0m] [0mresolving dependencies for configuration 'runtime'[0m
 [0m[[0mdebug[0m] [0m== resolving dependencies for default#default-775cf2;0.1-SNAPSHOT [runtime][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies for default#default-775cf2;0.1-SNAPSHOT [compile][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies default#default-775cf2;0.1-SNAPSHOT->default#default-965cb7;0.0 [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies default#default-965cb7;0.0->com.typesafe.sbteclipse#sbteclipse-plugin;2.1.1 [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-plugin;2.1.1->com.typesafe.sbteclipse#sbteclipse-core;2.1.1 [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->runtime][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#default-775cf2;0.1-SNAPSHOT->com.typesafe.sbteclipse#sbteclipse-plugin;2.2.0 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-plugin;2.2.0->com.typesafe.sbteclipse#sbteclipse-core;2.2.0 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->compile][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [compile->master(*)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [compile->compile(*)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [runtime->runtime(*)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [runtime->compile][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->master][0m
 [0m[[0mdebug[0m] [0mresolving dependencies for configuration 'test'[0m
 [0m[[0mdebug[0m] [0m== resolving dependencies for default#default-775cf2;0.1-SNAPSHOT [test][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies for default#default-775cf2;0.1-SNAPSHOT [runtime][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies for default#default-775cf2;0.1-SNAPSHOT [compile][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies default#default-775cf2;0.1-SNAPSHOT->default#default-965cb7;0.0 [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies default#default-965cb7;0.0->com.typesafe.sbteclipse#sbteclipse-plugin;2.1.1 [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-plugin;2.1.1->com.typesafe.sbteclipse#sbteclipse-core;2.1.1 [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->runtime][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#default-775cf2;0.1-SNAPSHOT->com.typesafe.sbteclipse#sbteclipse-plugin;2.2.0 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-plugin;2.2.0->com.typesafe.sbteclipse#sbteclipse-core;2.2.0 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->compile][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [compile->master(*)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [compile->compile(*)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [runtime->runtime(*)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [runtime->compile][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->master][0m
 [0m[[0mdebug[0m] [0mresolving dependencies for configuration 'provided'[0m
 [0m[[0mdebug[0m] [0m== resolving dependencies for default#default-775cf2;0.1-SNAPSHOT [provided][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies default#default-775cf2;0.1-SNAPSHOT->org.scala-sbt#sbt;0.12.3 [provided->default(compile)][0m
@@ -596,17 +622,16 @@
 [0m[[0mdebug[0m] [0mresolving dependencies for configuration 'compile-internal'[0m
 [0m[[0mdebug[0m] [0m== resolving dependencies for default#default-775cf2;0.1-SNAPSHOT [compile-internal][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies for default#default-775cf2;0.1-SNAPSHOT [compile][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies default#default-775cf2;0.1-SNAPSHOT->default#default-965cb7;0.0 [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies default#default-965cb7;0.0->com.typesafe.sbteclipse#sbteclipse-plugin;2.1.1 [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-plugin;2.1.1->com.typesafe.sbteclipse#sbteclipse-core;2.1.1 [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->runtime][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#default-775cf2;0.1-SNAPSHOT->com.typesafe.sbteclipse#sbteclipse-plugin;2.2.0 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-plugin;2.2.0->com.typesafe.sbteclipse#sbteclipse-core;2.2.0 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->compile][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [compile->master(*)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [compile->compile(*)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [runtime->runtime(*)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [runtime->compile][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->master][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies for default#default-775cf2;0.1-SNAPSHOT [optional][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies for default#default-775cf2;0.1-SNAPSHOT [provided][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies default#default-775cf2;0.1-SNAPSHOT->org.scala-sbt#sbt;0.12.3 [provided->default(compile)][0m
@@ -929,34 +954,32 @@
 [0m[[0mdebug[0m] [0m== resolving dependencies for default#default-775cf2;0.1-SNAPSHOT [runtime-internal][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies for default#default-775cf2;0.1-SNAPSHOT [runtime][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies for default#default-775cf2;0.1-SNAPSHOT [compile][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies default#default-775cf2;0.1-SNAPSHOT->default#default-965cb7;0.0 [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies default#default-965cb7;0.0->com.typesafe.sbteclipse#sbteclipse-plugin;2.1.1 [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-plugin;2.1.1->com.typesafe.sbteclipse#sbteclipse-core;2.1.1 [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->runtime][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#default-775cf2;0.1-SNAPSHOT->com.typesafe.sbteclipse#sbteclipse-plugin;2.2.0 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-plugin;2.2.0->com.typesafe.sbteclipse#sbteclipse-core;2.2.0 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->compile][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [compile->master(*)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [compile->compile(*)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [runtime->runtime(*)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [runtime->compile][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->master][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies for default#default-775cf2;0.1-SNAPSHOT [optional][0m
 [0m[[0mdebug[0m] [0mresolving dependencies for configuration 'test-internal'[0m
 [0m[[0mdebug[0m] [0m== resolving dependencies for default#default-775cf2;0.1-SNAPSHOT [test-internal][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies for default#default-775cf2;0.1-SNAPSHOT [test][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies for default#default-775cf2;0.1-SNAPSHOT [runtime][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies for default#default-775cf2;0.1-SNAPSHOT [compile][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies default#default-775cf2;0.1-SNAPSHOT->default#default-965cb7;0.0 [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies default#default-965cb7;0.0->com.typesafe.sbteclipse#sbteclipse-plugin;2.1.1 [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-plugin;2.1.1->com.typesafe.sbteclipse#sbteclipse-core;2.1.1 [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->runtime][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#default-775cf2;0.1-SNAPSHOT->com.typesafe.sbteclipse#sbteclipse-plugin;2.2.0 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-plugin;2.2.0->com.typesafe.sbteclipse#sbteclipse-core;2.2.0 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->compile][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [compile->master(*)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [compile->compile(*)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [runtime->runtime(*)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.scalaz#scalaz-core_2.9.2;6.0.4->org.scala-lang#scala-library;2.9.2 [runtime->compile][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.1.1->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.sbteclipse#sbteclipse-core;2.2.0->org.scalaz#scalaz-core_2.9.2;6.0.4 [compile->master][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies for default#default-775cf2;0.1-SNAPSHOT [optional][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies for default#default-775cf2;0.1-SNAPSHOT [provided][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies default#default-775cf2;0.1-SNAPSHOT->org.scala-sbt#sbt;0.12.3 [provided->default(compile)][0m
@@ -1285,9 +1308,24 @@
 [0m[[0mdebug[0m] [0m== resolving dependencies for default#default-775cf2;0.1-SNAPSHOT [pom][0m
 [0m[[0mdebug[0m] [0m	resolved ivy file produced in C:\Users\Phil\git\autoTdd\constraint\project\target\resolution-cache\default\default-775cf2\scala_2.9.2\sbt_0.12\0.1-SNAPSHOT\resolved.xml.xml[0m
 [0m[[0mdebug[0m] [0m:: downloading artifacts ::[0m
-[0m[[0mdebug[0m] [0m	[NOT REQUIRED] com.typesafe.sbteclipse#sbteclipse-plugin;2.1.1!sbteclipse-plugin.jar[0m
-[0m[[0mdebug[0m] [0m	[NOT REQUIRED] com.typesafe.sbteclipse#sbteclipse-core;2.1.1!sbteclipse-core.jar[0m
-[0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scalaz#scalaz-core_2.9.2;6.0.4!scalaz-core_2.9.2.jar[0m
+[0m[[0mdebug[0m] [0m		tried http://repo.typesafe.com/typesafe/ivy-releases/com.typesafe.sbteclipse/sbteclipse-plugin/scala_2.9.2/sbt_0.12/2.2.0/jars/sbteclipse-plugin.jar[0m
+[0m[[0minfo[0m] [0mdownloading http://repo.typesafe.com/typesafe/ivy-releases/com.typesafe.sbteclipse/sbteclipse-plugin/scala_2.9.2/sbt_0.12/2.2.0/jars/sbteclipse-plugin.jar ...[0m
+[0m[[0mdebug[0m] [0m	typesafe-ivy-releases: downloading http://repo.typesafe.com/typesafe/ivy-releases/com.typesafe.sbteclipse/sbteclipse-plugin/scala_2.9.2/sbt_0.12/2.2.0/jars/sbteclipse-plugin.jar[0m
+[0m[[0mdebug[0m] [0m	typesafe-ivy-releases: downloading http://repo.typesafe.com/typesafe/ivy-releases/com.typesafe.sbteclipse/sbteclipse-plugin/scala_2.9.2/sbt_0.12/2.2.0/jars/sbteclipse-plugin.jar.sha1[0m
+[0m[[0mdebug[0m] [0msha1 OK for http://repo.typesafe.com/typesafe/ivy-releases/com.typesafe.sbteclipse/sbteclipse-plugin/scala_2.9.2/sbt_0.12/2.2.0/jars/sbteclipse-plugin.jar[0m
+[0m[[0minfo[0m] [0m	[SUCCESSFUL ] com.typesafe.sbteclipse#sbteclipse-plugin;2.2.0!sbteclipse-plugin.jar (2640ms)[0m
+[0m[[0mdebug[0m] [0m		tried http://repo.typesafe.com/typesafe/ivy-releases/com.typesafe.sbteclipse/sbteclipse-core/scala_2.9.2/sbt_0.12/2.2.0/jars/sbteclipse-core.jar[0m
+[0m[[0minfo[0m] [0mdownloading http://repo.typesafe.com/typesafe/ivy-releases/com.typesafe.sbteclipse/sbteclipse-core/scala_2.9.2/sbt_0.12/2.2.0/jars/sbteclipse-core.jar ...[0m
+[0m[[0mdebug[0m] [0m	typesafe-ivy-releases: downloading http://repo.typesafe.com/typesafe/ivy-releases/com.typesafe.sbteclipse/sbteclipse-core/scala_2.9.2/sbt_0.12/2.2.0/jars/sbteclipse-core.jar[0m
+[0m[[0mdebug[0m] [0m	typesafe-ivy-releases: downloading http://repo.typesafe.com/typesafe/ivy-releases/com.typesafe.sbteclipse/sbteclipse-core/scala_2.9.2/sbt_0.12/2.2.0/jars/sbteclipse-core.jar.sha1[0m
+[0m[[0mdebug[0m] [0msha1 OK for http://repo.typesafe.com/typesafe/ivy-releases/com.typesafe.sbteclipse/sbteclipse-core/scala_2.9.2/sbt_0.12/2.2.0/jars/sbteclipse-core.jar[0m
+[0m[[0minfo[0m] [0m	[SUCCESSFUL ] com.typesafe.sbteclipse#sbteclipse-core;2.2.0!sbteclipse-core.jar (1945ms)[0m
+[0m[[0mdebug[0m] [0m		tried http://repo1.maven.org/maven2/org/scalaz/scalaz-core_2.9.2/6.0.4/scalaz-core_2.9.2-6.0.4.jar[0m
+[0m[[0minfo[0m] [0mdownloading http://repo1.maven.org/maven2/org/scalaz/scalaz-core_2.9.2/6.0.4/scalaz-core_2.9.2-6.0.4.jar ...[0m
+[0m[[0mdebug[0m] [0m	public: downloading http://repo1.maven.org/maven2/org/scalaz/scalaz-core_2.9.2/6.0.4/scalaz-core_2.9.2-6.0.4.jar[0m
+[0m[[0mdebug[0m] [0m	public: downloading http://repo1.maven.org/maven2/org/scalaz/scalaz-core_2.9.2/6.0.4/scalaz-core_2.9.2-6.0.4.jar.sha1[0m
+[0m[[0mdebug[0m] [0msha1 OK for http://repo1.maven.org/maven2/org/scalaz/scalaz-core_2.9.2/6.0.4/scalaz-core_2.9.2-6.0.4.jar[0m
+[0m[[0minfo[0m] [0m	[SUCCESSFUL ] org.scalaz#scalaz-core_2.9.2;6.0.4!scalaz-core_2.9.2.jar (3041ms)[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-sbt#sbt;0.12.3!sbt.jar[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-sbt#main;0.12.3!main.jar[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-sbt#compiler-interface;0.12.3!compiler-interface-src.jar[0m
@@ -1329,7 +1367,7 @@
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-sbt#cache;0.12.3!cache.jar[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-sbt#test-agent;0.12.3!test-agent.jar[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-tools.testing#test-interface;0.5!test-interface.jar[0m
-[0m[[0mdebug[0m] [0m:: resolution report :: resolve 2876ms :: artifacts dl 82ms[0m
+[0m[[0mdebug[0m] [0m:: resolution report :: resolve 9037ms :: artifacts dl 7728ms[0m
 [0m[[0mdebug[0m] [0m	report for default#default-775cf2;0.1-SNAPSHOT compile produced in C:\Users\Phil\git\autoTdd\constraint\project\target\resolution-cache\reports\default-default-775cf2-compile.xml[0m
 [0m[[0mdebug[0m] [0m	report for default#default-775cf2;0.1-SNAPSHOT runtime produced in C:\Users\Phil\git\autoTdd\constraint\project\target\resolution-cache\reports\default-default-775cf2-runtime.xml[0m
 [0m[[0mdebug[0m] [0m	report for default#default-775cf2;0.1-SNAPSHOT test produced in C:\Users\Phil\git\autoTdd\constraint\project\target\resolution-cache\reports\default-default-775cf2-test.xml[0m
@@ -1342,5 +1380,5 @@
 [0m[[0mdebug[0m] [0m	report for default#default-775cf2;0.1-SNAPSHOT sources produced in C:\Users\Phil\git\autoTdd\constraint\project\target\resolution-cache\reports\default-default-775cf2-sources.xml[0m
 [0m[[0mdebug[0m] [0m	report for default#default-775cf2;0.1-SNAPSHOT docs produced in C:\Users\Phil\git\autoTdd\constraint\project\target\resolution-cache\reports\default-default-775cf2-docs.xml[0m
 [0m[[0mdebug[0m] [0m	report for default#default-775cf2;0.1-SNAPSHOT pom produced in C:\Users\Phil\git\autoTdd\constraint\project\target\resolution-cache\reports\default-default-775cf2-pom.xml[0m
-[0m[[0mdebug[0m] [0m	resolve done (2876ms resolve - 82ms download)[0m
+[0m[[0mdebug[0m] [0m	resolve done (9037ms resolve - 7728ms download)[0m
 [0m[[0minfo[0m] [0mDone updating.[0m

@@ -137,16 +137,16 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
                 throw new NoExpectedException("No expected in " + c)
               val actualResultIfUseThisNodesCode = evaluateResultForConstraint(c, c.params);
               actualResultIfUseThisNodesCode match {
-                case Left(e: Throwable) => throw e;
-                case Right(result) if result == c.expected.get => Left(l.copy(constraints = c :: l.constraints))
-                case Right(result) =>
+                case Right(e: Throwable) => throw e;
+                case Left(result) if result == c.expected.get => Left(l.copy(constraints = c :: l.constraints))
+                case Left(result) =>
                   throw new AssertionException("Actual Result: " + result + "\nExpected: " + c.expected.get)
               }
             }
           }
 
         case Right(r) =>
-          evaluateBecauseForConstraint(c, c.params) match {
+          evaluateBecauseForConstraint(r.constraintThatCausedNode, c.params) match {
             case true => Right(r.copy(yes = withConstraint(Some(r), r.yes, c, true)));
             case false => Right(r.copy(no = withConstraint(Some(r), r.no, c, false)));
           }
