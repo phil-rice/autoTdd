@@ -7,6 +7,7 @@ object BuildSettings {
     version := "1.0.0",
     scalacOptions ++= Seq(),
     scalaVersion := "2.10.1",
+
     libraryDependencies ++= Seq(
 		"org.scala-lang" % "scala-reflect" % "2.10.1",
 		"org.scala-lang" % "scala-compiler" % "2.10.1",
