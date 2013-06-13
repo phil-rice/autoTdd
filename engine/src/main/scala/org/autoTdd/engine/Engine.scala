@@ -65,7 +65,7 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
   def buildFromConstraints(root: RorN, cs: List[C]): RorN = {
     cs.size match {
       case 0 => root;
-      case _ => buildFromConstraints(withConstraint(None, root, cs.head, false), cs.tail)
+      case _ => buildFromConstraints(withConstraint(None, root, cs.head, true), cs.tail)
     }
   }
 
@@ -74,11 +74,12 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
     c.configure
     c.because match { case Some(b) => fn(b.because); case _ => throw new IllegalStateException("No because in " + c) }
   }
-  def evaluateResultForConstraint(c: C, params: List[Any]) : ROrException[R]= {
+  def evaluateResultForConstraint(c: C, params: List[Any]): ROrException[R] = {
     val fnr = makeClosureForResult(params)
     c.configure
     try {
-      Left(fnr(c.actualCode.rfn));
+      val result = Left(fnr(c.actualCode.rfn));
+      result
     } catch {
       case e: Throwable => Right(e.getClass())
     }
@@ -101,13 +102,13 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
     val resultFromConstraint: ROrException[R] = evaluateResultForConstraint(c, c.params)
     val result = l.constraints match {
       case (lc :: tail) =>
-        val resultFromRoot: ROrException[R] = evaluateResultForConstraint(c, lc.params)
-        val resultDifferent = resultFromConstraint == resultFromRoot
-        resultDifferent
+        val resultFromRoot: ROrException[R] = evaluateResultForConstraint(lc, c.params)
+        val resultSame = resultFromConstraint == resultFromRoot
+        resultSame
       case _ => //so I don't have a constraint. But I have a code. 
         val resultFromRoot = makeClosureForResult(c.params)(l.rfn);
-        val resultDifferent = resultFromConstraint == resultFromRoot
-        resultDifferent
+        val resultSame = resultFromConstraint == Left(resultFromRoot)
+        resultSame
     }
     result
   }
@@ -139,7 +140,19 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
               val actualResultIfUseThisNodesCode: ROrException[R] = evaluateResultForConstraint(c, c.params);
               actualResultIfUseThisNodesCode match {
                 case Right(e: Throwable) => throw e;
-                case Left(result) if result == c.expected.get => Left(l.copy(constraints = c :: l.constraints))
+                case Left(result) if result == c.expected.get =>
+                  parentWasTrue match {
+                    case true =>
+                      if (resultsSame(l, c))
+                        Left(l.copy(constraints = c :: l.constraints))
+                      else
+                        throw new AssertionException("Adding assertion and got wrong value.\nAdding: " + c + "\nto: " + l + "\n")
+                    case false => //Only way here is when I am coming down a no node. By definition I have a parent and it was false
+                      if (parent.isDefined && resultsSame(parent.get.no.left.get, c))
+                        Left(l.copy(constraints = c :: l.constraints))
+                      else
+                        throw new AssertionException("Adding assertion to else and got wrong value.\nAdding: " + c + "\nto: " + parent.get.no + "\n")
+                  }
                 case Left(result) =>
                   throw new AssertionException("Actual Result: " + result + "\nExpected: " + c.expected.get)
               }
@@ -157,7 +170,6 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
       case e: EngineException => throw e;
       case e: Throwable => throw new ExceptionAddingConstraint("Constraint: " + c.description + "\nFull Details:\n" + c, e)
     }
-
   private def findLastMatch(fn: BecauseClosure, root: OptN, lastMatch: OptN, params: List[Any]): OptN = {
     root match {
       case None => None
@@ -219,8 +231,10 @@ trait Engine[R] extends BuildEngine[R] with EvaluateEngine[R] {
         } catch {
           case e: Throwable if EngineTest.testing =>
             EngineTest.exceptions = EngineTest.exceptions + (c -> e); root
-          case e: EngineException => throw e;
-          case e: Throwable => throw e
+          case e: EngineException =>
+            throw e;
+          case e: Throwable =>
+            throw e
         }
       case _ => root
     }

@@ -29,7 +29,7 @@ trait EngineStringTests[X] extends EngineTests[String] with Engine1Types[X, Stri
   def comparator = NodeComparator.comparator1[X, String]
   def assertEngineMatches(e: Engine[String], n2: RorN) {
     val actual = comparator.compare(e.root.asInstanceOf[RorN], n2)
-    assert(actual == List(), actual)
+    assert(actual == List(), actual +"\n" + e.root)
   }
 
   def assertMatches(n1: RorN, n2: RorN) {

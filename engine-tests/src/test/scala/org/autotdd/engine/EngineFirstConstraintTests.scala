@@ -1,11 +1,12 @@
 package org.autotdd.engine
 
 import org.scalatest.FlatSpec
-
 import org.scalatest.matchers.ShouldMatchers
 import org.autotdd.constraints._
 import org.autotdd.engine._
-
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+@RunWith(classOf[JUnitRunner])
 class EngineFirstConstraintTests extends EngineStringStringTests {
 
   "An empty engine" should "change from root to if then with one constraint" in {

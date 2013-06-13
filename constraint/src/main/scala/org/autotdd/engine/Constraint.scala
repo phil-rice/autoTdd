@@ -90,7 +90,9 @@ object ConstraintBuilder {
 
 }
 
-case class ConstraintWithHolder[B, RFn, R](scenarioHolder: ScenarioHolder, params: List[Any], expected: Option[R], val code: Option[CodeFn[B, RFn, R]], val because: Option[Because[B]], val configuration: List[Configurator[Any]], rfnMaker: (Either[Exception, R]) => RFn) extends Constraint[B, RFn, R]
+case class ConstraintWithHolder[B, RFn, R](scenarioHolder: ScenarioHolder, params: List[Any], expected: Option[R], val code: Option[CodeFn[B, RFn, R]], val because: Option[Because[B]], val configuration: List[Configurator[Any]], rfnMaker: (Either[Exception, R]) => RFn) extends Constraint[B, RFn, R] {
+  override def toString: String = "Constraint(" + params + "," + expected + "," + code + "," + because + ")";
+}
 
 case class ConstraintBuilder[B, RFn, R](val params: List[Any], val expected: Option[R], val code: Option[CodeFn[B, RFn, R]], val because: Option[Because[B]], val configuration: List[Configurator[Any]], rfnMaker: (Either[Exception, R]) => RFn) extends Constraint[B, RFn, R] {
   val scenarioHolder: ScenarioHolder = null
