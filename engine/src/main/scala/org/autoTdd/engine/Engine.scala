@@ -74,6 +74,7 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
     c.configure
     c.because match { case Some(b) => fn(b.because); case _ => throw new IllegalStateException("No because in " + c) }
   }
+  
   def evaluateResultForConstraint(c: C, params: List[Any]): ROrException[R] = {
     val fnr = makeClosureForResult(params)
     c.configure
@@ -106,6 +107,7 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
         val resultSame = resultFromConstraint == resultFromRoot
         resultSame
       case _ => //so I don't have a constraint. But I have a code. 
+        c.configure
         val resultFromRoot = makeClosureForResult(c.params)(l.rfn);
         val resultSame = resultFromConstraint == Left(resultFromRoot)
         resultSame
@@ -120,9 +122,10 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
           val cd: CodeFn[B, RFn, R] = c.actualCode
           val newCd = cd.copy(constraints = c :: cd.constraints)
           c.because match {
-            case Some(b) => //ok so we are the 
+            case Some(b) => 
               parent match {
                 case Some(p) =>
+                  p.constraintThatCausedNode.configure
                   val wouldBreakExisting = parentWasTrue & makeClosureForBecause(p.inputs)(b.because)
                   if (wouldBreakExisting)
                     throw new ConstraintConflictException("Cannot differentiate between\nExisting: " + p.constraintThatCausedNode.description + "\nBeingAdded: " + c.description + "\n\nDetails existing:\n" + p + "\nConstraint:\n" + c)
@@ -247,6 +250,7 @@ trait Engine[R] extends BuildEngine[R] with EvaluateEngine[R] {
   }
 
   private def validateBecause(c: C) {
+    c.configure
     c.because match {
       case Some(b) =>
         if (!makeClosureForBecause(c.params).apply(b.because))
