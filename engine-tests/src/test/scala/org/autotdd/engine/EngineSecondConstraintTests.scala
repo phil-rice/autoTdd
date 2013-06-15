@@ -14,11 +14,6 @@ class EngineSecondConstraintTests extends EngineStringStringTests {
     val engine = Engine1[String, String]("Z", UseCase("", a, b))
     assertEngineMatches(engine, Right(Node(because = "A", constraintThatCausedNode = a, inputs = List("A"), yes = Left(("X": Code).copy(constraints = List(a))), no = Left(("Z": Code).copy(constraints = List(b))))))
   }
-  it should "Throw AssertionException if constraint doesnt match root condition and comes to wrong conclusion" in {
-    val a = Scenario("A").becauseBecause("A").produces("X")
-    val b = Scenario("B").produces("X") //should really come to Z as doesn't have because
-    evaluating { Engine1[String, String]("Z", UseCase("", a, b)) } should produce[AssertionException]
-  }
 
   it should "Add assertions to the yes if constraint comes to correct value" in {
     val a = Scenario("A").becauseBecause("A").produces("X")
@@ -55,10 +50,17 @@ class EngineSecondConstraintTests extends EngineStringStringTests {
   }
 
   //TODO Consider how to deal with identical result, different because. It's not clear to me what I should do
-  it should "throw exception if  cannot differentiate inputs, identical result, different because" in {
+  it should "throw ConstraintConflictException if  cannot differentiate inputs, identical result, different because" in {
     val xBecauseA = Scenario("AB").becauseBecause("A").produces("X")
     val xbecauseB = Scenario("AB").becauseBecause("B").produces("X")
-    evaluating { Engine1[String, String]("Z", UseCase("", xBecauseA, xbecauseB)) } should produce[ConstraintConflictException]
+    val e = evaluating { Engine1[String, String]("Z", UseCase("", xBecauseA, xbecauseB)) } should produce[ConstraintConflictException]
+  }
+
+  it should "throw ConstraintConflictException if it cannot decide between two constraints" in {
+    val xBecauseA = Scenario("AB").becauseBecause("A").produces("X")
+    val ybecauseA = Scenario("AB").becauseBecause("A").produces("Y")
+    val e = evaluating { Engine1[String, String]("Z", UseCase("", xBecauseA, ybecauseA)) } should produce[ConstraintConflictException]
+
   }
 
   it should "Throw AssertionException if constraint matches root condition and comes to wrong conclusion" in {
@@ -66,8 +68,13 @@ class EngineSecondConstraintTests extends EngineStringStringTests {
     val comesToDifferentConclusionWithoutBecause = Scenario[String, String]("AB").produces("Z")
     evaluating {
       Engine1[String, String]("Z", UseCase("", a, comesToDifferentConclusionWithoutBecause))
-      println
     } should produce[AssertionException]
+
+  }
+  it should "Throw AssertionException if constraint doesnt match root condition and comes to wrong conclusion" in {
+    val a = Scenario("A").becauseBecause("A").produces("X")
+    val b = Scenario("B").produces("X") //should really come to Z as doesn't have because
+    evaluating { Engine1[String, String]("Z", UseCase("", a, b)) } should produce[AssertionException]
   }
 
 }

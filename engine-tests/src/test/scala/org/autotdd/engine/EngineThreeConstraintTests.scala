@@ -7,8 +7,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class EngineThreeConstraintTests extends EngineStringTests[String] {
 
-  
-  "An engine passed a mutable parameter" should "reset the paramaters prior to checking the because 1" in {
+  "An engine" should "allow any combination of three constraints to work" in {
     val becauseA = new Because[B]((h => h contains "A"), "hA");
     val becauseB = new Because[B]((h => h contains "B"), "hB");
     val becauseAB = new Because[B]((h => (h contains "A") & (h contains "B")), "hAB");
@@ -23,6 +22,6 @@ class EngineThreeConstraintTests extends EngineStringTests[String] {
     Engine1[String, String]("Z", UseCase("", ab, b, a)).validateConstraints
     Engine1[String, String]("Z", UseCase("", b, a, ab)).validateConstraints
     Engine1[String, String]("Z", UseCase("", b, ab, a)).validateConstraints
-    println("Engine: " + Engine1[String, String]("Z", UseCase("", a, ab)))
+//    println("Engine: " + Engine1[String, String]("Z", UseCase("", a, ab)))
   }
 }

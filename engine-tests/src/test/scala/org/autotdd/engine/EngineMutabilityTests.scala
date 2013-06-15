@@ -34,8 +34,8 @@ class EngineMutabilityTests extends EngineStringTests[Holder] {
     val a = Scenario(mutable).produces("XA").becauseBecause(becauseA).whenConfigured(mutable, (a: Holder) => a.value = "A")
     val b = Scenario(mutable).produces("XB").becauseBecause(becauseB).whenConfigured(mutable, (a: Holder) => a.value = "B")
     val ab = Scenario(mutable).produces("XAB").becauseBecause(becauseAB).whenConfigured(mutable, (a: Holder) => a.value = "AB")
-    Engine1[Holder, String]("Z", UseCase("", a, ab)).validateConstraints
     Engine1[Holder, String]("Z", UseCase("", ab, a)).validateConstraints
+    Engine1[Holder, String]("Z", UseCase("", a, ab)).validateConstraints
     Engine1[Holder, String]("Z", UseCase("", a, ab, b)).validateConstraints
     Engine1[Holder, String]("Z", UseCase("", a, b, ab)).validateConstraints
     Engine1[Holder, String]("Z", UseCase("", ab, a, b)).validateConstraints

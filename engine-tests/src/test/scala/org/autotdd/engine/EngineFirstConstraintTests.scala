@@ -31,4 +31,9 @@ class EngineFirstConstraintTests extends EngineStringStringTests {
   it should "Throw AssertionException if first constraint is assertion and comes to wrong result" in {
     evaluating { Engine1[String, String]("Z", UseCase("", Scenario("A").produces("X"))) } should produce[AssertionException]
   }
+  it should "Throw ConstraintBecauseException if because is not true in scenario" in {
+	  evaluating { Engine1[String, String]("Z", UseCase("", Scenario("A").produces("X").becauseBecause("B"))) } should produce[ConstraintBecauseException]
+  }
+
+  
 }
