@@ -6,7 +6,7 @@ import org.autotdd.constraints._
 class ConstraintBecauseException(msg: String) extends EngineException(msg)
 class ConstraintResultException(msg: String) extends EngineException(msg)
 class EngineResultException(msg: String) extends EngineException(msg)
-class ConstraintConflictException(msg: String, val constraintBeingAdded: Constraint[_, _, _]) extends EngineException(msg)
+class ConstraintConflictException(msg: String, val constraintBeingAdded: Constraint[_, _, _], cause: Throwable) extends EngineException(msg, cause)
 class AssertionException(msg: String) extends EngineException(msg)
 class ExceptionAddingConstraint(msg: String, t: Throwable) extends EngineException(msg, t)
 //class CannotAccessBrokenEngineException(msg: String) extends RuntimeException(msg)
@@ -101,7 +101,7 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
 
   def evaluateBecauseForConstraint(c: C, params: List[Any]) = {
     val fn = makeClosureForBecause(params)
-    c.configure
+//    c.configure
     c.because match { case Some(b) => fn(b.because); case _ => throw new IllegalStateException("No because in " + c) }
   }
 
@@ -157,10 +157,11 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
                 case Some(p) =>
                   p.constraintThatCausedNode.configure
                   val wouldBreakExisting = parentWasTrue & makeClosureForBecause(p.inputs)(b.because)
-                  if (wouldBreakExisting)
+                  if (wouldBreakExisting) {
                     throw new ConstraintConflictException("Cannot differentiate between\nExisting: " + p.constraintThatCausedNode.description +
                       "\nBeingAdded: " + c.description +
-                      "\n\nDetails existing:\n" + p + "\nConstraint:\n" + c, c)
+                      "\n\nDetails existing:\n" + p + "\nConstraint:\n" + c, c, null)
+                  }
                   //            Left(newCd)
                   Right(Node(b, c.params, Left(newCd), Left(l), c)) //Adding to the 'yes' of the current
                 case _ => //No parent so we are the root.
@@ -270,7 +271,7 @@ trait Engine[R] extends BuildEngine[R] with EvaluateEngine[R] with EngineToStrin
             val index = constraints.indexOf(e.constraintBeingAdded)
             val safeCs = constraints.take(index)
             val msg = constructionString(root, safeCs) + "\n" + e.getMessage()
-            throw new ConstraintConflictException(msg, e.constraintBeingAdded)
+            throw new ConstraintConflictException(msg, e.constraintBeingAdded, e)
 
           case e: Throwable if EngineTest.testing =>
             EngineTest.exceptions = EngineTest.exceptions + (c -> e); root
