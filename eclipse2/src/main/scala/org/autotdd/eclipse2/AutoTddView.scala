@@ -17,7 +17,7 @@ import org.eclipse.swt.events.SelectionListener
 import org.eclipse.swt.widgets.Composite
 import org.eclipse.ui.part.ViewPart
 import org.junit.runner.RunWith
-import net.miginfocom.swt.MigLayout
+import net.miginfocom.swt.MigLayout 
 import org.autotdd.engine.Engine3
 import org.eclipse.swt.widgets.Shell
 import org.eclipse.swt.widgets.Display

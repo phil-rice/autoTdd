@@ -3,19 +3,20 @@ Bundle-ManifestVersion: 2
 Bundle-Name: AutoTdd 2 eclipse plugin
 Bundle-SymbolicName: org.autotdd.eclipse2;singleton:=true
 Bundle-Version: 1.0.0.qualifier
+Bundle-ClassPath: .,
+ libFromSbt/constraint_2.10-1.0.0.jar,
+ libFromSbt/engine_2.10-1.0.0.jar,
+ libFromSbt/junit-4.8.2.jar,
+ libFromSbt/miglayout-core-4.2.jar,
+ libFromSbt/miglayout-swt-4.2.jar,
+ libFromSbt/scala-actors-2.10.0.jar,
+ libFromSbt/scala-reflect-2.10.1.jar,
+ libFromSbt/scalatest_2.10-1.9.1.jar
+Bundle-Activator: org.autotdd.eclipse2.Activator
 Require-Bundle: org.eclipse.ui;bundle-version="3.7.0",
  org.eclipse.core.runtime;bundle-version="3.7.0",
- org.junit;bundle-version="4.8.2"
-Bundle-ClassPath: .,
- lib/constraints-0.0.1-SNAPSHOT.jar,
- lib/engine-0.0.1-SNAPSHOT.jar,
- lib/junit-4.8.2.jar,
- lib/miglayout-core-4.2.jar,
- lib/miglayout-swt-4.2.jar,
- lib/scala-actors-2.10.0.jar,
- lib/scala-compiler-2.10.1.jar,
- lib/scala-library-2.10.1.jar,
- lib/scala-reflect-2.10.0.jar,
- lib/scalatest_2.10-1.9.1.jar
-Bundle-Activator: org.autotdd.eclipse2.Activator
+ org.junit;bundle-version="4.8.2",
+ org.scala-ide.scala.compiler;bundle-version="2.10.1",
+ org.scala-ide.scala.library;bundle-version="2.10.1"
 Bundle-ActivationPolicy: lazy
+Export-Package: org.autotdd.eclipse2
