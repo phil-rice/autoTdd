@@ -5,7 +5,7 @@ import org.autotdd.constraints._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
-class Constraint1Tests extends AbstractConstraintTests[(Int) => Boolean, (Int) => Int, Int] {
+class Constraint1Tests extends AbstractConstraintTests[(Int) => Boolean, (Int) => Int, Int] with Engine1Types[Int, Int] {
 
   def name = "A constraint created by the UseCase 1 method"
   def constraint = Scenario(1)
@@ -33,5 +33,19 @@ class Constraint1Tests extends AbstractConstraintTests[(Int) => Boolean, (Int) =
     val c = constraint.produces(2).because((i) => true)
     val description = c.because.get.description
     assert(description == "((i: Int) => true)", description)
+  }
+
+  it should "have an actual code that generates the 'produces' if a byCalling isn't specific" in {
+    val c = constraint.produces(2).because((i) => true)
+    val cd: Code = c.actualCode
+    assert(2 == cd.rfn(1))
+    assert(2 == cd.rfn(2))
+  }
+
+  it should "have an actual code which is the codeFn is byCalling is specified" in {
+    val c = constraint.produces(2).byCalling((i) => 2).because((i) => true)
+    val actual = c.actualCode
+    val expected = c.code.get
+    assert(expected == actual, "WTF")
   }
 }

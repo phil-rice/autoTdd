@@ -17,7 +17,7 @@ import org.eclipse.swt.events.SelectionListener
 import org.eclipse.swt.widgets.Composite
 import org.eclipse.ui.part.ViewPart
 import org.junit.runner.RunWith
-import net.miginfocom.swt.MigLayout 
+import net.miginfocom.swt.MigLayout
 import org.autotdd.engine.Engine3
 import org.eclipse.swt.widgets.Shell
 import org.eclipse.swt.widgets.Display
@@ -99,6 +99,7 @@ trait UpdateFiles {
 class AutoTddComposite(parent: Composite, color: Int) extends Composite(parent, SWT.NULL) {
   setLayout(new MigLayout("fill", "[400][grow]", "[grow]"))
   val list = new org.eclipse.swt.widgets.List(this, SWT.WRAP | SWT.READ_ONLY); list.setLayoutData("grow")
+
   val textArea = new StyledText(this, SWT.WRAP | SWT.READ_ONLY); textArea.setLayoutData("grow")
   def insert(index: Int, fct: FileContentAndTime) =
     try {
@@ -112,6 +113,7 @@ class AutoTddComposite(parent: Composite, color: Int) extends Composite(parent, 
   def currentSelection: Int = 0 //list.getSelectionIndex() 
   def reset = list.removeAll()
   def setText(s: String) = textArea.setText(s)
+  override def toString =    getClass().getSimpleName() + "(list=" + list.getItems().mkString(",") + ",selected=" + list.getSelectionIndex() + ")";
 }
 
 object AutoTddComposite {

@@ -28,9 +28,10 @@ trait NodeComparator[R] extends EngineTypes[R] {
         }
     }
   }
-  def compareResults(prefix: String, c1: Code, c2: Code): List[String] = {
+  def compareResults(prefix: String, c1: CodenC, c2: CodenC): List[String] = {
     check(prefix + "result {0} {1}", c1.description, c2.description) ++
       compareConstraints(prefix + "constraints/", c1.constraints, c2.constraints)
+
   }
   def compare(prefix: String, n1: N, n2: N): List[String] = {
     check(prefix + "because {0} {1}", n1.because.description, n2.because.description) ++

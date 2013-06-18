@@ -96,3 +96,12 @@ publish-loca
 publish-local
 copy
 exit
+compile
+copy
+compile
+copy
+compile
+copy
+publish-local
+copy
+exit

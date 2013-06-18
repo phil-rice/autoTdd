@@ -12,14 +12,14 @@ class EngineSecondConstraintTests extends EngineStringStringTests {
     val a = Scenario("A").becauseBecause("A").produces("X")
     val b = Scenario("B").produces("Z")
     val engine = Engine1[String, String]("Z", UseCase("", a, b))
-    assertEngineMatches(engine, Right(Node(because = "A", constraintThatCausedNode = a, inputs = List("A"), yes = Left(("X": Code).copy(constraints = List(a))), no = Left(("Z": Code).copy(constraints = List(b))))))
+    assertEngineMatches(engine, Right(Node(because = "A", constraintThatCausedNode = a, inputs = List("A"), yes = Left(CodeAndConstraints("X",List(a))), no = Left(CodeAndConstraints("Z",List(b))))))
   }
 
   it should "Add assertions to the yes if constraint comes to correct value" in {
     val a = Scenario("A").becauseBecause("A").produces("X")
     val ab = Scenario("AB").produces("X")
     val engine = Engine1[String, String](default = "Z", UseCase("", a, ab))
-    assertEngineMatches(engine, Right(Node(because = "A", inputs = List("A"), yes = Left(("X": Code).copy(constraints = List(ab, a))), no = Left("Z": Code), constraintThatCausedNode = a)))
+    assertEngineMatches(engine, Right(Node(because = "A", inputs = List("A"), yes = Left(CodeAndConstraints("X",  List(ab, a))), no = Left(CodeAndConstraints("Z")), constraintThatCausedNode = a)))
 
   }
 
@@ -29,10 +29,10 @@ class EngineSecondConstraintTests extends EngineStringStringTests {
     val engine = Engine1[String, String]("Z", UseCase("", a, b));
     assertEngineMatches(engine,
       Right(Node(because = "A", constraintThatCausedNode = a, inputs = List("A"),
-        yes = Left(("X": Code).copy(constraints = List(a))),
+        yes = Left(CodeAndConstraints("X": Code,  List(a))),
         no = Right(Node(because = "B", constraintThatCausedNode = b, inputs = List("B"),
-          yes = Left(("Y": Code).copy(constraints = List(b))),
-          no = Left("Z": Code))))))
+          yes = Left(CodeAndConstraints("Y", List(b))),
+          no = Left(CodeAndConstraints("Z")))))))
     checkConstraintsExist(engine, "A", "B");
   }
 
@@ -43,9 +43,9 @@ class EngineSecondConstraintTests extends EngineStringStringTests {
     assertEngineMatches(engine,
       Right(Node(because = "A", constraintThatCausedNode = a, inputs = List("A"),
         yes = Right(Node(because = "B", constraintThatCausedNode = ab, inputs = List("AB"),
-          yes = Left(("Y": Code).copy(constraints = List(ab))),
-          no = Left(("X": Code).copy(constraints = List(a))))),
-        no = Left("Z": Code))))
+          yes = Left(CodeAndConstraints("Y", List(ab))),
+          no = Left(CodeAndConstraints("X", List(a))))),
+        no = Left(CodeAndConstraints("Z")))))
     checkConstraintsExist(engine, "A", "B");
   }
 

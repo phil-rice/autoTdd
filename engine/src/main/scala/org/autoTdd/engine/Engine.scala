@@ -11,6 +11,15 @@ class AssertionException(msg: String) extends EngineException(msg)
 class ExceptionAddingConstraint(msg: String, t: Throwable) extends EngineException(msg, t)
 //class CannotAccessBrokenEngineException(msg: String) extends RuntimeException(msg)
 
+object CodeAndConstraints {
+  implicit def delegate_to[B, RFn, R](c: CodeAndConstraints[B, RFn, R]) = c.code
+
+}
+
+case class CodeAndConstraints[B, RFn, R](val code: CodeFn[B, RFn, R], val constraints: List[Constraint[B, RFn, R]] = List()) {
+  def firstAddedConstraint = constraints.last
+}
+
 /** There are a load of generics / types flying around. This class defines classes, and is the mechanism for avoiding code duplication with different arities / shapes of implementations */
 trait EngineTypes[R] {
   /** B is a function from the parameters of the engine to a boolean. It is effectively in calculating which constraint is to be used */
@@ -20,7 +29,6 @@ trait EngineTypes[R] {
   type RFn
   /**  */
   type C = Constraint[B, RFn, R]
-
   type RFnMaker = (Either[Exception, R]) => RFn
 
   /** In order to call a B in the building code, when we don't know anything about the arity, we create a closure holding the parameters and pass the B function to it */
@@ -32,29 +40,33 @@ trait EngineTypes[R] {
   type N = Node[B, RFn, R]
   /** This is just a type synonym to save messy code */
   type Code = CodeFn[B, RFn, R]
+
+  type CodenC = CodeAndConstraints[B, RFn, R]
+
   /** This is just a type synonym to save messy code */
   type OptN = Option[N]
   /** This is just a type synonym to save messy code.  This represents the decision tree: either a result or another node which has a condition, and a true/false RorN  */
-  type RorN = Either[Code, N]
+  type RorN = Either[CodenC, N]
   def makeClosureForBecause(params: List[Any]): BecauseClosure
   def makeClosureForResult(params: List[Any]): ResultClosure
 }
 
-case class Node[B, RFn, R](val because: Because[B], inputs: List[Any], yes: Either[CodeFn[B, RFn, R], Node[B, RFn, R]], no: Either[CodeFn[B, RFn, R], Node[B, RFn, R]], constraintThatCausedNode: Constraint[B, RFn, R]) {
+case class Node[B, RFn, R](val because: Because[B], inputs: List[Any], yes: Either[CodeAndConstraints[B, RFn, R], Node[B, RFn, R]], no: Either[CodeAndConstraints[B, RFn, R], Node[B, RFn, R]], constraintThatCausedNode: Constraint[B, RFn, R]) {
   def allConstraints = constraints(Right(this))
-  private def constraints(rOrN: Either[CodeFn[B, RFn, R], Node[B, RFn, R]]): List[Constraint[B, RFn, R]] = {
+  private def constraints(rOrN: Either[CodeAndConstraints[B, RFn, R], Node[B, RFn, R]]): List[Constraint[B, RFn, R]] = {
     rOrN match {
       case Left(cd) => cd.constraints
       case Right(n) => constraints(n.yes) ++ constraints(n.no)
     }
   }
+  override def toString = getClass().getSimpleName() + "(" + because.description + " => " + yes.toString() + " =/> " + no.toString() + " / " + constraintThatCausedNode.description;
 }
 
 trait EvaluateEngine[R] extends EngineTypes[R] {
 
   def evaluate(fn: BecauseClosure, n: RorN): RFn = {
     n match {
-      case Left(r) => r.rfn
+      case Left(r) => r.code.rfn
       case Right(n) => evaluate(fn, n)
     }
   }
@@ -85,7 +97,7 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
     if (c.expected.isEmpty)
       throw new NoExpectedException("No 'produces' in " + c)
     if (actualFromConstraint != c.expected.get)
-      throw new ConstraintResultException("Wrong result for " + c.actualCode.description + " for " + c.params + "\nActual: " + actualFromConstraint + "\nExpected: " + c.expected + "\nEngine:\n" + this);
+      throw new ConstraintResultException("Wrong result for " + c.actualCode.description + " for " + c.params + "\nActual: " + actualFromConstraint + "\nExpected: " + c.expected + "\nRoot:\n" + toString("", root));
   }
 
   def buildFromConstraints(root: RorN, cs: List[C]): RorN = {
@@ -101,7 +113,7 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
 
   def evaluateBecauseForConstraint(c: C, params: List[Any]) = {
     val fn = makeClosureForBecause(params)
-//    c.configure
+    //    c.configure
     c.because match { case Some(b) => fn(b.because); case _ => throw new IllegalStateException("No because in " + c) }
   }
 
@@ -129,7 +141,7 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
    * p is the parent node. c is the constrant being added
    *  This is asking whether the parameters in p come to the same conclusion as c
    */
-  private def resultsSame(l: Code, c: C): Boolean = {
+  private def resultsSame(l: CodenC, c: C): Boolean = {
     val resultFromConstraint: ROrException[R] = evaluateResultForConstraint(c, c.params)
     val result = l.constraints match {
       case (lc :: tail) =>
@@ -148,9 +160,9 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
   private def withConstraint(parent: Option[N], n: RorN, c: C, parentWasTrue: Boolean): RorN =
     try {
       val result: RorN = n match {
-        case Left(l: Code) =>
+        case Left(l: CodenC) =>
           val cd: CodeFn[B, RFn, R] = c.actualCode
-          val newCd = cd.copy(constraints = c :: cd.constraints)
+          val newCnC = CodeAndConstraints(c.actualCode, List(c))
           c.because match {
             case Some(b) =>
               parent match {
@@ -158,31 +170,34 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
                   p.constraintThatCausedNode.configure
                   val wouldBreakExisting = parentWasTrue & makeClosureForBecause(p.inputs)(b.because)
                   if (wouldBreakExisting) {
-                    throw new ConstraintConflictException("Cannot differentiate between\nExisting: " + p.constraintThatCausedNode.description +
-                      "\nBeingAdded: " + c.description +
-                      "\n\nDetails existing:\n" + p + "\nConstraint:\n" + c, c, null)
+                    val existing = p.constraintThatCausedNode.description + " " + p.constraintThatCausedNode.params;
+                    val existingConstraint = p.constraintThatCausedNode
+                    c.configure;
+                    throw new ConstraintConflictException("Cannot differentiate between\nExisting: " + existing +
+                      "\nBeingAdded: " + c.description + " " + c.params +
+                      "\n\nDetails existing:\n" + existingConstraint + "\nConstraint:\n" + c, c, null)
                   }
                   //            Left(newCd)
-                  Right(Node(b, c.params, Left(newCd), Left(l), c)) //Adding to the 'yes' of the current
+                  Right(Node(b, c.params, Left(newCnC), Left(l), c)) //Adding to the 'yes' of the current
                 case _ => //No parent so we are the root.
                   resultsSame(l, c) match {
-                    case true => Left(newCd); // we come to same conclusion as root, so we just add ourselves as assertion
-                    case false => Right(Node(b, c.params, Left(newCd), Left(l), c)) //So we are if b then new result else default 
+                    case true => Left(newCnC); // we come to same conclusion as root, so we just add ourselves as assertion
+                    case false => Right(Node(b, c.params, Left(newCnC), Left(l), c)) //So we are if b then new result else default 
                   }
               }
             case None => {
               if (c.expected.isEmpty)
                 throw new NoExpectedException("No expected in " + c)
-              val actualResultIfUseThisNodesCode: ROrException[R] = evaluateResultForConstraint(c, c.params);
-              actualResultIfUseThisNodesCode match {
+              val actualResultIfUseThisConstraintsCode: ROrException[R] = safeCall(makeClosureForResult(c.params), l.code.rfn);
+              actualResultIfUseThisConstraintsCode match {
                 case Right(e: Throwable) => throw e;
                 case Left(result) if result == c.expected.get =>
                   parentWasTrue match {
                     case true =>
-                      if (resultsSame(l, c))
+                      if (actualResultIfUseThisConstraintsCode == Left(c.expected.get))
                         Left(l.copy(constraints = c :: l.constraints))
                       else
-                        throw new AssertionException("Adding assertion and got wrong value.\nAdding: " + c + "\nto: " + l + "\n")
+                        throw new AssertionException("Adding assertion and got wrong value.\nAdding: " + c.description + "\nDetails: " + c + "\nto: " + l + "\nActual result: " + actualResultIfUseThisConstraintsCode)
                     case false => //Only way here is when I am coming down a no node. By definition I have a parent and it was false
                       if (parent.isDefined && resultsSame(parent.get.no.left.get, c))
                         Left(l.copy(constraints = c :: l.constraints))
@@ -374,19 +389,19 @@ trait Engine3Types[P1, P2, P3, R] extends EngineTypes[R] {
 }
 
 class Engine1[P, R](val default: CodeFn[(P) => Boolean, (P) => R, R], val useCases: List[UseCase[(P) => Boolean, (P) => R, R]]) extends Engine[R] with Function1[P, R] with Engine1Types[P, R] {
-  def defaultRoot: RorN = Left(default)
+  def defaultRoot: RorN = Left(CodeAndConstraints(default, List()))
   def apply(p: P) = evaluate((b) => b(p), root)(p)
   override def toString: String = toString("", root)
 }
 
 class Engine2[P1, P2, R](val default: CodeFn[(P1, P2) => Boolean, (P1, P2) => R, R], val useCases: List[UseCase[(P1, P2) => Boolean, (P1, P2) => R, R]]) extends Engine[R] with Function2[P1, P2, R] with Engine2Types[P1, P2, R] {
-  def defaultRoot: RorN = Left(default)
+  def defaultRoot: RorN = Left(CodeAndConstraints(default, List()))
   def apply(p1: P1, p2: P2) = evaluate((b) => b(p1, p2), root)(p1, p2)
   override def toString: String = toString("", root)
 }
 
 class Engine3[P1, P2, P3, R](val default: CodeFn[(P1, P2, P3) => Boolean, (P1, P2, P3) => R, R], val useCases: List[UseCase[(P1, P2, P3) => Boolean, (P1, P2, P3) => R, R]]) extends Engine[R] with Function3[P1, P2, P3, R] with Engine3Types[P1, P2, P3, R] {
-  def defaultRoot: RorN = Left(default)
+  def defaultRoot: RorN = Left(CodeAndConstraints(default, List()))
   def apply(p1: P1, p2: P2, p3: P3) = evaluate((b) => b(p1, p2, p3), root)(p1, p2, p3)
   override def toString: String = toString("", root)
 }
@@ -395,7 +410,7 @@ object Engine1 {
   def apply_impl[P: c.WeakTypeTag, R: c.WeakTypeTag](c: Context)(default: c.Expr[(P) => R], useCases: c.Expr[List[UseCase[(P) => Boolean, (P) => R, R]]]): c.Expr[Engine1[P, R]] = {
     import c.universe._
     val expr = reify {
-      new Engine1[P, R](new CodeFn[(P) => Boolean, (P) => R, R](default.splice, c.literal(show(default.tree)).splice, List()), useCases.splice)
+      new Engine1[P, R](new CodeFn[(P) => Boolean, (P) => R, R](default.splice, c.literal(show(default.tree)).splice), useCases.splice)
     }
     c.Expr[Engine1[P, R]](expr.tree)
   }
@@ -407,7 +422,7 @@ object Engine1 {
 object Engine2 {
   def apply_impl[P1: c.WeakTypeTag, P2: c.WeakTypeTag, R: c.WeakTypeTag](c: Context)(default: c.Expr[(P1, P2) => R], useCases: c.Expr[List[UseCase[(P1, P2) => Boolean, (P1, P2) => R, R]]]): c.Expr[Engine2[P1, P2, R]] = {
     import c.universe._
-    val expr = reify { new Engine2[P1, P2, R](new CodeFn[(P1, P2) => Boolean, (P1, P2) => R, R](default.splice, c.literal(show(default.tree)).splice, List()), useCases.splice) with EngineToString[R] }
+    val expr = reify { new Engine2[P1, P2, R](new CodeFn[(P1, P2) => Boolean, (P1, P2) => R, R](default.splice, c.literal(show(default.tree)).splice), useCases.splice) with EngineToString[R] }
     c.Expr[Engine2[P1, P2, R]](expr.tree)
   }
   def apply[P1, P2, R](default: (P1, P2) => R, useCases: List[UseCase[(P1, P2) => Boolean, (P1, P2) => R, R]]) = macro apply_impl[P1, P2, R]; // new Engine2[P1, P2, R](default, constraints.toList) with Function2[P1, P2, R] with EngineToString[R]
@@ -418,7 +433,7 @@ object Engine3 {
   def apply_impl[P1: c.WeakTypeTag, P2: c.WeakTypeTag, P3: c.WeakTypeTag, R: c.WeakTypeTag](c: Context)(default: c.Expr[(P1, P2, P3) => R], useCases: c.Expr[List[UseCase[(P1, P2, P3) => Boolean, (P1, P2, P3) => R, R]]]): c.Expr[Engine3[P1, P2, P3, R]] = {
     import c.universe._
     try {
-      val expr = reify { new Engine3[P1, P2, P3, R](new CodeFn[(P1, P2, P3) => Boolean, (P1, P2, P3) => R, R](default.splice, c.literal(show(default.tree)).splice, List()), useCases.splice) }
+      val expr = reify { new Engine3[P1, P2, P3, R](new CodeFn[(P1, P2, P3) => Boolean, (P1, P2, P3) => R, R](default.splice, c.literal(show(default.tree)).splice), useCases.splice) }
       c.Expr[Engine3[P1, P2, P3, R]](expr.tree)
     } catch {
       case e: Throwable => e.printStackTrace(); throw e;

@@ -50,7 +50,7 @@ class EngineConstructionStringTest extends EngineStringStringTests {
     val yBecauseA = Scenario("AB").becauseBecause(becauseA).produces("YA")
     val e = evaluating { Engine1[String, String]("Z", UseCase("", xBecauseA, yBecauseA)) } should produce[ConstraintConflictException]
     val useCase = UseCase("", xBecauseA, yBecauseA) //needed to get the if / then string correct
-    val actual = engine.constructionString(Left("Z"), List(xBecauseA, yBecauseA).map(_.withScenarioHolder(useCase)));
+    val actual = engine.constructionString(Left(CodeAndConstraints("Z")), List(xBecauseA, yBecauseA).map(_.withScenarioHolder(useCase)));
     val expected = aCString + "\n" + e.getClass() + "\n" + e.getMessage()
     assert(expected == actual, "Expected: " + expected + "\nActual: " + actual)
 

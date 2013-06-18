@@ -65,12 +65,14 @@ trait Constraint[B, RFn, R] {
     //    println("Expected: " + expected)
     //    println("Constraint: " + this)
     expected match {
-      case Some(e) => new CodeFn(rfnMaker(Right(e)), e.toString, List());
-      case _ => new CodeFn(rfnMaker(Left(new IllegalStateException("Do not have code or expected  for this constraint"))), "No expected or Code", List())
+      case Some(e) => new CodeFn(rfnMaker(Right(e)), e.toString);
+      case _ => new CodeFn(rfnMaker(Left(new IllegalStateException("Do not have code or expected  for this constraint"))), "No expected or Code")
     }
   })
   def withScenarioHolder(scenarioHolder: ScenarioHolder): Constraint[B, RFn, R] =
     new ConstraintWithHolder(scenarioHolder, params, expected, code, because, configuration, rfnMaker);
+  override def toString = getClass.getSimpleName + "(" + description + "," + params + "=>" + expected + ",byCalling(" + code + "), because(" + because + ")";
+
 }
 
 object ConstraintBuilder {
@@ -78,7 +80,7 @@ object ConstraintBuilder {
   def byCallingMacroImpl[B: c.WeakTypeTag, RFn: c.WeakTypeTag, R: c.WeakTypeTag](c: Context)(code: c.Expr[RFn]) = {
     import c.universe._
     reify {
-      (c.Expr[ConstraintBuilder[B, RFn, R]](c.prefix.tree)).splice.byCallingCode(new CodeFn[B, RFn, R](code.splice, c.literal(show(code.tree)).splice, List()));
+      (c.Expr[ConstraintBuilder[B, RFn, R]](c.prefix.tree)).splice.byCallingCode(new CodeFn[B, RFn, R](code.splice, c.literal(show(code.tree)).splice));
     }
   }
   def becauseMacroImpl[B: c.WeakTypeTag, RFn: c.WeakTypeTag, R: c.WeakTypeTag](c: Context)(b: c.Expr[B]) = {
@@ -95,13 +97,17 @@ case class ConstraintWithHolder[B, RFn, R](scenarioHolder: ScenarioHolder, param
 }
 
 case class ConstraintBuilder[B, RFn, R](val params: List[Any], val expected: Option[R], val code: Option[CodeFn[B, RFn, R]], val because: Option[Because[B]], val configuration: List[Configurator[Any]], rfnMaker: (Either[Exception, R]) => RFn) extends Constraint[B, RFn, R] {
+ 
   val scenarioHolder: ScenarioHolder = null
 
   def whenConfigured[K](item: K, fn: (K) => Unit) = copy(configuration = Configurator[K](item, fn).asInstanceOf[Configurator[Any]] :: configuration)
   def produces(expected: R) = copy(expected = Some(expected))
 
   def byCalling[K](code: RFn) = macro ConstraintBuilder.byCallingMacroImpl[B, RFn, R]
-  def byCallingCode[K](code: CodeFn[B, RFn, R]) = copy(code = Some(code))
+  def byCallingCode[K](code: CodeFn[B, RFn, R]) = {
+    val result = copy(code = Some(code))
+    result
+  }
 
   def because(b: B): ConstraintBuilder[B, RFn, R] = macro ConstraintBuilder.becauseMacroImpl[B, RFn, R];
   def becauseBecause(b: Because[B]): ConstraintBuilder[B, RFn, R] =
@@ -121,9 +127,13 @@ abstract class CodeHolder(val description: String) {
     case i => description.substring(0, index);
   }
 
+  override def toString = getClass.getSimpleName() + "(" + description + ")"
+
 }
 
-case class CodeFn[B, RFn, R](val rfn: RFn, override val description: String, val constraints: List[Constraint[B, RFn, R]] = List[Constraint[B, RFn, R]]()) extends CodeHolder(description)
+case class CodeFn[B, RFn, R](val rfn: RFn, override val description: String) extends CodeHolder(description) {
+  override def toString = getClass.getSimpleName() + "(" + description + ")"
+}
 
 object CodeFn {
   implicit def r_to_result[B, RFn, R](r: RFn): CodeFn[B, RFn, R] = macro c_to_code_impll[B, RFn, R]

@@ -74,7 +74,7 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner {
             val b = engine.makeClosureForBecause(constraint.params);
             val actual = engine.applyParam(engine.root, constraint.params)
             try {
-              Assert.assertEquals(constraint.expected, actual)
+              Assert.assertEquals(constraint.expected, Some(actual))
               notifier.fireTestFinished(cd)
             } catch {
               case e: Throwable => notifier.fireTestFailure(new Failure(cd, e))

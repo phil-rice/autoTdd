@@ -28,7 +28,7 @@ abstract class AbstractConstraintTests[B, RFn, R] extends FlatSpec with ShouldMa
     assert(c.configuration == List())
   }
 
-  name should "start with description empty, then get description from scenarioHolder if it has one" in {
+  it should "start with description empty, then get description from scenarioHolder if it has one" in {
     val c = constraint
     val sh = new ScenarioHolder {
       def description = "root";
@@ -54,7 +54,8 @@ abstract class AbstractConstraintTests[B, RFn, R] extends FlatSpec with ShouldMa
   it should "add code when byCalling is called" in {
     val c = constraint.produces(firstResult).byCalling(codeFn)
     assert(c.params == params)
-    assert(c.code == Some(new CodeFn(codeFn, "AbstractConstraintTests.this.codeFn", List())), c)
+    val expectedCode = Some(new CodeFn(codeFn, "AbstractConstraintTests.this.codeFn"))
+    assert(c.code == expectedCode, "Constraint: " + c + "\nCode: " + c.code + "\nExpected: " + expectedCode)
     assert(c.because == None)
     assert(c.expected == Some(firstResult))
     assert(c.configuration == List())
