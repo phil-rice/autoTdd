@@ -1,21 +1,20 @@
 package org.autotdd.engine
 import org.autotdd.engine._
 import org.autotdd.engine.tests._
-import org.autotdd.constraints._
 import scala.runtime.ZippedTraversable2.zippedTraversable2ToTraversable
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 import scala.language.implicitConversions
 trait EngineTests[R] extends ShouldMatchers with FlatSpec with EngineTypes[R] {
-  implicit def string_to_constraint(s: String) = Scenario(s).produces(s).because((x) => x contains s)
+  implicit def string_to_scenario(s: String) = Scenario(s).produces(s).because((x) => x contains s)
 
   def node(c: C, inputs: List[Any], yes: RorN, no: RorN) = new Node(c.because.get, inputs, yes, no, c);
   def rightNode(c: C, inputs: List[Any], yes: RorN, no: RorN) = Right(new Node(c.because.get, inputs, yes, no, c));
 
-  def checkConstraintsExist[X](engine: Engine1[X, R], expected: String*) {
-    assert(engine.constraints.size == expected.size)
-    for ((c, a) <- (engine.constraints, expected).zipped) {
-      assert(c.becauseString == a, "Expected: [" + a + "] BecauseString = [" + c.becauseString + "] Actual " + c + "\n   Constraints: " + engine.constraints + "\nEngine:\n" + engine)
+  def checkScenariosExist[X](engine: Engine1[X, R], expected: String*) {
+    assert(engine.scenarios.size == expected.size)
+    for ((c, a) <- (engine.scenarios, expected).zipped) {
+      assert(c.becauseString == a, "Expected: [" + a + "] BecauseString = [" + c.becauseString + "] Actual " + c + "\n   Scenarios: " + engine.scenarios + "\nEngine:\n" + engine)
     }
   }
 

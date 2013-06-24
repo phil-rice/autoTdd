@@ -1,7 +1,6 @@
 package org.autotdd.engine
 
 import org.autotdd.engine._
-import org.autotdd.constraints._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
@@ -38,35 +37,35 @@ class EngineConstructionStringTest extends EngineStringStringTests {
     " else\n" +
     "  Z:\n"
 
-  "An engine's construction string" should "be included in constraint conflict exceptions to help explain how the exception happened" in {
+  "An engine's construction string" should "be included in scenario conflict exceptions to help explain how the exception happened" in {
     val xBecauseA = Scenario("AB").becauseBecause("A").produces("X")
     val ybecauseA = Scenario("AB").becauseBecause("A").produces("Y")
-    val e = evaluating { Engine1[String, String]("Z", UseCase("", xBecauseA, ybecauseA)) } should produce[ConstraintConflictException]
+    val e = evaluating { Engine1[String, String]("Z", UseCase("", xBecauseA, ybecauseA)) } should produce[ScenarioConflictException]
     assert(e.getMessage().contains(Engine1[String, String]("Z", UseCase("", xBecauseA)).constructionString), "Message: " + e.getMessage())
   }
 
   it should "be generated even if exceptions occur. The exceptions should be included" in {
     val xBecauseA = Scenario("AB").becauseBecause(becauseA).produces("XA")
     val yBecauseA = Scenario("AB").becauseBecause(becauseA).produces("YA")
-    val e = evaluating { Engine1[String, String]("Z", UseCase("", xBecauseA, yBecauseA)) } should produce[ConstraintConflictException]
+    val e = evaluating { Engine1[String, String]("Z", UseCase("", xBecauseA, yBecauseA)) } should produce[ScenarioConflictException]
     val useCase = UseCase("", xBecauseA, yBecauseA) //needed to get the if / then string correct
-    val actual = engine.constructionString(Left(CodeAndConstraints("Z")), List(xBecauseA, yBecauseA).map(_.withScenarioHolder(useCase)));
+    val actual = engine.constructionString(Left(CodeAndScenarios("Z")), List(xBecauseA, yBecauseA).map(_.withScenarioHolder(useCase)));
     val expected = aCString + "\n" + e.getClass() + "\n" + e.getMessage()
     assert(expected == actual, "Expected: " + expected + "\nActual: " + actual)
 
   }
 
-  it should "return the aggregate of the toString of an engine created from the constraints, one after another" in {
+  it should "return the aggregate of the toString of an engine created from the scenarios, one after another" in {
     assert(aCString + "\n" + b_aCString + "\n" + ab_b_aCString == engine.constructionString, engine.constructionString)
   }
 
-  "An engine's increasingConstraintsList method" should "return a list of increasing numbers of constraints" in {
-    val actual = engine.increasingConstraintsList(engine.constraints)
+  "An engine's increasingScenariosList method" should "return a list of increasing numbers of scenarios" in {
+    val actual = engine.increasingScenariosList(engine.scenarios)
     val expected = List(List(abS, bS, aS), List(bS, aS), List(aS)).map(_.map(_.withScenarioHolder(useCase)))
     assert(expected == actual, "Actual:  " + actual + "\nExpected: " + expected)
   }
 
-  "An engine's buildRoot method" should "return a node that represents the constraints" in {
+  "An engine's buildRoot method" should "return a node that represents the scenarios" in {
     val actual = engine.buildRoot(engine.defaultRoot, List(aS, bS, abS).map(_.withScenarioHolder(useCase)))
     assertEngineMatches(engine, actual)
   }

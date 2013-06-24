@@ -15,11 +15,11 @@ object AutoTddParser {
       case _ => EngineDescription(item.substring(0, index), item.substring(index + 1))
     }
   }, List())
-  //  itemParse.constraint("abc\ndef", EngineDescription("abc", "def"))
+  //  itemParse.scenario("abc\ndef", EngineDescription("abc", "def"))
   //  //TODO Need to be able to assert throws exceptions
   //
   //  val parse = Engine1((t: String) => t.split(AutoTddRunner.separator).map(itemParse))
-  //  parse.constraint("abc\ndef" + AutoTddRunner.separator + "123\n234",
+  //  parse.scenario("abc\ndef" + AutoTddRunner.separator + "123\n234",
   //    Array(EngineDescription("abc", "def"), EngineDescription("123", "234")))
 
   def apply(s: String) = itemParse(s)

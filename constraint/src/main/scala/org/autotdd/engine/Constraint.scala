@@ -1,4 +1,4 @@
-package org.autotdd.constraints
+package org.autotdd.engine
 
 import scala.Option.option2Iterable
 import scala.reflect.macros.Context
@@ -15,17 +15,17 @@ case class Configurator[K](item: K, fn: (K) => Unit);
 
 trait ScenarioHolder {
   def description: String
-  def indexOf[B, RFn, R](c: Constraint[B, RFn, R]): Int
+  def indexOf[B, RFn, R](c: Scenario[B, RFn, R]): Int
 }
 
-class UseCase[B, RFn, R](val description: String, val rawScenarios: List[Constraint[B, RFn, R]]) extends ScenarioHolder {
+class UseCase[B, RFn, R](val description: String, val rawScenarios: List[Scenario[B, RFn, R]]) extends ScenarioHolder {
   val scenarios = rawScenarios.map(_.withScenarioHolder(this))
-  def indexOf[B, RFn, R](c: Constraint[B, RFn, R]) = scenarios.indexOf(c)
+  def indexOf[B, RFn, R](c: Scenario[B, RFn, R]) = scenarios.indexOf(c)
 
 }
 
 object UseCase {
-  def apply[B, RFn, R](description: String, scenarios: Constraint[B, RFn, R]*) = new UseCase[B, RFn, R](description, scenarios.toList)
+  def apply[B, RFn, R](description: String, scenarios: Scenario[B, RFn, R]*) = new UseCase[B, RFn, R](description, scenarios.toList)
 }
 
 object Scenario {
@@ -34,13 +34,13 @@ object Scenario {
   def rfn3ConstantMaker[P1, P2, P3, R] = (e: Either[Exception, R]) => e match { case Left(e) => (p1: P1, p2: P2, p3: P3) => throw e; case Right(r) => (p1: P1, p2: P2, p3: P3) => r }
 
   //  def apply[P, R](p: P) = new ConstraintBuilder[(P) => Boolean, (P) => R, R]("", List(p), None, None, None, List(), rfn1ConstantMaker);
-  def apply[P, R](p: P) = new ConstraintBuilder[(P) => Boolean, (P) => R, R](List(p), None, None, None, List(), rfn1ConstantMaker);
+  def apply[P, R](p: P) = new ScenarioBuilder[(P) => Boolean, (P) => R, R](List(p), None, None, None, List(), rfn1ConstantMaker);
   //  def apply[P1, P2, R](p1: P1, p2: P2) = new ConstraintBuilder[(P1, P2) => Boolean, (P1, P2) => R, R]("", List(p1, p2), None, None, None, List(), rfn2ConstantMaker);
-  def apply[P1, P2, R](p1: P1, p2: P2) = new ConstraintBuilder[(P1, P2) => Boolean, (P1, P2) => R, R](List(p1, p2), None, None, None, List(), rfn2ConstantMaker);
-  def apply[P1, P2, P3, R](p1: P1, p2: P2, p3: P3) = new ConstraintBuilder[(P1, P2, P3) => Boolean, (P1, P2, P3) => R, R](List(p1, p2, p3), None, None, None, List(), rfn3ConstantMaker);
+  def apply[P1, P2, R](p1: P1, p2: P2) = new ScenarioBuilder[(P1, P2) => Boolean, (P1, P2) => R, R](List(p1, p2), None, None, None, List(), rfn2ConstantMaker);
+  def apply[P1, P2, P3, R](p1: P1, p2: P2, p3: P3) = new ScenarioBuilder[(P1, P2, P3) => Boolean, (P1, P2, P3) => R, R](List(p1, p2, p3), None, None, None, List(), rfn3ConstantMaker);
 }
 
-trait Constraint[B, RFn, R] {
+trait Scenario[B, RFn, R] {
   def scenarioHolder: ScenarioHolder
   def description: String =
     scenarioHolder match {
@@ -66,51 +66,51 @@ trait Constraint[B, RFn, R] {
     //    println("Constraint: " + this)
     expected match {
       case Some(e) => new CodeFn(rfnMaker(Right(e)), e.toString);
-      case _ => new CodeFn(rfnMaker(Left(new IllegalStateException("Do not have code or expected  for this constraint"))), "No expected or Code")
+      case _ => new CodeFn(rfnMaker(Left(new IllegalStateException("Do not have code or expected  for this scenario"))), "No expected or Code")
     }
   })
-  def withScenarioHolder(scenarioHolder: ScenarioHolder): Constraint[B, RFn, R] =
-    new ConstraintWithHolder(scenarioHolder, params, expected, code, because, configuration, rfnMaker);
+  def withScenarioHolder(scenarioHolder: ScenarioHolder): Scenario[B, RFn, R] =
+    new ScenarioWithHolder(scenarioHolder, params, expected, code, because, configuration, rfnMaker);
   override def toString = getClass.getSimpleName + "(" + description + "," + params + "=>" + expected + ",byCalling(" + code + "), because(" + because + ")";
 
 }
 
-object ConstraintBuilder {
+object ScenarioBuilder {
 
   def byCallingMacroImpl[B: c.WeakTypeTag, RFn: c.WeakTypeTag, R: c.WeakTypeTag](c: Context)(code: c.Expr[RFn]) = {
     import c.universe._
     reify {
-      (c.Expr[ConstraintBuilder[B, RFn, R]](c.prefix.tree)).splice.byCallingCode(new CodeFn[B, RFn, R](code.splice, c.literal(show(code.tree)).splice));
+      (c.Expr[ScenarioBuilder[B, RFn, R]](c.prefix.tree)).splice.byCallingCode(new CodeFn[B, RFn, R](code.splice, c.literal(show(code.tree)).splice));
     }
   }
   def becauseMacroImpl[B: c.WeakTypeTag, RFn: c.WeakTypeTag, R: c.WeakTypeTag](c: Context)(b: c.Expr[B]) = {
     import c.universe._
     reify {
-      (c.Expr[ConstraintBuilder[B, RFn, R]](c.prefix.tree)).splice.becauseBecause(new Because[B](b.splice, c.literal(show(b.tree)).splice));
+      (c.Expr[ScenarioBuilder[B, RFn, R]](c.prefix.tree)).splice.becauseBecause(new Because[B](b.splice, c.literal(show(b.tree)).splice));
     }
   }
 
 }
 
-case class ConstraintWithHolder[B, RFn, R](scenarioHolder: ScenarioHolder, params: List[Any], expected: Option[R], val code: Option[CodeFn[B, RFn, R]], val because: Option[Because[B]], val configuration: List[Configurator[Any]], rfnMaker: (Either[Exception, R]) => RFn) extends Constraint[B, RFn, R] {
+case class ScenarioWithHolder[B, RFn, R](scenarioHolder: ScenarioHolder, params: List[Any], expected: Option[R], val code: Option[CodeFn[B, RFn, R]], val because: Option[Because[B]], val configuration: List[Configurator[Any]], rfnMaker: (Either[Exception, R]) => RFn) extends Scenario[B, RFn, R] {
   override def toString: String = "Constraint(" + params + "," + expected + "," + code + "," + because + ")";
 }
 
-case class ConstraintBuilder[B, RFn, R](val params: List[Any], val expected: Option[R], val code: Option[CodeFn[B, RFn, R]], val because: Option[Because[B]], val configuration: List[Configurator[Any]], rfnMaker: (Either[Exception, R]) => RFn) extends Constraint[B, RFn, R] {
+case class ScenarioBuilder[B, RFn, R](val params: List[Any], val expected: Option[R], val code: Option[CodeFn[B, RFn, R]], val because: Option[Because[B]], val configuration: List[Configurator[Any]], rfnMaker: (Either[Exception, R]) => RFn) extends Scenario[B, RFn, R] {
  
   val scenarioHolder: ScenarioHolder = null
 
   def whenConfigured[K](item: K, fn: (K) => Unit) = copy(configuration = Configurator[K](item, fn).asInstanceOf[Configurator[Any]] :: configuration)
   def produces(expected: R) = copy(expected = Some(expected))
 
-  def byCalling[K](code: RFn) = macro ConstraintBuilder.byCallingMacroImpl[B, RFn, R]
+  def byCalling[K](code: RFn) = macro ScenarioBuilder.byCallingMacroImpl[B, RFn, R]
   def byCallingCode[K](code: CodeFn[B, RFn, R]) = {
     val result = copy(code = Some(code))
     result
   }
 
-  def because(b: B): ConstraintBuilder[B, RFn, R] = macro ConstraintBuilder.becauseMacroImpl[B, RFn, R];
-  def becauseBecause(b: Because[B]): ConstraintBuilder[B, RFn, R] =
+  def because(b: B): ScenarioBuilder[B, RFn, R] = macro ScenarioBuilder.becauseMacroImpl[B, RFn, R];
+  def becauseBecause(b: Because[B]): ScenarioBuilder[B, RFn, R] =
     copy(because = Some(b))
 
 }

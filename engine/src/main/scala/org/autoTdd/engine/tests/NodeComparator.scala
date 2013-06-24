@@ -1,6 +1,5 @@
 package org.autotdd.engine.tests
 
-import org.autotdd.constraints.CodeFn
 import java.text.MessageFormat
 import org.autotdd.engine._
 
@@ -30,7 +29,7 @@ trait NodeComparator[R] extends EngineTypes[R] {
   }
   def compareResults(prefix: String, c1: CodenC, c2: CodenC): List[String] = {
     check(prefix + "result {0} {1}", c1.description, c2.description) ++
-      compareConstraints(prefix + "constraints/", c1.constraints, c2.constraints)
+      compareConstraints(prefix + "scenarios/", c1.scenarios, c2.scenarios)
 
   }
   def compare(prefix: String, n1: N, n2: N): List[String] = {

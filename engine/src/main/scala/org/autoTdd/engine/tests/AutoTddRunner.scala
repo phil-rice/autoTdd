@@ -6,7 +6,6 @@ import scala.collection.JavaConversions._
 import org.junit.runner.Runner
 import org.junit.runner.notification.RunNotifier
 import org.autotdd.engine._
-import org.autotdd.constraints._
 import scala.reflect.runtime.{ universe => ru }
 import java.lang.reflect.Method
 import junit.framework.Assert
@@ -28,7 +27,7 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner {
   val instance = EngineTest.test(() => { instantiate(clazz) });
 
   var engineMap: Map[Description, Engine[Any]] = Map()
-  var constraintMap: Map[Description, Constraint[Any, Any, Any]] = Map()
+  var ScenarioMap: Map[Description, Scenario[Any, Any, Any]] = Map()
   var exceptionMap: Map[Description, Throwable] = Map()
 
   for (m <- clazz.getDeclaredMethods().filter((m) => returnTypeIsEngine(m))) {
@@ -38,13 +37,13 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner {
     println(m.getName())
     println(engine)
     engineMap = engineMap + (engineDescription -> engine)
-    for (c <- engine.constraints) {
+    for (c <- engine.scenarios) {
       val name = c.params.reduce((acc, p) => acc + ", " + p) + " => " + c.expected + " " + c.becauseString
       val cleanedName = name.replace("(", "<").replace(")", ">");
       //      println("   " + cleanedName)
-      val constraintDescription = Description.createSuiteDescription(cleanedName)
-      engineDescription.addChild(constraintDescription)
-      constraintMap = constraintMap + (constraintDescription -> c.asInstanceOf[Constraint[ Any, Any, Any]])
+      val ScenarioDescription = Description.createSuiteDescription(cleanedName)
+      engineDescription.addChild(ScenarioDescription)
+      ScenarioMap = ScenarioMap + (ScenarioDescription -> c.asInstanceOf[Scenario[ Any, Any, Any]])
       saveResults(clazz, engineDescription, engine)
     }
 
@@ -67,14 +66,14 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner {
         val engine = engineMap(ed)
         for (cd <- ed.getChildren) {
           notifier.fireTestStarted(cd)
-          val constraint = constraintMap(cd)
-          if (EngineTest.exceptions.contains(constraint))
-            notifier.fireTestFailure(new Failure(cd, EngineTest.exceptions(constraint)))
+          val Scenario = ScenarioMap(cd)
+          if (EngineTest.exceptions.contains(Scenario))
+            notifier.fireTestFailure(new Failure(cd, EngineTest.exceptions(Scenario)))
           else {
-            val b = engine.makeClosureForBecause(constraint.params);
-            val actual = engine.applyParam(engine.root, constraint.params)
+            val b = engine.makeClosureForBecause(Scenario.params);
+            val actual = engine.applyParam(engine.root, Scenario.params)
             try {
-              Assert.assertEquals(constraint.expected, Some(actual))
+              Assert.assertEquals(Scenario.expected, Some(actual))
               notifier.fireTestFinished(cd)
             } catch {
               case e: Throwable => notifier.fireTestFailure(new Failure(cd, e))
@@ -82,8 +81,8 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner {
           }
           notifier.fireTestFinished(ed)
         }
-        //        println("Constraints for: " + ed.getDisplayName())
-        //        for (c <- engine.constraints)
+        //        println("Scenarios for: " + ed.getDisplayName())
+        //        for (c <- engine.Scenarios)
         //          println("  " + c)
       }
       notifier.fireTestFinished(getDescription)

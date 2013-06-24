@@ -2,9 +2,7 @@
 
 package org.autotdd.engine
 
-import org.autotdd.constraints._
 
-import org.autotdd.engine._
 
 object Example {
 

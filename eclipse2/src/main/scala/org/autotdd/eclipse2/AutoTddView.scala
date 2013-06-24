@@ -5,7 +5,6 @@ import scala.collection.JavaConversions._
 import scala.io.Source
 import org.autotdd.engine._
 import org.autotdd.engine.tests._
-import org.autotdd.constraints._
 import org.eclipse.core.runtime.IProgressMonitor
 import org.eclipse.core.runtime.IStatus
 import org.eclipse.core.runtime.Status
@@ -23,7 +22,6 @@ import org.eclipse.swt.widgets.Shell
 import org.eclipse.swt.widgets.Display
 import org.eclipse.swt.graphics.Color
 import java.lang.IllegalArgumentException
-import org.autotdd.constraints.Because
 
 object AppStateFixture {
   val f1 = new File("1");
@@ -54,7 +52,11 @@ trait UpdateFiles {
 
   val becauseFileIsntInCache: Because = (f, ac, as) => fileCacheL(as, f).isEmpty
   val becauseFileHasChangedOnFileSystem: Because = (f, ac, as) => fileCacheL(as, f).collect { case fct => fct.time != fileAccessL(as)(f).time }.getOrElse(false);
-  val becauseFileIsTheSelectedFile: Because = (f, ac, as) => fileCacheL.indexOf(as, f) == ac.currentSelection
+  val becauseFileIsTheSelectedFile: Because = (f, ac, as) => {
+    val index = fileCacheL.indexOf(as, f);
+    val selection = ac.currentSelection
+    index == selection
+  }
 
   def and(b1: Because, b2: Because): Because = (f, ac, as) => b1(f, ac, as) & b2(f, ac, as)
 
@@ -103,17 +105,21 @@ class AutoTddComposite(parent: Composite, color: Int) extends Composite(parent, 
   val textArea = new StyledText(this, SWT.WRAP | SWT.READ_ONLY); textArea.setLayoutData("grow")
   def insert(index: Int, fct: FileContentAndTime) =
     try {
-      println("List: " + list.getItemCount() + " index " + index + ", " + fct.file.getName())
+      //      println("List: " + list.getItemCount() + " index " + index + ", " + fct.file.getName())
       list.add(fct.file.getName, index)
 
     } catch {
       case e: Throwable => e.printStackTrace();
     }
   def setSelection(index: Int) = list.setSelection(index)
-  def currentSelection: Int = 0 //list.getSelectionIndex() 
+  def currentSelection: Int = list.getSelectionIndex()
   def reset = list.removeAll()
   def setText(s: String) = textArea.setText(s)
-  override def toString =    getClass().getSimpleName() + "(list=" + list.getItems().mkString(",") + ",selected=" + list.getSelectionIndex() + ")";
+  override def toString =
+    {
+      val selection = ",selected = " + (if (list.getSelectionIndex() == -1) -1; else list.getSelectionIndex + "/[" + list.getItems()(list.getSelectionIndex()) + "]");
+      getClass().getSimpleName() + "(list=" + list.getItems().mkString(",") + selection + ")";
+    }
 }
 
 object AutoTddComposite {
@@ -131,7 +137,11 @@ object AutoTddComposite {
         }
 
       })
-      val job = new Jobs(getDisplay()).executeRepeatadlyAsJob(2000, fileAccess.listFiles.foreach(f => appState = updateFiles.updateGuiAndCacheWhenFileChanges(f, this, appState)));
+      val job = new Jobs(getDisplay()).executeRepeatadlyAsJob(2000,
+        {
+          fileAccess.listFiles.foreach(f =>
+            appState = updateFiles.updateGuiAndCacheWhenFileChanges(f, this, appState))
+        });
       override def dispose = {
         job.stop = true;
         job.cancel()
@@ -165,7 +175,6 @@ object AutoTddView {
 class AutoTddView extends ViewPart {
 
   def createPartControl(parent: Composite) = {
-
     try {
       val fileAccess = new FileSystemFileAccess() {
         val userHome = System.getProperty("user.home");

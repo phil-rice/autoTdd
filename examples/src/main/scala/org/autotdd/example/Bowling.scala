@@ -2,7 +2,6 @@ package org.autotdd.example
 
 import org.junit.runner.RunWith
 
-import org.autotdd.constraints._
 import org.autotdd.engine._
 import org.autotdd.engine.tests._
 
@@ -25,7 +24,7 @@ object Bowling {
           because((rolls, i) => i >= rolls.size),
         Scenario(List(7, 10, 4, 3), 5).produces(0),
         Scenario(List(7, 10, 4, 3), 100).produces(0))));
-  get.validateConstraints
+  get.validateScenarios
   println(get(List(), 100))
 
   val makeFrame = Engine2[List[Int], Int, Frame]((rolls: List[Int], i: Int) => NormalFrame(get(rolls, i), get(rolls, i + 1)),

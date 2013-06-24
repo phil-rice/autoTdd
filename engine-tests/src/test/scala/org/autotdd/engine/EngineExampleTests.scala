@@ -1,6 +1,5 @@
 package org.autotdd.engine
 
-import org.autotdd.constraints._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
@@ -22,6 +21,6 @@ class EngineExampleTests extends EngineTests[Int] with Engine2Types[List[Int], I
             because((rolls, i) => i >= rolls.size),
           Scenario(List(7, 10, 4, 3), 5).produces(0),
           Scenario(List(7, 10, 4, 3), 100).produces(0))));
-    get.validateConstraints
+    get.validateScenarios
   }
 }

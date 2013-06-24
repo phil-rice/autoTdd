@@ -1,8 +1,6 @@
 package org.autotdd.engine
 
-import org.autotdd.constraints.Because
-import org.autotdd.constraints.Scenario
-import org.autotdd.constraints.UseCase
+import org.autotdd.engine._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -11,7 +9,7 @@ case class Holder(var value: String);
 @RunWith(classOf[JUnitRunner])
 class EngineMutabilityTests extends EngineStringTests[Holder] {
 
-  "A constraint with a configurer" should "change the configured items" in {
+  "A scenario with a configurer" should "change the configured items" in {
     val mutable = Holder("A");
     val becauseA = new Because[B]((h => h.value contains "A"), "hA");
     val becauseB = new Because[B]((h => h.value contains "B"), "hB");
@@ -34,14 +32,14 @@ class EngineMutabilityTests extends EngineStringTests[Holder] {
     val a = Scenario(mutable).produces("XA").becauseBecause(becauseA).whenConfigured(mutable, (a: Holder) => a.value = "A")
     val b = Scenario(mutable).produces("XB").becauseBecause(becauseB).whenConfigured(mutable, (a: Holder) => a.value = "B")
     val ab = Scenario(mutable).produces("XAB").becauseBecause(becauseAB).whenConfigured(mutable, (a: Holder) => a.value = "AB")
-    Engine1[Holder, String]("Z", UseCase("", ab, a)).validateConstraints
-    Engine1[Holder, String]("Z", UseCase("", a, ab)).validateConstraints
-    Engine1[Holder, String]("Z", UseCase("", a, ab, b)).validateConstraints
-    Engine1[Holder, String]("Z", UseCase("", a, b, ab)).validateConstraints
-    Engine1[Holder, String]("Z", UseCase("", ab, a, b)).validateConstraints
-    Engine1[Holder, String]("Z", UseCase("", ab, b, a)).validateConstraints
-    Engine1[Holder, String]("Z", UseCase("", b, a, ab)).validateConstraints
-    Engine1[Holder, String]("Z", UseCase("", b, ab, a)).validateConstraints
+    Engine1[Holder, String]("Z", UseCase("", ab, a)).validateScenarios
+    Engine1[Holder, String]("Z", UseCase("", a, ab)).validateScenarios
+    Engine1[Holder, String]("Z", UseCase("", a, ab, b)).validateScenarios
+    Engine1[Holder, String]("Z", UseCase("", a, b, ab)).validateScenarios
+    Engine1[Holder, String]("Z", UseCase("", ab, a, b)).validateScenarios
+    Engine1[Holder, String]("Z", UseCase("", ab, b, a)).validateScenarios
+    Engine1[Holder, String]("Z", UseCase("", b, a, ab)).validateScenarios
+    Engine1[Holder, String]("Z", UseCase("", b, ab, a)).validateScenarios
     println("Engine: " + Engine1[Holder, String]("Z", UseCase("", a, ab)))
   }
 

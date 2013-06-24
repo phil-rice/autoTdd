@@ -12,7 +12,10 @@ class Jobs(val display: Display) extends NeedsSwtThread {
     val job = new Job("My Job") {
       def run(monitor: IProgressMonitor): IStatus = {
         execute(new Runnable() {
-          def run() = calculate
+          def run() = {
+            println("Should calculate")
+            calculate
+          }
         })
         Status.OK_STATUS;
       }
@@ -22,12 +25,17 @@ class Jobs(val display: Display) extends NeedsSwtThread {
   }
 
   def executeRepeatadlyAsJob(period: Int, calculate: => Unit) = {
+    println("Setting up job (" + period + ")")
     val job = new Job("My Job") {
       var stop = false
       def run(monitor: IProgressMonitor): IStatus = {
+        println("in job run")
         try {
           execute(new Runnable() {
-            def run() = calculate
+            def run {
+              calculate
+            }
+            override def toString = "Running calculate "
           })
         } finally {
           if (!stop)
