@@ -40,7 +40,6 @@ class EngineMutabilityTests extends EngineStringTests[Holder] {
     Engine1[Holder, String]("Z", UseCase("", ab, b, a)).validateScenarios
     Engine1[Holder, String]("Z", UseCase("", b, a, ab)).validateScenarios
     Engine1[Holder, String]("Z", UseCase("", b, ab, a)).validateScenarios
-    println("Engine: " + Engine1[Holder, String]("Z", UseCase("", a, ab)))
   }
 
 }

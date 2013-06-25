@@ -7,6 +7,7 @@ object BuildSettings {
   val buildSettings = Defaults.defaultSettings ++ Seq(
     organization := "org.autotdd",
     version := "1.0.0",
+	resolvers += "repo.codahale.com" at "http://repo.codahale.com",
     scalacOptions ++= Seq(),
     retrieveManaged := true,
     scalaVersion := "2.10.1",
@@ -16,7 +17,7 @@ object BuildSettings {
       "org.scala-lang" % "scala-reflect" % "2.10.1",
       "org.scala-lang" % "scala-compiler" % "2.10.1",
       "org.scalatest" % "scalatest_2.10" % "1.9.1",
-
+      "log4j" % "log4j" % "1.2.17",
       "junit" % "junit" % "4.8.2"))
 
   val eclipseSettings = buildSettings ++ Seq(
@@ -45,7 +46,7 @@ object HelloBuild extends Build {
   lazy val engine = Project(id = "engine", settings = buildSettings, base = file("engine")) dependsOn (constraint)
   lazy val engine_test = Project(id = "engine_test", settings = buildSettings, base = file("engine-tests")) dependsOn (constraint, engine)
   lazy val examples = Project(id = "examples", settings = buildSettings, base = file("examples")) dependsOn (constraint, engine)
-  lazy val eclipse = Project(id = "eclipse", settings = eclipseSettings, base = file("eclipse2"))
+  lazy val eclipse = Project(id = "eclipse", settings = eclipseSettings, base = file("eclipse2")) dependsOn (constraint, engine)
   lazy val root = Project(id = "root", settings = buildSettings ++ Seq(copyTask), base = file(".")) aggregate (constraint, engine, examples, engine_test, eclipse)
 
   import java.io.File

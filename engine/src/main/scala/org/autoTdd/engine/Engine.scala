@@ -50,7 +50,7 @@ trait EngineTypes[R] {
   def makeClosureForResult(params: List[Any]): ResultClosure
 }
 
-case class Node[B, RFn, R](val because: Because[B], inputs: List[Any], yes: Either[CodeAndScenarios[B, RFn, R], Node[B, RFn, R]], no: Either[CodeAndScenarios[B, RFn, R], Node[B, RFn, R]],scenarioThatCausedNode: Scenario[B, RFn, R]) {
+case class Node[B, RFn, R](val because: Because[B], inputs: List[Any], yes: Either[CodeAndScenarios[B, RFn, R], Node[B, RFn, R]], no: Either[CodeAndScenarios[B, RFn, R], Node[B, RFn, R]], scenarioThatCausedNode: Scenario[B, RFn, R]) {
   def allScenarios = scenarios(Right(this))
   private def scenarios(rOrN: Either[CodeAndScenarios[B, RFn, R], Node[B, RFn, R]]): List[Scenario[B, RFn, R]] = {
     rOrN match {
@@ -62,19 +62,25 @@ case class Node[B, RFn, R](val because: Because[B], inputs: List[Any], yes: Eith
 }
 
 trait EvaluateEngine[R] extends EngineTypes[R] {
+  def logger: TddLogger
 
-  def evaluate(fn: BecauseClosure, n: RorN): RFn = {
+  def evaluate(fn: BecauseClosure, n: RorN, log: Boolean = true): RFn = {
     val result = n match {
-      case Left(r) => r.code.rfn
-      case Right(n) => evaluate(fn, n)
+      case Left(r) =>
+        val result = r.code.rfn
+        result
+      case Right(n) => evaluate(fn, n, log)
     }
     result
   }
 
-  private def evaluate(fn: BecauseClosure, n: N): RFn = {
-    fn(n.because.because) match {
-      case false => evaluate(fn, n.no);
-      case true => evaluate(fn, n.yes);
+  private def evaluate(fn: BecauseClosure, n: N, log: Boolean): RFn = {
+    val condition = fn(n.because.because)
+    if (log)
+      logger.infoRun(" Condition" + n.because + " was " + condition)
+    condition match {
+      case false => evaluate(fn, n.no, log);
+      case true => evaluate(fn, n.yes, log);
     }
   }
 }
@@ -92,7 +98,7 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
   protected def validateScenario(root: RorN, c: C) {
     c.configure
     val bec = makeClosureForBecause(c.params)
-    val rFn: RFn = evaluate(bec, root)
+    val rFn: RFn = evaluate(bec, root, false)
     val actualFromScenario: R = makeClosureForResult(c.params)(rFn)
     if (c.expected.isEmpty)
       throw new NoExpectedException("No 'produces' in " + c)
@@ -177,12 +183,17 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
                       "\nBeingAdded: " + c.description + " " + c.params +
                       "\n\nDetails existing:\n" + existingScenario + "\nScenario:\n" + c, c, null)
                   }
-                  //            Left(newCd)
+                  //                  logger.debugCompile( "Adding " + newCnC + "to yes of leaf " + parent.toString)
+                  logger.debugCompile("Adding " + c.description + " under " + (if (parentWasTrue) "yes" else "no") + " of node " + p.scenarioThatCausedNode.description)
                   Right(Node(b, c.params, Left(newCnC), Left(l), c)) //Adding to the 'yes' of the current
                 case _ => //No parent so we are the root.
                   resultsSame(l, c) match {
-                    case true => Left(newCnC); // we come to same conclusion as root, so we just add ourselves as assertion
-                    case false => Right(Node(b, c.params, Left(newCnC), Left(l), c)) //So we are if b then new result else default 
+                    case true =>
+                      logger.debugCompile("Adding " + c.description + " as extra scenario for root")
+                      Left(newCnC); // we come to same conclusion as root, so we just add ourselves as assertion
+                    case false =>
+                      logger.debugCompile("Adding " + c.description + " as new root")
+                      Right(Node(b, c.params, Left(newCnC), Left(l), c)) //So we are if b then new result else default 
                   }
               }
             case None => {
@@ -194,14 +205,16 @@ trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
                 case Left(result) if result == c.expected.get =>
                   parentWasTrue match {
                     case true =>
-                      if (actualResultIfUseThisScenariosCode == Left(c.expected.get))
+                      if (actualResultIfUseThisScenariosCode == Left(c.expected.get)) {
+                        logger.debugCompile("Adding " + c.description + " as extra scenario for " + l)
                         Left(l.copy(scenarios = c :: l.scenarios))
-                      else
+                      } else
                         throw new AssertionException("Adding assertion and got wrong value.\nAdding: " + c.description + "\nDetails: " + c + "\nto: " + l + "\nActual result: " + actualResultIfUseThisScenariosCode)
                     case false => //Only way here is when I am coming down a no node. By definition I have a parent and it was false
-                      if (parent.isDefined && resultsSame(parent.get.no.left.get, c))
+                      if (parent.isDefined && resultsSame(parent.get.no.left.get, c)) {
+                        logger.debugCompile("Adding " + c.description + " as extra scenario for " + l.code)
                         Left(l.copy(scenarios = c :: l.scenarios))
-                      else
+                      } else
                         throw new AssertionException("Adding assertion to else and got wrong value.\nAdding: " + c + "\nto: " + parent.get.no + "\n")
                   }
                 case Left(result) =>
@@ -267,6 +280,12 @@ trait Engine[R] extends BuildEngine[R] with EvaluateEngine[R] with EngineToStrin
 
   val root: RorN = buildRoot(defaultRoot, scenarios)
   def constructionString: String = constructionString(defaultRoot, scenarios)
+  def logParams(p: Any*) = logger.debugRun("Executing " + p.mkString(","))
+  def logResult(fn: => R): R = {
+    val result: R = fn;
+    logger.debugRun(" Result " + result)
+    result
+  }
 
   def buildRoot(root: RorN, scenarios: List[C]): RorN = {
     scenarios match {
@@ -299,16 +318,16 @@ trait Engine[R] extends BuildEngine[R] with EvaluateEngine[R] with EngineToStrin
     }
   }
 
-  def applyParam(root: RorN, params: List[Any]): R = {
+  def applyParam(root: RorN, params: List[Any], log: Boolean): R = {
     val bec = makeClosureForBecause(params)
-    val rfn = evaluate(bec, root)
+    val rfn = evaluate(bec, root, log)
     makeClosureForResult(params)(rfn)
   }
 
   private def checkScenario(root: RorN, c: C) {
     validateBecause(c);
     validateScenario(root, c);
-    val actualFromEngine = applyParam(root, c.params);
+    val actualFromEngine = applyParam(root, c.params, false);
     if (actualFromEngine != c.expected.get)
       throw new EngineResultException("Wrong result for " + c.actualCode.description + " for " + c.params + "\nActual: " + actualFromEngine + "\nExpected: " + c.expected);
   }
@@ -388,22 +407,28 @@ trait Engine3Types[P1, P2, P3, R] extends EngineTypes[R] {
   def makeClosureForResult(params: List[Any]) = (r: RFn) => r(params(0).asInstanceOf[P1], params(1).asInstanceOf[P2], params(2).asInstanceOf[P3])
 }
 
-class Engine1[P, R](val default: CodeFn[(P) => Boolean, (P) => R, R], val useCases: List[UseCase[(P) => Boolean, (P) => R, R]]) extends Engine[R] with Function1[P, R] with Engine1Types[P, R] {
+class Engine1[P, R](val default: CodeFn[(P) => Boolean, (P) => R, R], val useCases: List[UseCase[(P) => Boolean, (P) => R, R]], val logger: TddLogger = TddLogger.noLogger) extends Engine[R] with Function1[P, R] with Engine1Types[P, R] {
   def defaultRoot: RorN = Left(CodeAndScenarios(default, List()))
-  def apply(p: P) = evaluate((b) => b(p), root)(p)
+  def apply(p: P) = {
+    logParams(p)
+    logResult(evaluate((b) => b(p), root)(p))
+  }
   override def toString: String = toString("", root)
+  def withLogger(logger: TddLogger) = new Engine1(default, useCases, logger)
 }
 
-class Engine2[P1, P2, R](val default: CodeFn[(P1, P2) => Boolean, (P1, P2) => R, R], val useCases: List[UseCase[(P1, P2) => Boolean, (P1, P2) => R, R]]) extends Engine[R] with Function2[P1, P2, R] with Engine2Types[P1, P2, R] {
+class Engine2[P1, P2, R](val default: CodeFn[(P1, P2) => Boolean, (P1, P2) => R, R], val useCases: List[UseCase[(P1, P2) => Boolean, (P1, P2) => R, R]], val logger: TddLogger = TddLogger.noLogger) extends Engine[R] with Function2[P1, P2, R] with Engine2Types[P1, P2, R] {
   def defaultRoot: RorN = Left(CodeAndScenarios(default, List()))
   def apply(p1: P1, p2: P2) = evaluate((b) => b(p1, p2), root)(p1, p2)
   override def toString: String = toString("", root)
+  def withLogger(logger: TddLogger) = new Engine2(default, useCases, logger)
 }
 
-class Engine3[P1, P2, P3, R](val default: CodeFn[(P1, P2, P3) => Boolean, (P1, P2, P3) => R, R], val useCases: List[UseCase[(P1, P2, P3) => Boolean, (P1, P2, P3) => R, R]]) extends Engine[R] with Function3[P1, P2, P3, R] with Engine3Types[P1, P2, P3, R] {
+class Engine3[P1, P2, P3, R](val default: CodeFn[(P1, P2, P3) => Boolean, (P1, P2, P3) => R, R], val useCases: List[UseCase[(P1, P2, P3) => Boolean, (P1, P2, P3) => R, R]], val logger: TddLogger = TddLogger.noLogger) extends Engine[R] with Function3[P1, P2, P3, R] with Engine3Types[P1, P2, P3, R] {
   def defaultRoot: RorN = Left(CodeAndScenarios(default, List()))
   def apply(p1: P1, p2: P2, p3: P3) = evaluate((b) => b(p1, p2, p3), root)(p1, p2, p3)
   override def toString: String = toString("", root)
+  def withLogger(logger: TddLogger) = new Engine3(default, useCases, logger)
 }
 
 object Engine1 {

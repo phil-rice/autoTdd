@@ -25,10 +25,20 @@ trait EngineTests[R] extends ShouldMatchers with FlatSpec with EngineTypes[R] {
 
 }
 trait EngineStringTests[X] extends EngineTests[String] with Engine1Types[X, String] {
+
+  def checkMessages(engine: Engine1[X, String], expected: String*) {
+    val actual = engine.logger.asInstanceOf[TestLogger].messages
+    assert(expected.toList == actual, "\nExpected: " + expected + "\nActual: " + actual)
+  }
+  def checkLastMessages(engine: Engine1[X, String], expected: String*) {
+    val full = engine.logger.asInstanceOf[TestLogger].messages
+    val actual = full.takeRight(expected.size)
+    assert(expected.toList == actual, "\nExpected: " + expected + "\nActual: " + full)
+  }
   def comparator = NodeComparator.comparator1[X, String]
   def assertEngineMatches(e: Engine[String], n2: RorN) {
     val actual = comparator.compare(e.root.asInstanceOf[RorN], n2)
-    assert(actual == List(), actual +"\n" + e.root)
+    assert(actual == List(), actual + "\n" + e.root)
   }
 
   def assertMatches(n1: RorN, n2: RorN) {

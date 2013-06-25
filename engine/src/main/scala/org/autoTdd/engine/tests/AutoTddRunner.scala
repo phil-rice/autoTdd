@@ -71,7 +71,7 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner {
             notifier.fireTestFailure(new Failure(cd, EngineTest.exceptions(Scenario)))
           else {
             val b = engine.makeClosureForBecause(Scenario.params);
-            val actual = engine.applyParam(engine.root, Scenario.params)
+            val actual = engine.applyParam(engine.root, Scenario.params, true)
             try {
               Assert.assertEquals(Scenario.expected, Some(actual))
               notifier.fireTestFinished(cd)
