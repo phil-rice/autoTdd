@@ -93,7 +93,8 @@ trait UpdateFiles {
           val fct = fileAccessL(as)(f)
           val index = fileCacheL.indexOf(as, f)
           fileCacheL.add(as, fct)
-        }).because(and(becauseFileHasChangedOnFileSystem, becauseFileIsTheSelectedFile)))));
+        }).because(and(becauseFileHasChangedOnFileSystem, becauseFileIsTheSelectedFile))))).
+    withLogger(new TestLogger());
 
   testComposite.dispose()
 }
@@ -130,9 +131,10 @@ object AutoTddComposite {
       list.addSelectionListener(new SelectionListener() {
         override def widgetDefaultSelected(e: SelectionEvent) = {}
         override def widgetSelected(e: SelectionEvent) = {
+          val msgs = updateFiles.updateGuiAndCacheWhenFileChanges.logger.asInstanceOf[TestLogger].messages.mkString("\n")
           list.getSelectionIndex() match {
-            case -1 => textArea.setText("");
-            case i => textArea.setText(appState.fileCache(i).content)
+            case -1 => textArea.setText(msgs);
+            case i => textArea.setText(appState.fileCache(i).content + "\n" + msgs)
           }
         }
 

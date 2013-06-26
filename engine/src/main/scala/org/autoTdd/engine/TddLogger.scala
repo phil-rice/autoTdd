@@ -2,8 +2,6 @@ package org.autotdd.engine
 
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
-import com.sun.tracing.Probe
-import com.sun.org.glassfish.external.probe.provider.annotations.Probe
 
 object TddLogger {
   val logger = Logger.getLogger(classOf[TddLogger]);

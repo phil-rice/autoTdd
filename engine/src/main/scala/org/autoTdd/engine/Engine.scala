@@ -419,14 +419,20 @@ class Engine1[P, R](val default: CodeFn[(P) => Boolean, (P) => R, R], val useCas
 
 class Engine2[P1, P2, R](val default: CodeFn[(P1, P2) => Boolean, (P1, P2) => R, R], val useCases: List[UseCase[(P1, P2) => Boolean, (P1, P2) => R, R]], val logger: TddLogger = TddLogger.noLogger) extends Engine[R] with Function2[P1, P2, R] with Engine2Types[P1, P2, R] {
   def defaultRoot: RorN = Left(CodeAndScenarios(default, List()))
-  def apply(p1: P1, p2: P2) = evaluate((b) => b(p1, p2), root)(p1, p2)
+  def apply(p1: P1, p2: P2) = {
+    logParams(p1, p2)
+    logResult(evaluate((b) => b(p1, p2), root)(p1, p2))
+  }
   override def toString: String = toString("", root)
   def withLogger(logger: TddLogger) = new Engine2(default, useCases, logger)
 }
 
 class Engine3[P1, P2, P3, R](val default: CodeFn[(P1, P2, P3) => Boolean, (P1, P2, P3) => R, R], val useCases: List[UseCase[(P1, P2, P3) => Boolean, (P1, P2, P3) => R, R]], val logger: TddLogger = TddLogger.noLogger) extends Engine[R] with Function3[P1, P2, P3, R] with Engine3Types[P1, P2, P3, R] {
   def defaultRoot: RorN = Left(CodeAndScenarios(default, List()))
-  def apply(p1: P1, p2: P2, p3: P3) = evaluate((b) => b(p1, p2, p3), root)(p1, p2, p3)
+  def apply(p1: P1, p2: P2, p3: P3) = {
+    logParams(p1, p2, p3)
+    logResult(evaluate((b) => b(p1, p2, p3), root)(p1, p2, p3))
+  }
   override def toString: String = toString("", root)
   def withLogger(logger: TddLogger) = new Engine3(default, useCases, logger)
 }

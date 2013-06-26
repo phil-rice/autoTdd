@@ -12,6 +12,8 @@
   <classpathentry kind="lib" path="..\lib_managed\jars\junit\junit\junit-4.8.2.jar" sourcepath="..\lib_managed\srcs\junit\junit\junit-4.8.2-sources.jar"></classpathentry>
   <classpathentry kind="lib" path="..\lib_managed\jars\com.miglayout\miglayout-swt\miglayout-swt-4.2.jar" sourcepath="..\lib_managed\srcs\com.miglayout\miglayout-swt\miglayout-swt-4.2-sources.jar"></classpathentry>
   <classpathentry kind="lib" path="..\lib_managed\jars\com.miglayout\miglayout-core\miglayout-core-4.2.jar" sourcepath="..\lib_managed\srcs\com.miglayout\miglayout-core\miglayout-core-4.2-sources.jar"></classpathentry>
+  <classpathentry path="..\lib_managed\jars\org.autotdd\constraint_2.10\constraint_2.10-1.0.0.jar" kind="lib"></classpathentry>
+  <classpathentry path="..\lib_managed\jars\org.autotdd\engine_2.10\engine_2.10-1.0.0.jar" kind="lib"></classpathentry>
   <classpathentry kind="lib" path="..\lib_managed\jars\org.eclipse.ui\org.eclipse.ui.workbench\org.eclipse.ui.workbench-3.7.1.v20120104-1859.jar" sourcepath="..\lib_managed\srcs\org.eclipse.ui\org.eclipse.ui.workbench\org.eclipse.ui.workbench-3.7.1.v20120104-1859-sources.jar"></classpathentry>
   <classpathentry kind="lib" path="..\lib_managed\jars\org.eclipse.jface\org.eclipse.jface\org.eclipse.jface-3.7.0.v20110928-1505.jar" sourcepath="..\lib_managed\srcs\org.eclipse.jface\org.eclipse.jface\org.eclipse.jface-3.7.0.v20110928-1505-sources.jar"></classpathentry>
   <classpathentry kind="lib" path="..\lib_managed\jars\org.eclipse.equinox\org.eclipse.equinox.common\org.eclipse.equinox.common-3.6.0.v20110523.jar" sourcepath="..\lib_managed\srcs\org.eclipse.equinox\org.eclipse.equinox.common\org.eclipse.equinox.common-3.6.0.v20110523-sources.jar"></classpathentry>
@@ -27,8 +29,6 @@
   <classpathentry kind="lib" path="..\lib_managed\jars\org.eclipse.osgi\org.eclipse.osgi.services\org.eclipse.osgi.services-3.2.100.v20100503.jar" sourcepath="..\lib_managed\srcs\org.eclipse.osgi\org.eclipse.osgi.services\org.eclipse.osgi.services-3.2.100.v20100503-sources.jar"></classpathentry>
   <classpathentry kind="lib" path="..\lib_managed\jars\javax.servlet\servlet-api\servlet-api-2.5.jar" sourcepath="..\lib_managed\srcs\javax.servlet\servlet-api\servlet-api-2.5-sources.jar"></classpathentry>
   <classpathentry path="..\lib_managed\jars\org.apache.felix\org.osgi.foundation\org.osgi.foundation-1.2.0.jar" kind="lib"></classpathentry>
-  <classpathentry exported="true" path="/constraint" kind="src" combineaccessrules="false"></classpathentry>
-  <classpathentry exported="true" path="/engine" kind="src" combineaccessrules="false"></classpathentry>
   <classpathentry path="org.eclipse.jdt.launching.JRE_CONTAINER" kind="con"></classpathentry>
   <classpathentry path="bin" kind="output"></classpathentry>
 </classpath>
