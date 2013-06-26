@@ -205,3 +205,51 @@ compile
 publish-local
 copy
 exit
+copyDep
+copyDependencies
+pack
+reload
+pack
+reload
+pack
+clean
+reload
+compile
+pack
+publish-local
+publish-localre
+reload
+compile;pacj
+compile;pack
+compile;;pack
+compile:pack
+reload
+r
+reload
+pack
+reload
+pack
+clean
+compile
+pack
+show show compile:dependency-classpath
+show compile:dependency-classpath
+reload
+compile
+publish-local
+pack
+project eclipse
+compile
+project root
+compile
+project eclipse
+clean
+compile
+clean
+project eclipse
+compile
+publish-local
+project eclipse
+compile
+publish-local
+project eclipse

@@ -7,7 +7,7 @@ object BuildSettings {
   val buildSettings = Defaults.defaultSettings ++ Seq(
     organization := "org.autotdd",
     version := "1.0.0",
-	resolvers += "repo.codahale.com" at "http://repo.codahale.com",
+	//resolvers += "repo.codahale.com" at "http://repo.codahale.com",
     scalacOptions ++= Seq(),
     retrieveManaged := true,
     scalaVersion := "2.10.1",
@@ -22,7 +22,7 @@ object BuildSettings {
 
   val eclipseSettings = buildSettings ++ Seq(
     resolvers += "eclipse-repo" at "https://swt-repo.googlecode.com/svn/repo/",
-    libraryDependencies ++= Seq(
+	libraryDependencies ++= Seq(
       "com.miglayout" % "miglayout-swt" % "4.2",
       "org.autotdd" %% "constraint" % "1.0.0" changing,
       "org.autotdd" %% "engine" % "1.0.0" changing,
@@ -46,8 +46,8 @@ object HelloBuild extends Build {
   lazy val engine = Project(id = "engine", settings = buildSettings, base = file("engine")) dependsOn (constraint)
   lazy val engine_test = Project(id = "engine_test", settings = buildSettings, base = file("engine-tests")) dependsOn (constraint, engine)
   lazy val examples = Project(id = "examples", settings = buildSettings, base = file("examples")) dependsOn (constraint, engine)
-  lazy val eclipse = Project(id = "eclipse", settings = eclipseSettings, base = file("eclipse2")) dependsOn (constraint, engine)
-  lazy val root = Project(id = "root", settings = buildSettings ++ Seq(copyTask), base = file(".")) aggregate (constraint, engine, examples, engine_test, eclipse)
+  lazy val eclipse = Project(id = "eclipse", settings = eclipseSettings++ Seq(copyDepTask), base = file("eclipse2"))// dependsOn (constraint, engine)
+  lazy val root = Project(id = "root", settings = buildSettings ++ Seq(copyTask,copyDepTask), base = file(".")) aggregate (constraint, engine, examples, engine_test)
 
   import java.io.File
 
@@ -87,5 +87,15 @@ object HelloBuild extends Build {
     val destination = new FileOutputStream(destFile).getChannel();
     destination.transferFrom(source, 0, source.size());
   }
+  lazy val copyDependencies = TaskKey[Unit]("pack")
 
+  def copyDepTask = copyDependencies <<= (update, crossTarget, scalaVersion) map {
+	  (updateReport, out, scalaVer) =>
+		updateReport.allFiles foreach {
+		  srcPath =>
+			val destPath = new File("eclipse2") / "lib" / srcPath.getName
+			println(destPath)
+			IO.copyFile(srcPath, destPath, preserveLastModified = true)
+		}
+	}
 }
