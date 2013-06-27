@@ -280,10 +280,11 @@ trait Engine[R] extends BuildEngine[R] with EvaluateEngine[R] with EngineToStrin
 
   val root: RorN = buildRoot(defaultRoot, scenarios)
   def constructionString: String = constructionString(defaultRoot, scenarios)
-  def logParams(p: Any*) = logger.debugRun("Executing " + p.mkString(","))
+  def logParams(p: Any*) =
+    logger.debugRun("Executing " + p.map(logger.loggerDisplay).mkString(","))
   def logResult(fn: => R): R = {
     val result: R = fn;
-    logger.debugRun(" Result " + result)
+    logger.debugRun(" Result " + logger.loggerDisplay(result))
     result
   }
 
@@ -353,8 +354,7 @@ trait EngineToString[R] extends EngineTypesWithRoot[R] {
           toString(indent + " ", node.no)
     }
   }
-  //TODO Ask Matt why cannot override Functions to String
-  override def toString: String = toString("", root)
+  override def toString(): String = toString("", root)
 
   def toStringWithScenarios(): String = toStringWithScenarios("", root);
 

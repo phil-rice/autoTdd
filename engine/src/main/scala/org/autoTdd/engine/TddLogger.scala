@@ -3,6 +3,32 @@ package org.autotdd.engine
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
 
+trait LoggerDisplay {
+  def loggerDisplay: String
+}
+
+case class ClassFunction[C, T](clazz: Class[C], fn: (C) => T) {
+  def apply(c: C) = fn(c)
+}
+
+case class ClassFunctionList[T](list: List[ClassFunction[_, T]] = List()) {
+  def apply[C](c: C) =
+    list.collectFirst({ case ClassFunction(clazz: Class[C], f) => f(c) })
+  def getOrElse[C](c: C, default: => T): T =
+    apply(c).getOrElse(default)
+
+}
+
+trait LoggerDisplayProcessor {
+  def displayMap: ClassFunctionList[String]
+  def loggerDisplay(a: Any): String =
+    displayMap.getOrElse(a,
+      a match {
+        case d: LoggerDisplay => d.loggerDisplay;
+        case a => a.toString
+      })
+}
+
 object TddLogger {
   val logger = Logger.getLogger(classOf[TddLogger]);
   val noLogger = new NoLogger()
@@ -16,7 +42,7 @@ object TddLogger {
 
 }
 
-trait TddLogger {
+trait TddLogger extends LoggerDisplayProcessor {
   import TddLogger._
   /** The raw log message that writes the string to an output */
   protected def message(priority: Level, msgType: TddMessageType, message: => String)
@@ -34,7 +60,7 @@ trait TddLogger {
   def fatalCompile(msg: => String) = message(Level.FATAL, compile, msg)
 }
 
-trait Log4JLogger extends TddLogger {
+class Log4JLogger(override val displayMap: ClassFunctionList[String] = ClassFunctionList()) extends TddLogger {
   import TddLogger._
 
   protected def message(priority: Level, msgType: TddMessageType, message: => String) {
@@ -44,7 +70,7 @@ trait Log4JLogger extends TddLogger {
 
 }
 
-class TestLogger extends TddLogger {
+class TestLogger(override val displayMap: ClassFunctionList[String] = ClassFunctionList()) extends TddLogger {
   import TddLogger._
   private var list = List[String]()
   protected def message(priority: Level, msgType: TddMessageType, message: => String) {
@@ -56,6 +82,7 @@ class TestLogger extends TddLogger {
 }
 class NoLogger extends TddLogger {
   import TddLogger._
+  val displayMap: ClassFunctionList[String] = ClassFunctionList()
   protected def message(priority: Level, msgType: TddMessageType, message: => String) {}
 
 }

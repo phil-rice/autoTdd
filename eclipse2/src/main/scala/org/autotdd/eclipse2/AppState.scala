@@ -2,8 +2,12 @@ package org.autotdd.eclipse2
 
 import java.io.File
 import org.autotdd.engine.Lens
+import org.autotdd.engine.LoggerDisplay
+import org.autotdd.engine.LoggerDisplayProcessor
 
-case class AppState(fileAccess: FileAccess, fileCache: List[FileContentAndTime])
+case class AppState(fileAccess: FileAccess, fileCache: List[FileContentAndTime]) extends LoggerDisplay with LoggerDisplayProcessor {
+  def loggerDisplay = "App(" + loggerDisplay(fileAccess) + "," + fileCache.map(loggerDisplay).mkString(",") + ")";
+}
 
 object AppState {
   val fileAccessL = Lens[AppState, FileAccess](_.fileAccess, (as, fa) => as.copy(fileAccess = fa));
