@@ -4,7 +4,7 @@ import org.apache.log4j.Logger
 import org.apache.log4j.Level
 
 trait LoggerDisplay {
-  def loggerDisplay: String
+  def loggerDisplay(dp: LoggerDisplayProcessor): String
 }
 
 case class ClassFunction[C, T](clazz: Class[C], fn: (C) => T) {
@@ -13,20 +13,24 @@ case class ClassFunction[C, T](clazz: Class[C], fn: (C) => T) {
 
 case class ClassFunctionList[T](list: List[ClassFunction[_, T]] = List()) {
   def apply[C](c: C) =
-    list.collectFirst({ case ClassFunction(clazz: Class[C], f) => f(c) })
+    list.collectFirst({ case ClassFunction(clazz, f)  if clazz.isAssignableFrom(c.getClass) => f.asInstanceOf[(C)=>T](c.asInstanceOf[C]) })
   def getOrElse[C](c: C, default: => T): T =
     apply(c).getOrElse(default)
 
 }
 
-trait LoggerDisplayProcessor {
+trait LoggerDisplayProcessor extends Function[Any, String]{
   def displayMap: ClassFunctionList[String]
-  def loggerDisplay(a: Any): String =
+  def apply(a: Any): String =
     displayMap.getOrElse(a,
       a match {
-        case d: LoggerDisplay => d.loggerDisplay;
+        case d: LoggerDisplay => d.loggerDisplay(this);
         case a => a.toString
       })
+}
+
+object LoggerDisplayProcessor {
+  def apply(cf: ClassFunction[_, String]*) = new SimpleLoggerDisplayProcessor(ClassFunctionList(cf.toList))
 }
 
 object TddLogger {
@@ -59,6 +63,8 @@ trait TddLogger extends LoggerDisplayProcessor {
   def errorCompile(msg: => String) = message(Level.ERROR, compile, msg)
   def fatalCompile(msg: => String) = message(Level.FATAL, compile, msg)
 }
+
+class SimpleLoggerDisplayProcessor(val displayMap: ClassFunctionList[String] = ClassFunctionList()) extends LoggerDisplayProcessor
 
 class Log4JLogger(override val displayMap: ClassFunctionList[String] = ClassFunctionList()) extends TddLogger {
   import TddLogger._

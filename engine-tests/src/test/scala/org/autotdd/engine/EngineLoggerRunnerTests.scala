@@ -2,10 +2,12 @@ package org.autotdd.engine
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import org.autotdd.engine._
 
 case class DisplayTest(val x: String) extends LoggerDisplay {
-  def loggerDisplay = "{" + x + "}"
+  def loggerDisplay(dp: LoggerDisplayProcessor) = "{" + x + "}"
 }
+
 
 @RunWith(classOf[JUnitRunner])
 class EngineLoggerRunnerDisplayTests extends EngineTests[DisplayTest] with Engine1Types[DisplayTest, DisplayTest] {
@@ -15,10 +17,19 @@ class EngineLoggerRunnerDisplayTests extends EngineTests[DisplayTest] with Engin
   val emptyUsecase = UseCase[B, RFn, DisplayTest]("")
 
   "A logger display processor" should "use the display method if available" in {
-    val processor = new LoggerDisplayProcessor() {}
-    assert("msg" == processor.loggerDisplay("msg"))
-    assert("1" == processor.loggerDisplay(1))
-    assert("msg" == processor.loggerDisplay(new LoggerDisplay() { def loggerDisplay = "msg" }))
+    val processor = LoggerDisplayProcessor()
+    assert("msg" == processor("msg"))
+    assert("1" == processor(1))
+    assert("{1}" == processor(DisplayTest("1")))
+    assert("msg" == processor(new LoggerDisplay() { def loggerDisplay (dp: LoggerDisplayProcessor)= "msg" }))
+  }
+
+  it should "use the class function list in preference to the display method " in {
+    val processor = new SimpleLoggerDisplayProcessor(ClassFunctionList(List(ClassFunction(classOf[DisplayTest], (d: DisplayTest) => "<" + d.x + ">"))))
+    assert("msg" == processor("msg"))
+    assert("1" == processor(1))
+    assert("<1>" == processor(DisplayTest("1")))
+    assert("<1>" == processor(new DisplayTest("1"){}))
   }
 
   "An empty engine" should "log the default solution" in {
@@ -42,7 +53,7 @@ class EngineLoggerRunnerDisplayTests extends EngineTests[DisplayTest] with Engin
       "DEBUG Run()  Executing {A}",
       "INFO  Run()   ConditionBecause(A) was true",
       "DEBUG Run()   Result {X}",
-      "DEBUG Run()  Executing {B}", 
+      "DEBUG Run()  Executing {B}",
       "INFO  Run()   ConditionBecause(A) was false",
       "DEBUG Run()   Result {Z}")
   }
@@ -53,10 +64,10 @@ class EngineLoggerRunnerStringTests extends EngineStringStringTests {
   val emptyUsecase = UseCase[B, RFn, String]("")
 
   "A logger display processor" should "use the display method if available" in {
-    val processor = new LoggerDisplayProcessor() {}
-    assert("msg" == processor.loggerDisplay("msg"))
-    assert("1" == processor.loggerDisplay(1))
-    assert("msg" == processor.loggerDisplay(new LoggerDisplay() { def loggerDisplay = "msg" }))
+    val processor = new SimpleLoggerDisplayProcessor() {}
+    assert("msg" == processor("msg"))
+    assert("1" == processor(1))
+    assert("msg" == processor(new LoggerDisplay() { def loggerDisplay(dp: LoggerDisplayProcessor) = "msg" }))
   }
 
   "An empty engine" should "log the default solution" in {

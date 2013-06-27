@@ -281,10 +281,10 @@ trait Engine[R] extends BuildEngine[R] with EvaluateEngine[R] with EngineToStrin
   val root: RorN = buildRoot(defaultRoot, scenarios)
   def constructionString: String = constructionString(defaultRoot, scenarios)
   def logParams(p: Any*) =
-    logger.debugRun("Executing " + p.map(logger.loggerDisplay).mkString(","))
+    logger.debugRun("Executing " + p.map(logger).mkString(","))
   def logResult(fn: => R): R = {
     val result: R = fn;
-    logger.debugRun(" Result " + logger.loggerDisplay(result))
+    logger.debugRun(" Result " + logger(result))
     result
   }
 

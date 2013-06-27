@@ -7,7 +7,6 @@ object BuildSettings {
   val buildSettings = Defaults.defaultSettings ++ Seq(
     organization := "org.autotdd",
     version := "1.0.0-SNAPSHOT",
-	//resolvers += "repo.codahale.com" at "http://repo.codahale.com",
     scalacOptions ++= Seq(),
     retrieveManaged := false,
     scalaVersion := "2.10.1",
@@ -24,8 +23,8 @@ object BuildSettings {
     resolvers += "eclipse-repo" at "https://swt-repo.googlecode.com/svn/repo/",
 	libraryDependencies ++= Seq(
       "com.miglayout" % "miglayout-swt" % "4.2",
-      "org.autotdd" %% "constraint" % "1.0.0-SNAPSHOT" changing(),
-      "org.autotdd" %% "engine" % "1.0.0-SNAPSHOT" changing(),
+      "org.autotdd" %% "constraint" % "1.0.0-SNAPSHOT" ,
+      "org.autotdd" %% "engine" % "1.0.0-SNAPSHOT" ,
       "org.eclipse.equinox" % "org.eclipse.equinox.common" % "3.6.0.v20100503",
       "org.eclipse.ui" % "org.eclipse.ui.workbench" % "3.7.1.v20120104-1859",
       "org.eclipse.swt.win32.win32" % "x86" % "3.3.0-v3346",
@@ -97,5 +96,6 @@ object HelloBuild extends Build {
 			println(destPath)
 			IO.copyFile(srcPath, destPath, preserveLastModified = true)
 		}
+		
 	}
 }

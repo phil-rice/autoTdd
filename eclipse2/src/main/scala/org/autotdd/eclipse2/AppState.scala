@@ -1,12 +1,10 @@
 package org.autotdd.eclipse2
 
 import java.io.File
-import org.autotdd.engine.Lens
-import org.autotdd.engine.LoggerDisplay
-import org.autotdd.engine.LoggerDisplayProcessor
+import org.autotdd.engine._
 
-case class AppState(fileAccess: FileAccess, fileCache: List[FileContentAndTime]) extends LoggerDisplay with LoggerDisplayProcessor {
-  def loggerDisplay = "App(" + loggerDisplay(fileAccess) + "," + fileCache.map(loggerDisplay).mkString(",") + ")";
+case class AppState(fileAccess: FileAccess, fileCache: List[FileContentAndTime])  extends LoggerDisplay {
+  def loggerDisplay (dp: LoggerDisplayProcessor)= "App(" + dp(fileAccess) + "," + fileCache.map(dp).mkString(",") + ")";
 }
 
 object AppState {

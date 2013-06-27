@@ -92,9 +92,10 @@ trait UpdateFiles {
         byCalling((f, ac, as) => {
           val fct = fileAccessL(as)(f)
           val index = fileCacheL.indexOf(as, f)
+          ac.setText(fct.content)
           fileCacheL.add(as, fct)
         }).because(and(becauseFileHasChangedOnFileSystem, becauseFileIsTheSelectedFile))))).
-    withLogger(new TestLogger(Map(classOf[File] -> ((f: File) => f.getName()))));
+    withLogger(new TestLogger(ClassFunctionList(List(ClassFunction(classOf[File], (f: File) => f.getName())))));
 
   testComposite.dispose()
 }
@@ -116,7 +117,7 @@ class AutoTddComposite(parent: Composite, color: Int) extends Composite(parent, 
   def currentSelection: Int = list.getSelectionIndex()
   def reset = list.removeAll()
   def setText(s: String) = textArea.setText(s)
-  def loggerDisplay = "Comp(sel=" + list.getSelectionIndex() + ", list=" + list.getItems().mkString(",") + ")"
+  def loggerDisplay(dp: LoggerDisplayProcessor) = "Comp(sel=" + list.getSelectionIndex() + ", list=" + list.getItems().mkString(",") + ")"
   override def toString =
     {
       val selection = ",selected = " + (if (list.getSelectionIndex() == -1) -1; else list.getSelectionIndex + "/[" + list.getItems()(list.getSelectionIndex()) + "]");

@@ -12,7 +12,7 @@ trait FileSystemFileAccess extends FileAccess with LoggerDisplay {
   def directory: File
   def apply(f: File) = FileContentAndTime(f, Source.fromFile(f).mkString, f.lastModified())
   def listFiles = directory.listFiles.filter(_.getName.endsWith(".attd"))
-  def loggerDisplay = "FileAccess(" + directory.getName() + ")"
+  def loggerDisplay(dp: LoggerDisplayProcessor) = "FileAccess(" + dp(directory) + ")"
 }
 
 class MockFileAccess(fcts: FileContentAndTime*) extends FileAccess {
@@ -23,5 +23,5 @@ class MockFileAccess(fcts: FileContentAndTime*) extends FileAccess {
 }
 
 case class FileContentAndTime(file: File, content: String, time: Long) extends LoggerDisplay {
-  def loggerDisplay = "FCT(" + file.getName() + ")"
+  def loggerDisplay(dp: LoggerDisplayProcessor) = "FCT(" + dp(file) + ")"
 }
