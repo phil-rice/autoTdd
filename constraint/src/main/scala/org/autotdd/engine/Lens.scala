@@ -8,3 +8,4 @@ case class Lens[A, B](get: A => B, set: (A, B) => A) extends Immutable {
     (c, b) => that.mod(c, set(_, b)))
   def andThen[C](that: Lens[B, C]) = that compose this
 }
+

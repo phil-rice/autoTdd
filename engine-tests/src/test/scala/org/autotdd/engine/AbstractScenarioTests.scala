@@ -5,10 +5,11 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.FlatSpec
 import org.autotdd.engine._
 
-abstract class AbstractScenarioTests[B, RFn, R] extends FlatSpec with ShouldMatchers {
+abstract class AbstractScenarioTests[R] extends FlatSpec with ShouldMatchers with EngineTypes[R] {
+  
+  def makeBuilder: EngineBuilderFactory[R]
 
   def name: String
-  def scenario: ScenarioBuilder[B, RFn, R]
   def description: String = "Some description"
   def params: List[Any]
   def codeFn: RFn

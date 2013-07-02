@@ -53,3 +53,6 @@ compile:publish-local
 project eclipse
 compile:publish-local
 project eclipse
+project engine
+compile
+project engine

@@ -13,13 +13,13 @@ case class ClassFunction[C, T](clazz: Class[C], fn: (C) => T) {
 
 case class ClassFunctionList[T](list: List[ClassFunction[_, T]] = List()) {
   def apply[C](c: C) =
-    list.collectFirst({ case ClassFunction(clazz, f)  if clazz.isAssignableFrom(c.getClass) => f.asInstanceOf[(C)=>T](c.asInstanceOf[C]) })
+    list.collectFirst({ case ClassFunction(clazz, f) if clazz.isAssignableFrom(c.getClass) => f.asInstanceOf[(C) => T](c.asInstanceOf[C]) })
   def getOrElse[C](c: C, default: => T): T =
     apply(c).getOrElse(default)
 
 }
 
-trait LoggerDisplayProcessor extends Function[Any, String]{
+trait LoggerDisplayProcessor extends Function[Any, String] {
   def displayMap: ClassFunctionList[String]
   def apply(a: Any): String =
     displayMap.getOrElse(a,
@@ -34,8 +34,8 @@ object LoggerDisplayProcessor {
 }
 
 object TddLogger {
+  def noLogger = new NoLogger()
   val logger = Logger.getLogger(classOf[TddLogger]);
-  val noLogger = new NoLogger()
   def loggerPriority = logger.getPriority()
   def log(priority: Level, msg: String) = logger.log(priority, msg);
   sealed abstract class TddMessageType(val name: String)
@@ -84,8 +84,17 @@ class TestLogger(override val displayMap: ClassFunctionList[String] = ClassFunct
   }
 
   def messages = list.reverse
+  def reset = list = List()
 
 }
+
+class ConsoleLogger(override val displayMap: ClassFunctionList[String] = ClassFunctionList()) extends TddLogger {
+  import TddLogger._
+  protected def message(priority: Level, msgType: TddMessageType, message: => String) =
+    println(String.format("%-5s %-6s %s", priority, msgType, message))
+
+}
+
 class NoLogger extends TddLogger {
   import TddLogger._
   val displayMap: ClassFunctionList[String] = ClassFunctionList()

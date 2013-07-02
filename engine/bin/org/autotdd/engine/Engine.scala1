@@ -84,6 +84,7 @@ trait EvaluateEngine[R] extends EngineTypes[R] {
     }
   }
 }
+
 trait BuildEngine[R] extends EvaluateEngine[R] with EngineToString[R] {
   protected def validateBecause(c: C) {
     c.configure
