@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry combineaccessrules="false" kind="src" path="/engine"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/constraint"/>
 	<classpathentry kind="src" output="bin" path="src/main/scala"/>
 	<classpathentry kind="src" output="bin" path="src/main/java"/>
 	<classpathentry kind="src" output="bin" path="src/test/scala"/>
 	<classpathentry kind="src" output="bin" path="src/test/java"/>
-	<classpathentry exported="true" kind="lib" path="lib/constraint_2.10.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/engine_2.10.jar" sourcepath="/engine"/>
+	<classpathentry kind="lib" path="../eclipse2/lib/constraint_2.10.jar"/>
+	<classpathentry kind="lib" path="../eclipse2/lib/engine_2.10.jar"/>
 	<classpathentry kind="lib" path="../eclipse2/lib/junit-4.8.2.jar"/>
 	<classpathentry kind="lib" path="../eclipse2/lib/log4j-1.2.17.jar"/>
 	<classpathentry kind="lib" path="../eclipse2/lib/miglayout-core-4.2.jar"/>

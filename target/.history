@@ -56,3 +56,8 @@ project eclipse
 project engine
 compile
 project engine
+compile
+eclipse
+compile
+publish-local
+project eclipse

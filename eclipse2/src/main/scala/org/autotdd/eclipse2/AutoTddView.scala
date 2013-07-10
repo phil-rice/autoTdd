@@ -17,7 +17,6 @@ import org.eclipse.swt.widgets.Composite
 import org.eclipse.ui.part.ViewPart
 import org.junit.runner.RunWith
 import net.miginfocom.swt.MigLayout
-import org.autotdd.engine.Engine3
 import org.eclipse.swt.widgets.Shell
 import org.eclipse.swt.widgets.Display
 import org.eclipse.swt.graphics.Color
@@ -62,40 +61,45 @@ trait UpdateFiles {
 
   val testComposite = makeComposite(SWT.COLOR_CYAN)
 
-  val updateGuiAndCacheWhenFileChanges = Engine3[File, AutoTddComposite, AppState, AppState](doNothing, List(
-    UseCase("When file Isn't In cache then add it to list",
-      Scenario(f1, testComposite, as_empty_cache).
-        whenConfigured(testComposite, (c: AutoTddComposite) => c.reset).
-        produces(fileCacheL.set(as_empty_cache, List(fct1))).
-        because(becauseFileIsntInCache).
-        byCalling((f, ac, as) => {
-          val fct = fileAccessL(as)(f)
-          val result = fileCacheL.add(as, fct)
-          val index = fileCacheL.indexOf(result, f)
-          ac.insert(index, fct)
-          result
-        })),
-    UseCase("When file has changed, and is not selected item, just update cache",
-      Scenario(f1, testComposite, as_fct12_f1_changed_on_file_system).
-        whenConfigured(testComposite, (c: AutoTddComposite) => { c.reset; c.insert(0, fct1); c.insert(1, fct2); c.setSelection(1) }).
-        produces(fileCacheL.set(as_fct12_f1_changed_on_file_system, List(fct1b, fct2))).
-        byCalling((f, ac, as) => {
-          val fct = fileAccessL(as)(f)
-          val index = fileCacheL.indexOf(as, f)
-          fileCacheL.add(as, fct)
-        }).because(becauseFileHasChangedOnFileSystem)),
+  val updateGuiAndCacheWhenFileChanges = Engine[File, AutoTddComposite, AppState, AppState]().
+    useCase("Default: file is in the cache: do nothing").
+    scenario(f1, testComposite, as_fct12).code(doNothing).expected(as_fct12).
 
-    UseCase("When file has changed, and is  selected item, update cache and update text area",
-      Scenario(f1, testComposite, as_fct12_f1_changed_on_file_system).
-        whenConfigured(testComposite, (c: AutoTddComposite) => { c.reset; c.insert(0, fct1); c.insert(1, fct2); c.setSelection(0) }).
-        produces(fileCacheL.set(as_fct12_f1_changed_on_file_system, List(fct1b, fct2))).
-        byCalling((f, ac, as) => {
-          val fct = fileAccessL(as)(f)
-          val index = fileCacheL.indexOf(as, f)
-          ac.setText(fct.content)
-          fileCacheL.add(as, fct)
-        }).because(and(becauseFileHasChangedOnFileSystem, becauseFileIsTheSelectedFile))))).
-    withLogger(new TestLogger(ClassFunctionList(List(ClassFunction(classOf[File], (f: File) => f.getName())))));
+    useCase("When file Isn't In cache then add it to list").
+    scenario(f1, testComposite, as_empty_cache).
+    configuration((f, c, as) => c.reset).
+    expected(fileCacheL.set(as_empty_cache, List(fct1))).
+    because(becauseFileIsntInCache).
+    code((f: File, ac: AutoTddComposite, as: AppState) => {
+      val fct = fileAccessL(as)(f)
+      val result = fileCacheL.add(as, fct)
+      val index = fileCacheL.indexOf(result, f)
+      ac.insert(index, fct)
+      result
+    }).
+
+    useCase("When file has changed, and is not selected item, just update cache").
+    scenario(f1, testComposite, as_fct12_f1_changed_on_file_system).
+    configuration((f, c, as) => { c.reset; c.insert(0, fct1); c.insert(1, fct2); c.setSelection(1) }).
+    expected(fileCacheL.set(as_fct12_f1_changed_on_file_system, List(fct1b, fct2))).
+    code((f: File, ac: AutoTddComposite, as: AppState) => {
+      val fct = fileAccessL(as)(f)
+      val index = fileCacheL.indexOf(as, f)
+      fileCacheL.add(as, fct)
+    }).because(becauseFileHasChangedOnFileSystem).
+
+    useCase("When file has changed, and is  selected item, update cache and update text area").
+    scenario(f1, testComposite, as_fct12_f1_changed_on_file_system).
+    configuration((f, c, as) => { c.reset; c.insert(0, fct1); c.insert(1, fct2); c.setSelection(0) }).
+    expected(fileCacheL.set(as_fct12_f1_changed_on_file_system, List(fct1b, fct2))).
+    code((f: File, ac: AutoTddComposite, as: AppState) => {
+      val fct = fileAccessL(as)(f)
+      val index = fileCacheL.indexOf(as, f)
+      ac.setText(fct.content)
+      fileCacheL.add(as, fct)
+    }).because(and(becauseFileHasChangedOnFileSystem, becauseFileIsTheSelectedFile)).build;
+
+  //    withLogger(new TestLogger(ClassFunctionList(List(ClassFunction(classOf[File], (f: File) => f.getName())))));
 
   testComposite.dispose()
 }
@@ -133,7 +137,7 @@ object AutoTddComposite {
       list.addSelectionListener(new SelectionListener() {
         override def widgetDefaultSelected(e: SelectionEvent) = {}
         override def widgetSelected(e: SelectionEvent) = {
-          val msgs = updateFiles.updateGuiAndCacheWhenFileChanges.logger.asInstanceOf[TestLogger].messages.mkString("\n")
+          val msgs = ""; //updateFiles.updateGuiAndCacheWhenFileChanges.logger.asInstanceOf[TestLogger].messages.mkString("\n")
           list.getSelectionIndex() match {
             case -1 => textArea.setText(msgs);
             case i => textArea.setText(appState.fileCache(i).content + "\n" + msgs)

@@ -55,7 +55,7 @@ trait EngineTypes[R] {
   def makeClosureForCfg(params: List[Any]): CfgClosure
 }
 
-abstract class EngineBuilderFactory[R] extends EngineTypes[R] {
+trait EngineBuilderFactory[R] extends EngineTypes[R] {
   class ScenarioConflictException(msg: String, val scenarioBeingAdded: Scenario, cause: Throwable) extends EngineException(msg, cause)
 
   def rfnMaker: (Either[Exception, R]) => RFn

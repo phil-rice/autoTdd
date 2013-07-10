@@ -1,7 +1,6 @@
 package org.autotdd.engine.tests
 
 import org.junit.runner.Description
-
 import scala.collection.JavaConversions._
 import org.junit.runner.Runner
 import org.junit.runner.notification.RunNotifier
@@ -20,20 +19,30 @@ object AutoTddRunner {
   val directory = new File(userHome, ".autoTdd")
 
 }
-class AutoTddRunner(val clazz: Class[Any]) extends Runner {
+trait NotActuallyFactory [R]extends EngineBuilderFactory[R]{
+  def builder: RealScenarioBuilder = ???
+  def logger: org.autotdd.engine.TddLogger = TddLogger.noLogger
+  def rfnMaker: scala.util.Either[Exception, Any] => RFn = ???
+  def makeClosureForBecause(params: List[Any]) = ???
+  def makeClosureForCfg(params: List[Any]) = ???
+  def makeClosureForResult(params: List[Any]) = ???
+
+}
+
+class AutoTddRunner(val clazz: Class[Any]) extends Runner with EngineBuilderFactory[Any] with NotActuallyFactory[Any]{
 
   val getDescription = Description.createSuiteDescription("ATDD: " + clazz.getName);
 
   val instance = EngineTest.test(() => { instantiate(clazz) });
 
-  var engineMap: Map[Description, Engine[Any]] = Map()
-  var ScenarioMap: Map[Description, Scenario[Any, Any, Any]] = Map()
+  var engineMap: Map[Description, Engine] = Map()
+  var ScenarioMap: Map[Description, Scenario] = Map()
   var exceptionMap: Map[Description, Throwable] = Map()
 
   for (m <- clazz.getDeclaredMethods().filter((m) => returnTypeIsEngine(m))) {
     val engineDescription = Description.createSuiteDescription(m.getName())
     getDescription.addChild(engineDescription)
-    val engine: Engine[Any] = m.invoke(instance).asInstanceOf[Engine[Any]];
+    val engine: Engine = m.invoke(instance).asInstanceOf[Engine];
     println(m.getName())
     println(engine)
     engineMap = engineMap + (engineDescription -> engine)
@@ -43,7 +52,7 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner {
       //      println("   " + cleanedName)
       val ScenarioDescription = Description.createSuiteDescription(cleanedName)
       engineDescription.addChild(ScenarioDescription)
-      ScenarioMap = ScenarioMap + (ScenarioDescription -> c.asInstanceOf[Scenario[ Any, Any, Any]])
+      ScenarioMap = ScenarioMap + (ScenarioDescription -> c.asInstanceOf[Scenario])
       saveResults(clazz, engineDescription, engine)
     }
 
@@ -70,7 +79,7 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner {
           if (EngineTest.exceptions.contains(Scenario))
             notifier.fireTestFailure(new Failure(cd, EngineTest.exceptions(Scenario)))
           else {
-            val b = engine.makeClosureForBecause(Scenario.params);
+            //            val b = engine.makeClosureForBecause(Scenario.params);
             val actual = engine.applyParam(engine.root, Scenario.params, true)
             try {
               Assert.assertEquals(Scenario.expected, Some(actual))
@@ -88,10 +97,10 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner {
       notifier.fireTestFinished(getDescription)
     })
   }
-  
+
   def returnTypeIsEngine(m: Method): Boolean = {
     val rt = m.getReturnType()
-    val c = classOf[Engine[Any]]
+    val c = classOf[Engine]
     if (c.isAssignableFrom(rt))
       return true;
     for (t <- rt.getInterfaces())
