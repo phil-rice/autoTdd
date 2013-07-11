@@ -3,6 +3,7 @@ package org.autotdd.engine
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 import java.text.MessageFormat
+
 class NeedUseCaseException extends Exception
 class NeedScenarioException extends Exception
 class ScenarioBecauseException(msg: String) extends EngineException(msg)
@@ -30,6 +31,8 @@ object EngineTest {
 
 }
 trait EngineTypes[R] {
+  /** A is a function from the parameters of the engine, and the result to a boolean. It checks that some property is true */
+  type A
   /** B is a function from the parameters of the engine to a boolean. It is effectively in calculating which scenario is to be used */
   type B
   /** RFn is a function from the parameters of the engine to a result R. It is used to calculate the result of the engine */
@@ -41,6 +44,8 @@ trait EngineTypes[R] {
   type CfgFn;
 
   type RealScenarioBuilder
+  /** In order to call an A in the building code, when we don't know anything about the arity, we create a closure holding the parameters and reusltand pass the A function to it */
+  type AssertionClosure = (A) => Boolean
   /** In order to call a B in the building code, when we don't know anything about the arity, we create a closure holding the parameters and pass the B function to it */
   type BecauseClosure = (B) => Boolean
   /** In order to call a RFN in the building code, when we don't know anything about the arity, we create a closure holding the parameters and pass the B function to it */
@@ -50,16 +55,17 @@ trait EngineTypes[R] {
   /** This is just a type synonym to save messy code */
   type Code = CodeFn[B, RFn, R]
 
+  def makeClosureForAssertion(params: List[Any], r: R): AssertionClosure
   def makeClosureForBecause(params: List[Any]): BecauseClosure
   def makeClosureForResult(params: List[Any]): ResultClosure
   def makeClosureForCfg(params: List[Any]): CfgClosure
 }
 
-trait EngineBuilderFactory[R] extends EngineTypes[R] {
+trait EngineUniverse[R] extends EngineTypes[R] {
   class ScenarioConflictException(msg: String, val scenarioBeingAdded: Scenario, cause: Throwable) extends EngineException(msg, cause)
 
   def rfnMaker: (Either[Exception, R]) => RFn
-  def logger: TddLogger 
+  def logger: TddLogger
 
   type RorN = Either[CodeAndScenarios, Node]
   type RealScenarioBuilder <: ScenarioBuilder
@@ -92,6 +98,7 @@ trait EngineBuilderFactory[R] extends EngineTypes[R] {
     expected: Option[R] = None,
     code: Option[CodeFn[B, RFn, R]] = None,
     because: Option[Because[B]] = None,
+    assertions: List[Assertion[A]] = List(),
     configuration: Option[CfgFn] = None) {
 
     def configure =
@@ -128,14 +135,12 @@ trait EngineBuilderFactory[R] extends EngineTypes[R] {
     def useCases: List[UseCase]
     def withCases(useCases: List[UseCase]): RealScenarioBuilder;
     def thisAsBuilder: RealScenarioBuilder
-    def because(b: Because[B]) = scenarioLens.set(thisAsBuilder, scenarioLens.get(thisAsBuilder).copy(because = Some(b)))
+    def because(b: Because[B]) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(because = Some(b)))
     def useCase(description: String) = withCases(UseCase(description, List()) :: useCases);
-    def expected(e: R) = scenarioLens.set(thisAsBuilder, scenarioLens.get(thisAsBuilder).copy(expected = Some(e)))
-    def code(c: CodeFn[B, RFn, R]) = scenarioLens.set(thisAsBuilder, scenarioLens.get(thisAsBuilder).copy(code = Some(c)))
-    def configuration[K](cfg: CfgFn) = {
-      val s = scenarioLens.get(thisAsBuilder);
-      scenarioLens.set(thisAsBuilder, s.copy(configuration = Some(cfg)))
-    }
+    def expected(e: R) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(expected = Some(e)))
+    def code(c: CodeFn[B, RFn, R]) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(code = Some(c)))
+    def configuration[K](cfg: CfgFn) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(configuration = Some(cfg)))
+    def assertion(a: Assertion[A]) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(assertions = a :: s.assertions))
 
     def useCasesForBuild: List[UseCase] =
       useCases.map(u => UseCase(u.description,
@@ -240,16 +245,38 @@ trait EngineBuilderFactory[R] extends EngineTypes[R] {
         throw new NoExpectedException("No 'produces' in " + c)
       if (actualFromScenario != c.expected.get)
         throw new ScenarioResultException("Wrong result for " + c.actualCode.description + " for " + c.params + "\nActual: " + actualFromScenario + "\nExpected: " + c.expected + "\nRoot:\n" + toString("", root));
+      val assertionClosure = makeClosureForAssertion(c.params, actualFromScenario);
+      for (a <- c.assertions) {
+        val result = assertionClosure(a.assertion)
+        if (!result)
+          throw new AssertionException("\nAssertion " + a.description + " failed.\nParams are " + c.params + "\nResult was " + actualFromScenario)
+      }
+
     }
 
     def buildFromScenarios(root: RorN, cs: List[Scenario]): RorN = {
       cs match {
         case c :: tail =>
           validateBecause(c);
-          //        validateScenario(root, c);
+          //                  validateScenario(root, c);
           buildFromScenarios(withScenario(None, root, c, true), tail)
 
         case _ => root;
+      }
+    }
+
+    def validateScenarios(root: RorN, cs: List[Scenario]) {
+      for (c <- cs) {
+        c.configure
+        val bc = makeClosureForBecause(c.params)
+        val fnr = makeClosureForResult(c.params)
+        val resultFn: RFn = evaluate(bc, root, false);
+        val result = fnr(resultFn)
+        val fna = makeClosureForAssertion(c.params, result)
+        for (a <- c.assertions) {
+          if (!fna(a.assertion))
+            throw new AssertionException("\nAssertion " + a.description + " failed.\nParams are " + c.params + "\nResult was " + result)
+        }
       }
     }
 
@@ -301,7 +328,7 @@ trait EngineBuilderFactory[R] extends EngineTypes[R] {
 
     private def withScenario(parent: Option[Node], n: RorN, c: Scenario, parentWasTrue: Boolean): RorN =
       try {
-                println("Scenario: " + c)
+        println("Scenario: " + c)
         val result: RorN = n match {
           case null =>
             if (c.because.isDefined)
@@ -401,6 +428,8 @@ trait EngineBuilderFactory[R] extends EngineTypes[R] {
     def scenarios: List[Scenario] = useCases.flatMap(_.scenarios)
 
     val root: RorN = buildRoot(defaultRoot, scenarios)
+    validateScenarios(root, scenarios)
+
     def constructionString: String = constructionString(defaultRoot, scenarios)
     def logParams(p: Any*) =
       logger.debugRun("Executing " + p.map(logger).mkString(","))
@@ -440,6 +469,7 @@ trait EngineBuilderFactory[R] extends EngineTypes[R] {
           }
         case _ => root
       }
+
     }
 
     def applyParam(root: RorN, params: List[Any], log: Boolean): R = {
@@ -465,6 +495,7 @@ trait EngineBuilderFactory[R] extends EngineTypes[R] {
 
 }
 trait Engine1Types[P, R] extends EngineTypes[R] {
+  type A = (P, R) => Boolean
   type B = (P) => Boolean
   type RFn = (P) => R
   type CfgFn = (P) => Unit
@@ -472,9 +503,11 @@ trait Engine1Types[P, R] extends EngineTypes[R] {
   def makeClosureForBecause(params: List[Any]) = (b: B) => b(params(0).asInstanceOf[P])
   def makeClosureForResult(params: List[Any]) = (r: RFn) => r(params(0).asInstanceOf[P])
   def makeClosureForCfg(params: List[Any]) = (c: CfgFn) => c(params(0).asInstanceOf[P])
+  def makeClosureForAssertion(params: List[Any], r: R) = (a: A) => a(params(0).asInstanceOf[P], r);
 }
 
 trait Engine2Types[P1, P2, R] extends EngineTypes[R] {
+  type A = (P1, P2, R) => Boolean
   type B = (P1, P2) => Boolean
   type RFn = (P1, P2) => R
   type CfgFn = (P1, P2) => Unit
@@ -482,9 +515,11 @@ trait Engine2Types[P1, P2, R] extends EngineTypes[R] {
   def makeClosureForBecause(params: List[Any]) = (b: B) => b(params(0).asInstanceOf[P1], params(1).asInstanceOf[P2])
   def makeClosureForResult(params: List[Any]) = (r: RFn) => r(params(0).asInstanceOf[P1], params(1).asInstanceOf[P2])
   def makeClosureForCfg(params: List[Any]) = (c: CfgFn) => c(params(0).asInstanceOf[P1], params(1).asInstanceOf[P2])
+  def makeClosureForAssertion(params: List[Any], r: R) = (a: A) => a(params(0).asInstanceOf[P1], params(1).asInstanceOf[P2], r);
 }
 
 trait Engine3Types[P1, P2, P3, R] extends EngineTypes[R] {
+  type A = (P1, P2, P3, R) => Boolean
   type B = (P1, P2, P3) => Boolean
   type RFn = (P1, P2, P3) => R
   type CfgFn = (P1, P2, P3) => Unit
@@ -492,6 +527,7 @@ trait Engine3Types[P1, P2, P3, R] extends EngineTypes[R] {
   def makeClosureForBecause(params: List[Any]) = (b: B) => b(params(0).asInstanceOf[P1], params(1).asInstanceOf[P2], params(2).asInstanceOf[P3])
   def makeClosureForResult(params: List[Any]) = (r: RFn) => r(params(0).asInstanceOf[P1], params(1).asInstanceOf[P2], params(2).asInstanceOf[P3])
   def makeClosureForCfg(params: List[Any]) = (c: CfgFn) => c(params(0).asInstanceOf[P1], params(1).asInstanceOf[P2], params(2).asInstanceOf[P3])
+  def makeClosureForAssertion(params: List[Any], r: R) = (a: A) => a(params(0).asInstanceOf[P1], params(1).asInstanceOf[P2], params(2).asInstanceOf[P3], r);
 }
 
 class Engine
@@ -502,7 +538,7 @@ object Engine {
   def apply[P1, P2, P3, R]() = new BuilderFactory3[P1, P2, P3, R]().builder
 }
 
-class BuilderFactory1[P, R](override val logger: TddLogger = TddLogger.noLogger) extends EngineBuilderFactory[R] with Engine1Types[P, R] {
+class BuilderFactory1[P, R](override val logger: TddLogger = TddLogger.noLogger) extends EngineUniverse[R] with Engine1Types[P, R] {
   type RealScenarioBuilder = Builder1
 
   def builder = new Builder1
@@ -520,10 +556,11 @@ class BuilderFactory1[P, R](override val logger: TddLogger = TddLogger.noLogger)
         val result: R = rfn(p)
         logResult(result)
       }
+      override def toString() = toStringWithScenarios
     }
   }
 }
-class BuilderFactory2[P1, P2, R](override val logger: TddLogger = TddLogger.noLogger) extends EngineBuilderFactory[R] with Engine2Types[P1, P2, R] {
+class BuilderFactory2[P1, P2, R](override val logger: TddLogger = TddLogger.noLogger) extends EngineUniverse[R] with Engine2Types[P1, P2, R] {
   type RealScenarioBuilder = Builder2
   def builder = new Builder2
   class Builder2(val useCases: List[UseCase] = List()) extends ScenarioBuilder {
@@ -539,10 +576,11 @@ class BuilderFactory2[P1, P2, R](override val logger: TddLogger = TddLogger.noLo
         val result: R = rfn(p1, p2)
         logResult(result)
       }
+      override def toString() = toStringWithScenarios
     }
   }
 }
-class BuilderFactory3[P1, P2, P3, R](override val logger: TddLogger = TddLogger.noLogger) extends EngineBuilderFactory[R] with Engine3Types[P1, P2, P3, R] {
+class BuilderFactory3[P1, P2, P3, R](override val logger: TddLogger = TddLogger.noLogger) extends EngineUniverse[R] with Engine3Types[P1, P2, P3, R] {
 
   type RealScenarioBuilder = Builder3
   def builder = new Builder3
@@ -559,10 +597,11 @@ class BuilderFactory3[P1, P2, P3, R](override val logger: TddLogger = TddLogger.
         val result: R = rfn(p1, p2, p3)
         logResult(result)
       }
+      override def toString() = toStringWithScenarios
     }
   }
 }
-trait NodeComparator[R] extends EngineBuilderFactory[R] {
+trait NodeComparator[R] extends EngineUniverse[R] {
 
   def compareNodes(n1: RorN, n2: RorN): List[String] =
     compareNodes("", n1, n2)
