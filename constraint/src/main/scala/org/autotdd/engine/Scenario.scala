@@ -62,4 +62,16 @@ object Because {
   }
 
 }
+case class Assertion[A](val assertion: A, override val description: String) extends CodeHolder(description)
+
+object Assertion {
+  implicit def a_to_assertion[A](a: A): Assertion[A] = macro a_to_assertion_impl[A]
+
+  def a_to_assertion_impl[A: c.WeakTypeTag](c: Context)(a: c.Expr[A]): c.Expr[Assertion[A]] = {
+    import c.universe._
+    val becauseString = show(a.tree)
+    reify { Assertion[A](a.splice, c.literal(becauseString).splice) }
+  }
+
+}
 

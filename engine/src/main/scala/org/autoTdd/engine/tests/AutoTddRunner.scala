@@ -19,17 +19,18 @@ object AutoTddRunner {
   val directory = new File(userHome, ".autoTdd")
 
 }
-trait NotActuallyFactory [R]extends EngineBuilderFactory[R]{
+trait NotActuallyFactory[R] extends EngineUniverse[R] {
   def builder: RealScenarioBuilder = ???
   def logger: org.autotdd.engine.TddLogger = TddLogger.noLogger
   def rfnMaker: scala.util.Either[Exception, Any] => RFn = ???
   def makeClosureForBecause(params: List[Any]) = ???
   def makeClosureForCfg(params: List[Any]) = ???
   def makeClosureForResult(params: List[Any]) = ???
+  def makeClosureForAssertion(params: List[Any], r: R) = ???
 
 }
 
-class AutoTddRunner(val clazz: Class[Any]) extends Runner with EngineBuilderFactory[Any] with NotActuallyFactory[Any]{
+class AutoTddRunner(val clazz: Class[Any]) extends Runner with EngineUniverse[Any] with NotActuallyFactory[Any] {
 
   val getDescription = Description.createSuiteDescription("ATDD: " + clazz.getName);
 

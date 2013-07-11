@@ -3,7 +3,7 @@ package org.autotdd.engine
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.FlatSpec
 
-trait AbstractEngineTest[R] extends EngineBuilderFactory[R] with FlatSpec with ShouldMatchers with NodeComparator[R] {
+trait AbstractEngineTest[R] extends EngineUniverse[R] with FlatSpec with ShouldMatchers with NodeComparator[R] {
   def logger: TddLogger
   def builder: RealScenarioBuilder
   def firstUseCaseDescription = "UseCase1"
