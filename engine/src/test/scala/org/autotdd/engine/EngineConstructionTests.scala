@@ -38,7 +38,8 @@ class EngineConstructionStringTest extends EngineStringStringTests {
     val bldr = bldrA.
       scenario("AB").because(becauseA).expected("Y")
     val e = evaluating { bldr.build } should produce[ScenarioConflictException]
-    assert(e.getMessage().contains(bldrA.build.constructionString), "Message: " + e.getMessage())
+    val cs = bldrA.build.constructionString
+    assert(e.getMessage().contains(cs), "Message: " + e.getMessage() + "\nConstruction String: " + cs)
   }
 
   it should "return the aggregate of the toString of an engine created from the scenarios, one after another" in {
@@ -47,8 +48,8 @@ class EngineConstructionStringTest extends EngineStringStringTests {
       scenario("B").because(becauseB).expected("XB").
       scenario("AB").because(becauseAB).expected("XAB")
     val e = bldr.build
-
-    assertEquals(wCString + "\n" + w_aCString + "\n" + w_b_aCString + "\n" + w_ab_b_aCString, e.constructionString)
+    val cs = e.constructionString
+    assertEquals(wCString + "\n" + w_aCString + "\n" + w_b_aCString + "\n" + w_ab_b_aCString, cs)
   }
 
   "An engine's increasingScenariosList method" should "return a list of increasing numbers of scenarios" in {

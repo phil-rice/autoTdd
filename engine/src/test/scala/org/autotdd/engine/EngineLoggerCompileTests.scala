@@ -14,7 +14,7 @@ class EngineLoggerCompileTests extends EngineStringStringTests {
     logger.reset
 
     bldr.build
-    checkMessages("DEBUG Compile() Adding UseCase[0] as new root", "DEBUG Compile() Adding UseCase[1] as extra scenario for CodeAndScenarios(CodeFn(Z):UseCase[0])")
+    checkMessages("DEBUG Compile() Adding UseCase[0] as new root", "DEBUG Compile() Adding UseCase[1] as extra scenario for Z")
   }
 
   it should "log the change from null to a root with one scenario" in {

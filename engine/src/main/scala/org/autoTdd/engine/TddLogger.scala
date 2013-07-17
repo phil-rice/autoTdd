@@ -51,17 +51,16 @@ trait TddLogger extends LoggerDisplayProcessor {
   /** The raw log message that writes the string to an output */
   protected def message(priority: Level, msgType: TddMessageType, message: => String)
 
-  def infoRun(msg: => String) = message(Level.INFO, run, msg)
-  def debugRun(msg: => String) = message(Level.DEBUG, run, msg)
-  def warnRun(msg: => String) = message(Level.WARN, run, msg)
-  def errorRun(msg: => String) = message(Level.ERROR, run, msg)
-  def fatalRun(msg: => String) = message(Level.FATAL, run, msg)
+  def newRoot(description: String) = message(Level.DEBUG, TddLogger.compile, "Adding " + description + " as new root")
+  def addingUnder(description: String, parentWasTrue: Boolean, parentDescription: String) = message(Level.DEBUG, TddLogger.compile, "Adding " + description + " under " + (if (parentWasTrue) "yes" else "no") + " of node " + parentDescription)
+  def addScenarioForRoot(description: String) = message(Level.DEBUG, TddLogger.compile, "Adding " + description + " as extra scenario for root")
+  def addFirstIfThenElse(description: String) = message(Level.DEBUG, TddLogger.compile, "Adding " + description + " as first if then else")
+  def addScenarioFor[B, RFn, R](description: String, code: CodeFn[B, RFn, R]) = message(Level.DEBUG, TddLogger.compile, "Adding " + description + " as extra scenario for " + code.description)
 
-  def infoCompile(msg: => String) = message(Level.INFO, compile, msg)
-  def debugCompile(msg: => String) = message(Level.DEBUG, compile, msg)
-  def warnCompile(msg: => String) = message(Level.WARN, compile, msg)
-  def errorCompile(msg: => String) = message(Level.ERROR, compile, msg)
-  def fatalCompile(msg: => String) = message(Level.FATAL, compile, msg)
+  def executing(params: List[Any]) = message(Level.DEBUG, TddLogger.run, "Executing " + params.map(this).mkString(","))
+  def evaluating(because: Any, condition: Boolean) = message(Level.INFO, TddLogger.run, " Condition" + because + " was " + condition)
+  def result(result: Any) =
+    message(Level.DEBUG, TddLogger.run, " Result " + this(result))
 }
 
 class SimpleLoggerDisplayProcessor(val displayMap: ClassFunctionList[String] = ClassFunctionList()) extends LoggerDisplayProcessor

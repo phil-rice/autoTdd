@@ -30,7 +30,7 @@ trait NotActuallyFactory[R] extends EngineUniverse[R] {
 
 }
 
-class AutoTddRunner(val clazz: Class[Any]) extends Runner with EngineUniverse[Any] with NotActuallyFactory[Any] {
+class AutoTddRunner(val clazz: Class[Any]) extends Runner with JunitUniverse[Any] with NotActuallyFactory[Any] {
 
   val getDescription = Description.createSuiteDescription("ATDD: " + clazz.getName);
 
@@ -39,13 +39,18 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner with EngineUniverse[An
   var engineMap: Map[Description, Engine] = Map()
   var ScenarioMap: Map[Description, Scenario] = Map()
   var exceptionMap: Map[Description, Throwable] = Map()
-
+  
+  def scenarioReporter(f: File) = new JunitScenarioReporter(new JunitFileManipulator(f), logger)
+  
   for (m <- clazz.getDeclaredMethods().filter((m) => returnTypeIsEngine(m))) {
     val engineDescription = Description.createSuiteDescription(m.getName())
     getDescription.addChild(engineDescription)
     val engine: Engine = m.invoke(instance).asInstanceOf[Engine];
     println(m.getName())
     println(engine)
+    
+    engine.walkScenarios(scenarioReporter(fileFor(clazz, engineDescription, "html")));
+    
     engineMap = engineMap + (engineDescription -> engine)
     for (c <- engine.scenarios) {
       val name = c.params.reduce((acc, p) => acc + ", " + p) + " => " + c.expected + " " + c.becauseString
@@ -58,16 +63,16 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner with EngineUniverse[An
     }
 
   }
-
+  
+  def fileFor(clazz: Class[Any], ed: Description, extension: String) = new File(AutoTddRunner.directory, clazz.getName() + "." + ed.getDisplayName() + "." + extension)
+  
   def saveResults(clazz: Class[Any], ed: Description, e: Any) {
+    import Files._
     AutoTddRunner.directory.mkdirs()
-    printToFile(new File(AutoTddRunner.directory, clazz.getName() + "." + ed.getDisplayName() + ".attd"))((pw) => pw.write(e.toString))
+    printToFile(fileFor(clazz, ed, "attd"))((pw) => pw.write(e.toString))
+//        new File(AutoTddRunner.directory, clazz.getName() + "." + ed.getDisplayName() + ".attd"))((pw) => pw.write(e.toString))
   }
 
-  def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
-    val p = new java.io.PrintWriter(f)
-    try { op(p) } finally { p.close() }
-  }
   def run(notifier: RunNotifier) {
     EngineTest.test(() => {
       notifier.fireTestStarted(getDescription)

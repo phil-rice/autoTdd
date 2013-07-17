@@ -131,7 +131,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     })
   case class UseCase(description: String, scenarios: List[Scenario]);
 
-  trait ScenarioBuilder {
+  trait ScenarioBuilder extends ScenarioWalker{
     def useCases: List[UseCase]
     def withCases(useCases: List[UseCase]): RealScenarioBuilder;
     def thisAsBuilder: RealScenarioBuilder
@@ -155,6 +155,32 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       }
 
   }
+  trait IfThenPrinter {
+    def resultPrint: (String, CodeAndScenarios) => String
+    def ifPrint: (String, Node) => String
+    def elsePrint: (String, Node) => String
+    def endPrint: (String, Node) => String
+  }
+
+  trait ScenarioVisitor {
+    def start
+    def visitUseCase(u: UseCase)
+    def visitScenario(u: UseCase, index: Int,  s: Scenario)
+    def visitUseCaseEnd(u: UseCase)
+  }
+
+  trait ScenarioWalker {
+    def useCases: List[UseCase];
+    def walkScenarios(v: ScenarioVisitor) {
+      v.start
+      for (u <- useCases.reverse) {
+        v.visitUseCase(u)
+        for ((s,i) <- u.scenarios.reverse.zipWithIndex)
+          v.visitScenario(u, i, s)
+          v.visitUseCaseEnd(u)
+      }
+    }
+  }
 
   trait EvaluateEngine {
 
@@ -171,7 +197,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     private def evaluate(fn: BecauseClosure, n: Node, log: Boolean): RFn = {
       val condition = fn(n.because.because)
       if (log)
-        logger.infoRun(" Condition" + n.because + " was " + condition)
+        logger.evaluating(n.because, condition)
       condition match {
         case false => evaluate(fn, n.no, log);
         case true => evaluate(fn, n.yes, log);
@@ -203,17 +229,28 @@ trait EngineUniverse[R] extends EngineTypes[R] {
         case _ => List(List(c))
       }))
 
-    def toStringWithScenarios(indent: String, root: RorN): String = {
+    class DefaultIfThenPrinter extends IfThenPrinter {
+      def resultPrint = (indent, result) => indent + result.pretty + ":" + result.scenarios.map((c) => c.description).mkString(",") + "\n"
+      def ifPrint = (indent, node) => indent + "if(" + node.because.pretty + ")\n"
+      def elsePrint = (indent, node) => indent + "else\n";
+      def endPrint = (indent, node) => "";
+    }
+
+    def toStringWith(indent: String, root: RorN, printer: IfThenPrinter): String = {
       root match {
-        case Left(result) =>
-          indent + result.pretty + ":" + result.scenarios.map((c) => c.description).mkString(",") + "\n"
+        case Left(result) => printer.resultPrint(indent, result)
         case Right(node) =>
-          indent + "if(" + node.because.pretty + ")\n" +
-            toStringWithScenarios(indent + " ", node.yes) +
-            indent + "else\n" +
-            toStringWithScenarios(indent + " ", node.no)
+          val ifString = printer.ifPrint(indent, node)
+          val yesString = toStringWith(indent + " ", node.yes, printer)
+          val elseString = printer.elsePrint(indent, node)
+          val noString = toStringWith(indent + " ", node.no, printer)
+          val endString = printer.endPrint(indent, node)
+          val result = ifString + yesString + elseString + noString + endString
+          return result
       }
     }
+
+    def toStringWithScenarios(indent: String, root: RorN): String = toStringWith(indent, root, new DefaultIfThenPrinter())
 
     def constructionString(root: RorN, cs: List[Scenario]) =
       increasingScenariosList(cs).reverse.map((cs) =>
@@ -333,7 +370,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
           case null =>
             if (c.because.isDefined)
               throw new CannotHaveBecauseInFirstScenarioException
-            logger.debugCompile("Adding " + c.description + " as new root")
+            logger.newRoot(c.description)
             Left(CodeAndScenarios(c.actualCode, List(c)))
           case Left(l: CodeAndScenarios) =>
             val cd: CodeFn[B, RFn, R] = c.actualCode
@@ -353,15 +390,15 @@ trait EngineUniverse[R] extends EngineTypes[R] {
                         "\n\nDetails existing:\n" + existingScenario + "\nScenario:\n" + c, c, null)
                     }
                     //                  logger.debugCompile( "Adding " + newCnC + "to yes of leaf " + parent.toString)
-                    logger.debugCompile("Adding " + c.description + " under " + (if (parentWasTrue) "yes" else "no") + " of node " + p.scenarioThatCausedNode.description)
+                    logger.addingUnder(c.description, parentWasTrue, p.scenarioThatCausedNode.description)
                     Right(Node(b, c.params, Left(newCnC), Left(l), c)) //Adding to the 'yes' of the current
                   case _ => //No parent so we are the root.
                     resultsSame(l, c) match {
                       case true =>
-                        logger.debugCompile("Adding " + c.description + " as extra scenario for root")
+                        logger.addScenarioForRoot(c.description)
                         Left(l.copy(scenarios = c :: l.scenarios)); // we come to same conclusion as root, so we just add ourselves as assertion
                       case false =>
-                        logger.debugCompile("Adding " + c.description + " as first if then else")
+                        logger.addFirstIfThenElse(c.description)
                         Right(Node(b, c.params, Left(newCnC), Left(l), c)) //So we are if b then new result else default 
                     }
                 }
@@ -375,13 +412,13 @@ trait EngineUniverse[R] extends EngineTypes[R] {
                     parentWasTrue match {
                       case true =>
                         if (actualResultIfUseThisScenariosCode == Left(c.expected.get)) {
-                          logger.debugCompile("Adding " + c.description + " as extra scenario for " + l)
+                          logger.addScenarioFor(c.description, l.code)
                           Left(l.copy(scenarios = c :: l.scenarios))
                         } else
                           throw new AssertionException("Adding assertion and got wrong value.\nAdding: " + c.description + "\nDetails: " + c + "\nto: " + l + "\nActual result: " + actualResultIfUseThisScenariosCode)
                       case false => //Only way here is when I am coming down a no node. By definition I have a parent and it was false
                         if (parent.isDefined && resultsSame(parent.get.no.left.get, c)) {
-                          logger.debugCompile("Adding " + c.description + " as extra scenario for " + l.code)
+                          logger.addScenarioFor(c.description, l.code)
                           Left(l.copy(scenarios = c :: l.scenarios))
                         } else
                           throw new AssertionException("Adding assertion to else and got wrong value.\nAdding: " + c + "\nto: " + parent.get.no + "\n")
@@ -422,7 +459,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     }
   }
 
-  trait Engine extends BuildEngine {
+  trait Engine extends BuildEngine with ScenarioWalker {
     def defaultRoot: RorN
     def useCases: List[UseCase];
     def scenarios: List[Scenario] = useCases.flatMap(_.scenarios)
@@ -432,11 +469,11 @@ trait EngineUniverse[R] extends EngineTypes[R] {
 
     def constructionString: String = constructionString(defaultRoot, scenarios)
     def logParams(p: Any*) =
-      logger.debugRun("Executing " + p.map(logger).mkString(","))
+      logger.executing(p.toList)
 
     def logResult(fn: => R): R = {
       val result: R = fn;
-      logger.debugRun(" Result " + logger(result))
+      logger.result(result)
       result
     }
 
