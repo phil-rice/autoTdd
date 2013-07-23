@@ -167,16 +167,25 @@ object AutoTddComposite {
 //when I start the first item is selected and the text area is populated, if one exists
 //If the directory doesn't exist shows <No Engines> in List
 
+@RunWith(classOf[AutoTddRunner])
+object ActualUpdateFile {
+  lazy val shell = new Shell
+//  try {
+    val updateFiles = new ActualUpdateFile()
+//  } catch {
+//    case t: Throwable => {
+//      shell.dispose()
+//    }
+//  }
+}
+
+class ActualUpdateFile extends UpdateFiles {
+  def makeComposite(color: Int) = new AutoTddComposite(ActualUpdateFile.shell, color)
+}
+
 object AutoTddView {
   def main(args: Array[String]) {
-    val shell = new Shell
-    try {
-      val updateFiles = new UpdateFiles() {
-        def makeComposite(color: Int) = new AutoTddComposite(shell, color)
-      }
-    } finally {
-      shell.dispose()
-    }
+    val updateFiles = new ActualUpdateFile()
   }
 }
 

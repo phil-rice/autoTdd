@@ -11,16 +11,16 @@ object Bowling {
   //get returns the ith ball or zero   
   val get = Engine[List[Int], Int, Int]().
     useCase("If index in range of list (i.e. the ball has been rolled, return ith item").
-    scenario(List(7, 10, 4, 3), 0).expected(7).code((rolls: List[Int], i: Int) => rolls(i)).
-    scenario(List(7, 10, 4, 3), 3).expected(3).
+    scenario(List(7, 10, 4, 3), 0, "Start of legal range").expected(7).code((rolls: List[Int], i: Int) => rolls(i), "Returns the ith item from the list").
+    scenario(List(7, 10, 4, 3), 3, "End of legal range").expected(3).
 
     useCase("If index is negative return zero").
-    scenario(List(7, 10, 4, 3), -1).expected(0).code((rolls: List[Any], i: Int) => 0).because((rolls: List[Any], i: Int) => i < 0).
+    scenario(List(7, 10, 4, 3), -1, "First value below legal range").expected(0).code((rolls: List[Any], i: Int) => 0).because((rolls: List[Any], i: Int) => i < 0, "Anything below zero").
+    scenario(List(7, 10, 4, 3), -100, "Quite a lot below legal range").expected(0).
 
     useCase("If index is too high return zero").
-    scenario(List(7, 10, 4, 3), 4).expected(0).because((rolls: List[Any], i: Int) => i >= rolls.size).
-    scenario(List(7, 10, 4, 3), 5).expected(0).
-    scenario(List(7, 10, 4, 3), 100).expected(0).build;
+    scenario(List(7, 10, 4, 3), 4, "First value above legal range").expected(0).because((rolls: List[Any], i: Int) => i >= rolls.size).
+    scenario(List(7, 10, 4, 3), 100, "Quite a lot above legal range").expected(0).build;
 
   //    get.validateScenarios
 

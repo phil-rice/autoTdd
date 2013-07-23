@@ -93,7 +93,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
   }
 
   case class Scenario(
-    description: String,
+    description: Option[String],
     params: List[Any],
     expected: Option[R] = None,
     code: Option[CodeFn[B, RFn, R]] = None,
@@ -131,26 +131,29 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     })
   case class UseCase(description: String, scenarios: List[Scenario]);
 
-  trait ScenarioBuilder extends ScenarioWalker{
+  trait ScenarioBuilder extends ScenarioWalker {
     def useCases: List[UseCase]
     def withCases(useCases: List[UseCase]): RealScenarioBuilder;
     def thisAsBuilder: RealScenarioBuilder
-    def because(b: Because[B]) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(because = Some(b)))
+    def because(b: Because[B], comment: String = "") = scenarioLens.mod(thisAsBuilder, (s) => s.copy(because = Some(b.copy(comment = comment))))
     def useCase(description: String) = withCases(UseCase(description, List()) :: useCases);
     def expected(e: R) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(expected = Some(e)))
-    def code(c: CodeFn[B, RFn, R]) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(code = Some(c)))
+    def code(c: CodeFn[B, RFn, R], comment: String = "") = scenarioLens.mod(thisAsBuilder, (s) => s.copy(code = Some(c.copy(comment = comment))))
     def configuration[K](cfg: CfgFn) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(configuration = Some(cfg)))
-    def assertion(a: Assertion[A]) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(assertions = a :: s.assertions))
+    def assertion(a: Assertion[A], comment: String = "") = scenarioLens.mod(thisAsBuilder, (s) => s.copy(assertions = a.copy(comment = comment) :: s.assertions))
 
     def useCasesForBuild: List[UseCase] =
       useCases.map(u => UseCase(u.description,
         u.scenarios.reverse.zipWithIndex.collect {
-          case (s, i) => s.copy(description = u.description + "[" + i + "]")
+          case (s, i) => s.copy(description = Some(s.description.getOrElse(u.description + "[" + i + "]")))
         })).reverse;
 
-    protected def newScenario(params: List[Any]) =
+    protected def newScenario(description: String, params: List[Any]) =
       useCases match {
-        case h :: t => withCases(UseCase(h.description, Scenario("", params) :: h.scenarios) :: t)
+        case h :: t => {
+          val descriptionString = if (description == null) None else Some(description);
+          withCases(UseCase(h.description, Scenario(descriptionString, params) :: h.scenarios) :: t)
+        }
         case _ => throw new NeedUseCaseException
       }
 
@@ -164,20 +167,21 @@ trait EngineUniverse[R] extends EngineTypes[R] {
 
   trait ScenarioVisitor {
     def start
-    def visitUseCase(u: UseCase)
-    def visitScenario(u: UseCase, index: Int,  s: Scenario)
+    def visitUseCase(useCaseindex: Int, u: UseCase)
+    def visitScenario(useCaseindex: Int, u: UseCase, scenarioIndex: Int, s: Scenario)
     def visitUseCaseEnd(u: UseCase)
   }
 
   trait ScenarioWalker {
     def useCases: List[UseCase];
-    def walkScenarios(v: ScenarioVisitor) {
+    def walkScenarios(v: ScenarioVisitor, reverse: Boolean) {
+      def actual[X](list: List[X]) = if (reverse) list.reverse else list;
       v.start
-      for (u <- useCases.reverse) {
-        v.visitUseCase(u)
-        for ((s,i) <- u.scenarios.reverse.zipWithIndex)
-          v.visitScenario(u, i, s)
-          v.visitUseCaseEnd(u)
+      for ((u, ui) <- actual(useCases).zipWithIndex) {
+        v.visitUseCase(ui, u)
+        for ((s, si) <- actual(u.scenarios).zipWithIndex)
+          v.visitScenario(ui, u, si, s)
+        v.visitUseCaseEnd(u)
       }
     }
   }
@@ -230,7 +234,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       }))
 
     class DefaultIfThenPrinter extends IfThenPrinter {
-      def resultPrint = (indent, result) => indent + result.pretty + ":" + result.scenarios.map((c) => c.description).mkString(",") + "\n"
+      def resultPrint = (indent, result) => indent + result.pretty + ":" + result.scenarios.map((s) => s.description.getOrElse("")).mkString(",") + "\n"
       def ifPrint = (indent, node) => indent + "if(" + node.because.pretty + ")\n"
       def elsePrint = (indent, node) => indent + "else\n";
       def endPrint = (indent, node) => "";
@@ -341,10 +345,10 @@ trait EngineUniverse[R] extends EngineTypes[R] {
         case e: Throwable => Right(e.getClass())
       }
 
-    //TODO This is awkward, there is the issue of what if some of the scenarios come to different conclusions. Ah but here is where we use cleverness and 
+    //TODO This is awkward, there is the issue of what if some of the scenarios come to different conclusions. Ah but here is where in the future we can use cleverness and 
     //do a good partitioning.
     /**
-     * p is the parent node. c is the constrant being added
+     * p is the parent node. c is the constraint being added
      *  This is asking whether the parameters in p come to the same conclusion as c
      */
     private def resultsSame(l: CodeAndScenarios, c: Scenario): Boolean = {
@@ -370,7 +374,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
           case null =>
             if (c.because.isDefined)
               throw new CannotHaveBecauseInFirstScenarioException
-            logger.newRoot(c.description)
+            logger.newRoot(c.description.get)
             Left(CodeAndScenarios(c.actualCode, List(c)))
           case Left(l: CodeAndScenarios) =>
             val cd: CodeFn[B, RFn, R] = c.actualCode
@@ -390,15 +394,15 @@ trait EngineUniverse[R] extends EngineTypes[R] {
                         "\n\nDetails existing:\n" + existingScenario + "\nScenario:\n" + c, c, null)
                     }
                     //                  logger.debugCompile( "Adding " + newCnC + "to yes of leaf " + parent.toString)
-                    logger.addingUnder(c.description, parentWasTrue, p.scenarioThatCausedNode.description)
+                    logger.addingUnder(c.description.get, parentWasTrue, p.scenarioThatCausedNode.description.get)
                     Right(Node(b, c.params, Left(newCnC), Left(l), c)) //Adding to the 'yes' of the current
                   case _ => //No parent so we are the root.
                     resultsSame(l, c) match {
                       case true =>
-                        logger.addScenarioForRoot(c.description)
+                        logger.addScenarioForRoot(c.description.get)
                         Left(l.copy(scenarios = c :: l.scenarios)); // we come to same conclusion as root, so we just add ourselves as assertion
                       case false =>
-                        logger.addFirstIfThenElse(c.description)
+                        logger.addFirstIfThenElse(c.description.get)
                         Right(Node(b, c.params, Left(newCnC), Left(l), c)) //So we are if b then new result else default 
                     }
                 }
@@ -412,13 +416,13 @@ trait EngineUniverse[R] extends EngineTypes[R] {
                     parentWasTrue match {
                       case true =>
                         if (actualResultIfUseThisScenariosCode == Left(c.expected.get)) {
-                          logger.addScenarioFor(c.description, l.code)
+                          logger.addScenarioFor(c.description.get, l.code)
                           Left(l.copy(scenarios = c :: l.scenarios))
                         } else
                           throw new AssertionException("Adding assertion and got wrong value.\nAdding: " + c.description + "\nDetails: " + c + "\nto: " + l + "\nActual result: " + actualResultIfUseThisScenariosCode)
                       case false => //Only way here is when I am coming down a no node. By definition I have a parent and it was false
                         if (parent.isDefined && resultsSame(parent.get.no.left.get, c)) {
-                          logger.addScenarioFor(c.description, l.code)
+                          logger.addScenarioFor(c.description.get, l.code)
                           Left(l.copy(scenarios = c :: l.scenarios))
                         } else
                           throw new AssertionException("Adding assertion to else and got wrong value.\nAdding: " + c + "\nto: " + parent.get.no + "\n")
@@ -583,7 +587,7 @@ class BuilderFactory1[P, R](override val logger: TddLogger = TddLogger.noLogger)
   class Builder1(val useCases: List[UseCase] = List()) extends ScenarioBuilder {
     def thisAsBuilder = this
     def withCases(useCases: List[UseCase]) = new Builder1(useCases)
-    def scenario(p: P) = newScenario(List(p))
+    def scenario(p: P, description: String = null) = newScenario(description, List(p))
     def build = new Engine with Function[P, R] {
       def useCases = useCasesForBuild
       def defaultRoot = null
@@ -603,7 +607,7 @@ class BuilderFactory2[P1, P2, R](override val logger: TddLogger = TddLogger.noLo
   class Builder2(val useCases: List[UseCase] = List()) extends ScenarioBuilder {
     def thisAsBuilder = this
     def withCases(useCases: List[UseCase]) = new Builder2(useCases)
-    def scenario(p1: P1, p2: P2) = newScenario(List(p1, p2))
+    def scenario(p1: P1, p2: P2, description: String = null) = newScenario(description, List(p1, p2))
     def build = new Engine with Function2[P1, P2, R] {
       def useCases = useCasesForBuild
       def defaultRoot = null
@@ -624,7 +628,7 @@ class BuilderFactory3[P1, P2, P3, R](override val logger: TddLogger = TddLogger.
   class Builder3(val useCases: List[UseCase] = List()) extends ScenarioBuilder {
     def thisAsBuilder = this
     def withCases(useCases: List[UseCase]) = new Builder3(useCases)
-    def scenario(p1: P1, p2: P2, p3: P3) = newScenario(List(p1, p2, p3))
+    def scenario(p1: P1, p2: P2, p3: P3, description: String = null) = newScenario(description, List(p1, p2, p3))
     def build = new Engine with Function3[P1, P2, P3, R] {
       def useCases = useCasesForBuild
       def defaultRoot = null

@@ -12,6 +12,7 @@ import org.junit.runner.notification.Failure
 import java.io.File
 import scala.collection.mutable.StringBuilder
 import sys.process._
+import java.lang.reflect.Field
 
 object AutoTddRunner {
   val separator = "\n#########\n"
@@ -39,38 +40,49 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner with JunitUniverse[Any
   var engineMap: Map[Description, Engine] = Map()
   var ScenarioMap: Map[Description, Scenario] = Map()
   var exceptionMap: Map[Description, Throwable] = Map()
-  
+
   def scenarioReporter(f: File) = new JunitScenarioReporter(new JunitFileManipulator(f), logger)
-  
+
   for (m <- clazz.getDeclaredMethods().filter((m) => returnTypeIsEngine(m))) {
     val engineDescription = Description.createSuiteDescription(m.getName())
-    getDescription.addChild(engineDescription)
     val engine: Engine = m.invoke(instance).asInstanceOf[Engine];
     println(m.getName())
     println(engine)
-    
-    engine.walkScenarios(scenarioReporter(fileFor(clazz, engineDescription, "html")));
-    
+    add(engineDescription, engine)
+  }
+  for (f <- clazz.getFields().filter((f) => typeIsEngine(f))) {
+    val engineDescription = Description.createSuiteDescription(f.getName())
+    val engine: Engine = f.get(instance).asInstanceOf[Engine];
+    println(f.getName())
+    println(engine)
+    add(engineDescription, engine)
+  }
+
+  def add(engineDescription: Description, engine: Engine) {
+    getDescription.addChild(engineDescription)
+
+    val reporter = (scenarioReporter(fileFor(clazz, engineDescription, "html")))
+    engine.walkScenarios(reporter, false);
+
     engineMap = engineMap + (engineDescription -> engine)
     for (c <- engine.scenarios) {
       val name = c.params.reduce((acc, p) => acc + ", " + p) + " => " + c.expected + " " + c.becauseString
-      val cleanedName = name.replace("(", "<").replace(")", ">");
-      //      println("   " + cleanedName)
+      val cleanedName = name.replace("(", "<").replace(")", ">").replace("\n", "\\n");
+      println("   " + cleanedName)
       val ScenarioDescription = Description.createSuiteDescription(cleanedName)
       engineDescription.addChild(ScenarioDescription)
       ScenarioMap = ScenarioMap + (ScenarioDescription -> c.asInstanceOf[Scenario])
       saveResults(clazz, engineDescription, engine)
     }
-
   }
-  
+
   def fileFor(clazz: Class[Any], ed: Description, extension: String) = new File(AutoTddRunner.directory, clazz.getName() + "." + ed.getDisplayName() + "." + extension)
-  
+
   def saveResults(clazz: Class[Any], ed: Description, e: Any) {
     import Files._
     AutoTddRunner.directory.mkdirs()
     printToFile(fileFor(clazz, ed, "attd"))((pw) => pw.write(e.toString))
-//        new File(AutoTddRunner.directory, clazz.getName() + "." + ed.getDisplayName() + ".attd"))((pw) => pw.write(e.toString))
+    //        new File(AutoTddRunner.directory, clazz.getName() + "." + ed.getDisplayName() + ".attd"))((pw) => pw.write(e.toString))
   }
 
   def run(notifier: RunNotifier) {
@@ -106,6 +118,15 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner with JunitUniverse[Any
 
   def returnTypeIsEngine(m: Method): Boolean = {
     val rt = m.getReturnType()
+    return isEngine(rt)
+  }
+
+  def typeIsEngine(f: Field): Boolean = {
+    val rt = f.getType()
+    return isEngine(rt)
+  }
+
+  def isEngine(rt: Class[_]): Boolean = {
     val c = classOf[Engine]
     if (c.isAssignableFrom(rt))
       return true;
@@ -118,11 +139,17 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner with JunitUniverse[Any
   def instantiate(clazz: Class[_]): Any = {
     val rm = ru.runtimeMirror(clazz.getClassLoader())
     val declaredFields = clazz.getDeclaredFields().toList
-    val obj = declaredFields.find(field => field.getName() == "MODULE$") match {
-      case Some(modField) => modField.get(clazz)
-      case None => clazz.newInstance()
+    val moduleField = declaredFields.find(field => field.getName() == "MODULE$")
+    try {
+      val obj = moduleField match {
+        case Some(modField) => modField.get(clazz)
+        case None => clazz.newInstance()
+      }
+      obj
+    } catch {
+      case e: Throwable =>
+        throw new RuntimeException(s"Class: $clazz Field: $moduleField", e);
     }
-    obj
   }
 
   trait SomeTrait { def someMethod: String }

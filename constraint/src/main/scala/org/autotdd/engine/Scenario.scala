@@ -20,7 +20,7 @@ object RfnMaker {
 
 }
 
-abstract class CodeHolder(val description: String) {
+abstract class CodeHolder(val description: String, val comment: String) {
   private val index = description.indexOf("=>");
   val pretty = index match {
     case -1 => description
@@ -36,7 +36,7 @@ abstract class CodeHolder(val description: String) {
 
 }
 
-case class CodeFn[B, RFn, R](val rfn: RFn, override val description: String) extends CodeHolder(description) {
+case class CodeFn[B, RFn, R](val rfn: RFn, override val description: String, override val comment: String="") extends CodeHolder(description, comment) {
   override def toString = getClass.getSimpleName() + "(" + description + ")"
 }
 
@@ -45,12 +45,12 @@ object CodeFn {
 
   def c_to_code_impll[B: c.WeakTypeTag, RFn: c.WeakTypeTag, R: c.WeakTypeTag](c: Context)(r: c.Expr[RFn]): c.Expr[CodeFn[B, RFn, R]] = {
     import c.universe._
-    reify { CodeFn[B, RFn, R](r.splice, c.literal(show(r.tree)).splice) }
+    reify { CodeFn[B, RFn, R](r.splice, c.literal(show(r.tree)).splice, "") }
   }
 
 }
 
-case class Because[B](val because: B, override val description: String) extends CodeHolder(description)
+case class Because[B](val because: B, override val description: String, override val comment: String="") extends CodeHolder(description, comment)
 
 object Because {
   implicit def b_to_because[B](b: B): Because[B] = macro b_to_because_imp[B]
@@ -58,11 +58,11 @@ object Because {
   def b_to_because_imp[B: c.WeakTypeTag](c: Context)(b: c.Expr[B]): c.Expr[Because[B]] = {
     import c.universe._
     val becauseString = show(b.tree)
-    reify { Because[B](b.splice, c.literal(becauseString).splice) }
+    reify { Because[B](b.splice, c.literal(becauseString).splice, "") }
   }
 
 }
-case class Assertion[A](val assertion: A, override val description: String) extends CodeHolder(description)
+case class Assertion[A](val assertion: A, override val description: String, override val comment: String="") extends CodeHolder(description, comment)
 
 object Assertion {
   implicit def a_to_assertion[A](a: A): Assertion[A] = macro a_to_assertion_impl[A]
@@ -70,7 +70,7 @@ object Assertion {
   def a_to_assertion_impl[A: c.WeakTypeTag](c: Context)(a: c.Expr[A]): c.Expr[Assertion[A]] = {
     import c.universe._
     val becauseString = show(a.tree)
-    reify { Assertion[A](a.splice, c.literal(becauseString).splice) }
+    reify { Assertion[A](a.splice, c.literal(becauseString).splice, "") }
   }
 
 }

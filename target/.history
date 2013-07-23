@@ -65,3 +65,15 @@ compile
 publish-loca
 publish-local
 project eclipse
+compile
+test
+publish-local
+pack
+project eclipse
+compile
+publish-local
+pack
+ project eclipse
+compile
+test
+exit

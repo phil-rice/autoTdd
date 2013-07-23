@@ -27,31 +27,33 @@ trait JunitUniverse[R] extends EngineUniverse[R] {
 
     def start = manipulator.nuke
 
-    def visitUseCase(u: UseCase) {
-      val text = <h1>{ u.description }</h1>.mkString;
+    def visitUseCase(ui: Int, u: UseCase) {
+      val text = <h1>Usecase { ui }: { u.description }</h1>.mkString;
       manipulator.append(text)
     }
 
     def visitUseCaseEnd(u: UseCase) {
-      val text = s"Goodbye ${u.description}";
-      manipulator.append(text)
     }
 
-    def visitScenario(u: UseCase, index: Int, s: Scenario) {
+    def visitScenario(useCaseindex: Int, u: UseCase, scenarioIndex: Int, s: Scenario) {
       val paramsString = s.params.mkString("<br />,")
-      val assertionsString = s.assertions.mkString(",")
-      val becauseString = s.because.collect { case b => b.description }.getOrElse("<undefined>")
       val text =
-        <h2>{ index } </h2>
+        <h2>{ scenarioIndex }{ s.description.collect { case d => ": " + d } getOrElse ("") }</h2>
         <table>
-          <tr>
-            <td>Parameters</td>
-            <td>{ s.params.mkString(",") }</td>
-          </tr>
+          <tr><td>Parameters</td><td>{ s.params.mkString(",") }</td></tr>
           <tr><td>Expected</td><td>{ s.expected.getOrElse("<undefined>") }</td></tr>
-          <tr><td>Because</td><td>{ becauseString }</td></tr>
-          <tr><td>Code</td><td>{ s.actualCode.description }</td></tr>
-          <tr><td>Assertions</td><td>{ assertionsString }</td></tr>
+          {
+            if (s.because.isDefined)
+              <tr><td>Because </td><td> { s.becauseString } </td><td>{ s.because.get.comment }</td></tr>
+          }
+          {
+            if (s.code.isDefined)
+              <tr><td>Code</td><td>{ s.code.get.description }</td><td>{ s.code.get.comment }</td></tr>
+          }
+          {
+            if (s.assertions.size > 0)
+              <tr><td>Assertions</td><td>{ s.assertions.mkString(",") }</td></tr>
+          }
         </table>;
 
       val t = text.mkString

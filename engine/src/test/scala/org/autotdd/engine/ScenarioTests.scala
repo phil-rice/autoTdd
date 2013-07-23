@@ -24,11 +24,11 @@ trait AbstractScenarioTests[R] extends FirstScenarioTest[R] {
     assert(c.because == None)
     assert(c.expected == None)
     assert(c.configuration == None)
-    assert(c.description == "", c.description)
+    assert(c.description == None, c.description)
   }
 
   "The ScenarioBuilder" should "allow the scenario lens to set /get the scenario" in {
-    val expected = new Scenario("xx", List())
+    val expected = new Scenario(None, List())
     val newBuilder = scenarioLens.set(builderWithScenario, expected);
     assert(List(expected) == newBuilder.useCases.head.scenarios, newBuilder.useCases.head.scenarios) //i.e. this has replaced the head scenario
     assert(expected == scenarioLens.get(newBuilder), scenarioLens.get(newBuilder))
@@ -73,12 +73,17 @@ trait AbstractScenarioTests[R] extends FirstScenarioTest[R] {
     checkRfn(c)
   }
 
+   
   "A built engine" should "have all the scenarios in it's list of scenarios" in {
     val b = builderWithScenario.expected(firstResult)
     val engine = build(b)
     assertEquals("UseCases", b.useCasesForBuild, engine.useCases)
-    val expectedScenario = Scenario(firstUseCaseDescription + "[0]", firstParams, Some(firstResult));
+    val expectedScenario = Scenario(Some(firstUseCaseDescription + "[0]"), firstParams, Some(firstResult));
     assertEquals(List(expectedScenario), engine.scenarios)
+  }
+  
+  it should "allow a specified description for a use ca to be used" in {
+    
   }
 
 }

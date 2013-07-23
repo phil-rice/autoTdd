@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" output="bin" path="src/main/scala"/>
 	<classpathentry kind="src" output="bin" path="src/main/java"/>
 	<classpathentry kind="src" output="bin" path="src/test/scala"/>
@@ -35,8 +36,8 @@
 	<classpathentry kind="lib" path="C:/Users/Phil/.ivy2/cache/junit/junit/jars/junit-4.8.2.jar" sourcepath="C:/Users/Phil/.ivy2/cache/junit/junit/srcs/junit-4.8.2-sources.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Phil/.ivy2/cache/com.miglayout/miglayout-swt/jars/miglayout-swt-4.2.jar" sourcepath="C:/Users/Phil/.ivy2/cache/com.miglayout/miglayout-swt/srcs/miglayout-swt-4.2-sources.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Phil/.ivy2/cache/com.miglayout/miglayout-core/jars/miglayout-core-4.2.jar" sourcepath="C:/Users/Phil/.ivy2/cache/com.miglayout/miglayout-core/srcs/miglayout-core-4.2-sources.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Phil/.ivy2/local/org.autotdd/constraint_2.10/1.0.0-SNAPSHOT/jars/constraint_2.10.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Phil/.ivy2/local/org.autotdd/engine_2.10/1.0.0-SNAPSHOT/jars/engine_2.10.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Phil/.ivy2/local/org.autotdd/constraint_2.10/1.0.0-SNAPSHOT/jars/constraint_2.10.jar" sourcepath="C:/Users/Phil/.ivy2/local/org.autotdd/constraint_2.10/1.0.0-SNAPSHOT/srcs/constraint_2.10-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Phil/.ivy2/local/org.autotdd/engine_2.10/1.0.0-SNAPSHOT/jars/engine_2.10.jar" sourcepath="C:/Users/Phil/.ivy2/local/org.autotdd/engine_2.10/1.0.0-SNAPSHOT/srcs/engine_2.10-sources.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Phil/.ivy2/cache/org.eclipse.ui/org.eclipse.ui.workbench/jars/org.eclipse.ui.workbench-3.7.1.v20120104-1859.jar" sourcepath="C:/Users/Phil/.ivy2/cache/org.eclipse.ui/org.eclipse.ui.workbench/srcs/org.eclipse.ui.workbench-3.7.1.v20120104-1859-sources.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Phil/.ivy2/cache/org.eclipse.jface/org.eclipse.jface/jars/org.eclipse.jface-3.7.0.v20110928-1505.jar" sourcepath="C:/Users/Phil/.ivy2/cache/org.eclipse.jface/org.eclipse.jface/srcs/org.eclipse.jface-3.7.0.v20110928-1505-sources.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Phil/.ivy2/cache/org.eclipse.equinox/org.eclipse.equinox.common/jars/org.eclipse.equinox.common-3.6.0.v20110523.jar" sourcepath="C:/Users/Phil/.ivy2/cache/org.eclipse.equinox/org.eclipse.equinox.common/srcs/org.eclipse.equinox.common-3.6.0.v20110523-sources.jar"/>
