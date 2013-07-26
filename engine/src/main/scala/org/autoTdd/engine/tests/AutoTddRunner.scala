@@ -62,16 +62,16 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner with JunitUniverse[Any
     getDescription.addChild(engineDescription)
 
     val reporter = (scenarioReporter(fileFor(clazz, engineDescription, "html")))
-    engine.walkScenarios(reporter, false);
+    engine.walkScenarios(reporter, true);
 
     engineMap = engineMap + (engineDescription -> engine)
-    for (c <- engine.scenarios) {
-      val name = c.params.reduce((acc, p) => acc + ", " + p) + " => " + c.expected + " " + c.becauseString
+    for (s <- engine.scenarios) {
+      val name = s.description.collect { case d: String => d + "/" }.getOrElse("") + s.params.reduce((acc, p) => acc + ", " + p) + " => " + s.expected + " " + s.becauseString
       val cleanedName = name.replace("(", "<").replace(")", ">").replace("\n", "\\n");
       println("   " + cleanedName)
       val ScenarioDescription = Description.createSuiteDescription(cleanedName)
       engineDescription.addChild(ScenarioDescription)
-      ScenarioMap = ScenarioMap + (ScenarioDescription -> c.asInstanceOf[Scenario])
+      ScenarioMap = ScenarioMap + (ScenarioDescription -> s.asInstanceOf[Scenario])
       saveResults(clazz, engineDescription, engine)
     }
   }
@@ -98,13 +98,17 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner with JunitUniverse[Any
             notifier.fireTestFailure(new Failure(cd, EngineTest.exceptions(Scenario)))
           else {
             //            val b = engine.makeClosureForBecause(Scenario.params);
-            val actual = engine.applyParam(engine.root, Scenario.params, true)
-            try {
-              Assert.assertEquals(Scenario.expected, Some(actual))
-              notifier.fireTestFinished(cd)
-            } catch {
-              case e: Throwable => notifier.fireTestFailure(new Failure(cd, e))
-            }
+            if (engine.root == null)
+              notifier.fireTestIgnored(cd)
+            else
+              try {
+                val actual = engine.applyParam(engine.root, Scenario.params, true)
+                Assert.assertEquals(Scenario.expected, Some(actual))
+                notifier.fireTestFinished(cd)
+              } catch {
+                //              case e: AssertionFailedError => notifier.fireTestFailure(new Failure(cd, e))
+                case e: Throwable => notifier.fireTestFailure(new Failure(cd, e))
+              }
           }
           notifier.fireTestFinished(ed)
         }

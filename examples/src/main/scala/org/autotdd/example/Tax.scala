@@ -17,8 +17,8 @@ object Dates {
   val april1st1940 = dateFormatter.parse("01/04/1940")
   val april1st1960 = dateFormatter.parse("01/04/1960")
 
-  val april6th1938 = dateFormatter.parse("01/04/1930")
-  val april6th1948 = dateFormatter.parse("01/04/1930")
+  val april6th1938 = dateFormatter.parse("06/04/1938")
+  val april6th1948 = dateFormatter.parse("06/04/1948")
 
 }
 
@@ -41,7 +41,7 @@ object Tax {
     useCase("Born after 5 April 1948").
     scenario(Dates.april1st1960, TaxReference.singlePersonsAllowanceReference, "Some time after").
     expected(AllowanceAndLimit(9440, 100000)).
-    code((d: Date, ref: SinglePersonsAllowanceReference) => ref.after6thApril1938).
+    code((d: Date, ref: SinglePersonsAllowanceReference) => ref.after5thApril1948).
 
     useCase("Born between 6 April 1938 and 5 April 1948").
     scenario(Dates.april1st1940,TaxReference. singlePersonsAllowanceReference, "In the middle").
@@ -53,7 +53,7 @@ object Tax {
     scenario(Dates.april1st1930, TaxReference.singlePersonsAllowanceReference, "Few years before").
     expected(AllowanceAndLimit(10660, 26100)).
     code((d: Date, ref: SinglePersonsAllowanceReference) => ref.before6thApril1938).
-    because((d: Date, ref: SinglePersonsAllowanceReference) => d.after(Dates.april6th1938)).
+    because((d: Date, ref: SinglePersonsAllowanceReference) => d.before(Dates.april6th1938)).
 
     build
 
@@ -64,11 +64,11 @@ object Tax {
     code((income: Float, a: AllowanceAndLimit, basicAllowance: Float) => {
       val excess = Math.max(0, income - a.limit)
       val reduction = excess / 2
-      Math.min(basicAllowance, income - reduction)
+      Math.max(basicAllowance, income - reduction)
     }).
 
     useCase("Higher Personal Allowance Partially Reduced ").
-    scenario(26100, AllowanceAndLimit(10660, 26100), 9440, "Diana").
+    scenario(28000, AllowanceAndLimit(10660, 26100), 9440, "Diana").
     expected(9710).
 
     useCase("Higher Personal Allowance Reduced To Basic").
