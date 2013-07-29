@@ -2,6 +2,7 @@ package org.autotdd.engine
 
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.FlatSpec
+import junit.framework.AssertionFailedError
 
 trait AbstractEngineTest[R] extends EngineUniverse[R] with FlatSpec with ShouldMatchers with NodeComparator[R] {
   def logger: TddLogger
@@ -39,15 +40,25 @@ trait AbstractEngineTest[R] extends EngineUniverse[R] with FlatSpec with ShouldM
     }
     assert(expected == actual, msg)
   }
-  def checkMessages[X]( expected: String*) {
+  def checkMessages[X](expected: String*) {
     val actual = logger.asInstanceOf[TestLogger].messages
     assert(expected.toList == actual, "\nExpected: " + expected + "\nActual: " + actual)
   }
-  def checkLastMessages( expected: String*) {
+  def checkLastMessages(expected: String*) {
     val full = logger.asInstanceOf[TestLogger].messages
     val actual = full.takeRight(expected.size)
     assert(expected.toList == actual, "\nExpected: " + expected + "\nActual: " + full)
   }
+
+//  def checkSingleException[E](code: => Unit, exceptionClass: Class[E]): E =
+//    try {
+//      code
+//      throw new AssertionFailedError("Expected " + exceptionClass.getName());
+//    } catch {
+//      case e: Exception if exceptionClass == e.get  => 
+//        assert(1==e.scenarioExceptionMap.size, s"Expected one exception of type $exceptionClass got ${e.scenarioExceptionMap}")
+//        e.scenarioExceptionMap.keys.head.asInstanceOf[E]
+//    }
 }
 
 trait AbstractEngine1Test[P, R] extends BuilderFactory1[P, R] with AbstractEngineTest[R] with Engine1Types[P, R]

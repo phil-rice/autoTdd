@@ -19,7 +19,11 @@ trait JunitUniverse[R] extends EngineUniverse[R] {
 
   class JUnitTestManipulator() extends JUnitManipulator {
     var results: List[String] = null
-    def nuke = if (results == null) results = List() else throw new IllegalStateException;
+    def nuke =
+      if (results == null)
+        results = List()
+      else
+        throw new IllegalStateException;
     def append(s: String) = results = s :: results
   }
 
@@ -60,6 +64,8 @@ trait JunitUniverse[R] extends EngineUniverse[R] {
       manipulator.append(t)
     }
 
+    def end={}
+    
     def ifPrint: (String, Node) => String = ???
     def elsePrint: (String, Node) => String = ???
     def endPrint: (String, Node) => String = ???

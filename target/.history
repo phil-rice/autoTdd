@@ -77,3 +77,11 @@ pack
 compile
 test
 exit
+compile
+test
+compile:test
+compile;test
+compile
+test
+publish-local
+project eclipse

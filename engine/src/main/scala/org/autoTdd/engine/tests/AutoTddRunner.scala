@@ -58,21 +58,31 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner with JunitUniverse[Any
     add(engineDescription, engine)
   }
 
+  private def clean(s: String) = s.replace("(", "<").replace(")", ">").replace("\n", "\\n")
+
   def add(engineDescription: Description, engine: Engine) {
     getDescription.addChild(engineDescription)
-
-    val reporter = (scenarioReporter(fileFor(clazz, engineDescription, "html")))
+    val file = fileFor(clazz, engineDescription, "html")
+    val manipulator = new JunitFileManipulator(file)
+    val reporter = (scenarioReporter(file))
     engine.walkScenarios(reporter, true);
+    manipulator.append("\n\n" + <pre>{ engine.constructionString }</pre>)
 
     engineMap = engineMap + (engineDescription -> engine)
-    for (s <- engine.scenarios) {
-      val name = s.description.collect { case d: String => d + "/" }.getOrElse("") + s.params.reduce((acc, p) => acc + ", " + p) + " => " + s.expected + " " + s.becauseString
-      val cleanedName = name.replace("(", "<").replace(")", ">").replace("\n", "\\n");
-      println("   " + cleanedName)
-      val ScenarioDescription = Description.createSuiteDescription(cleanedName)
-      engineDescription.addChild(ScenarioDescription)
-      ScenarioMap = ScenarioMap + (ScenarioDescription -> s.asInstanceOf[Scenario])
-      saveResults(clazz, engineDescription, engine)
+
+    for (u <- engine.useCases) {
+      val useCaseDescription = Description.createSuiteDescription(clean(u.description))
+      engineDescription.addChild(useCaseDescription)
+
+      for (s <- u.scenarios) {
+        val name = s.description.collect { case d: String => d + "/" }.getOrElse("") + s.params.reduce((acc, p) => acc + ", " + p) + " => " + s.expected + " " + s.becauseString
+        val cleanedName = clean(name)
+        println("   " + cleanedName)
+        val scenarioDescription = Description.createSuiteDescription(cleanedName)
+        useCaseDescription.addChild(scenarioDescription)
+        ScenarioMap = ScenarioMap + (scenarioDescription -> s.asInstanceOf[Scenario])
+        saveResults(clazz, engineDescription, engine)
+      }
     }
   }
 
@@ -91,26 +101,30 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner with JunitUniverse[Any
       for (ed <- getDescription.getChildren) {
         notifier.fireTestStarted(ed)
         val engine = engineMap(ed)
-        for (cd <- ed.getChildren) {
-          notifier.fireTestStarted(cd)
-          val Scenario = ScenarioMap(cd)
-          if (EngineTest.exceptions.contains(Scenario))
-            notifier.fireTestFailure(new Failure(cd, EngineTest.exceptions(Scenario)))
-          else {
-            //            val b = engine.makeClosureForBecause(Scenario.params);
-            if (engine.root == null)
-              notifier.fireTestIgnored(cd)
-            else
-              try {
-                val actual = engine.applyParam(engine.root, Scenario.params, true)
-                Assert.assertEquals(Scenario.expected, Some(actual))
-                notifier.fireTestFinished(cd)
-              } catch {
-                //              case e: AssertionFailedError => notifier.fireTestFailure(new Failure(cd, e))
-                case e: Throwable => notifier.fireTestFailure(new Failure(cd, e))
-              }
+        for (ud <- ed.getChildren) {
+          notifier.fireTestStarted(ud)
+          for (sd <- ud.getChildren) {
+            notifier.fireTestStarted(sd)
+            val Scenario = ScenarioMap(sd)
+            if (EngineTest.exceptions.contains(Scenario))
+              notifier.fireTestFailure(new Failure(sd, EngineTest.exceptions(Scenario)))
+            else {
+              //            val b = engine.makeClosureForBecause(Scenario.params);
+              if (engine.root == null)
+                notifier.fireTestIgnored(sd)
+              else
+                try {
+                  val actual = engine.applyParam(engine.root, Scenario.params, true)
+                  Assert.assertEquals(Scenario.expected, Some(actual))
+                  notifier.fireTestFinished(sd)
+                } catch {
+                  //              case e: AssertionFailedError => notifier.fireTestFailure(new Failure(cd, e))
+                  case e: Throwable => notifier.fireTestFailure(new Failure(sd, e))
+                }
+            }
+            notifier.fireTestFinished(ed)
           }
-          notifier.fireTestFinished(ed)
+          notifier.fireTestFinished(ud)
         }
         //        println("Scenarios for: " + ed.getDisplayName())
         //        for (c <- engine.Scenarios)

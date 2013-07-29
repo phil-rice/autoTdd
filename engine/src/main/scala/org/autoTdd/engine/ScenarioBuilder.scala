@@ -65,6 +65,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
   class ScenarioResultException(msg: String, scenario: Scenario) extends ScenarioException(msg, scenario)
   class AssertionException(msg: String, scenario: Scenario) extends ScenarioException(msg, scenario)
   class ScenarioConflictException(msg: String, scenario: Scenario, cause: Throwable = null) extends ScenarioException(msg, scenario, cause)
+  class MultipleExceptions(msg: String, val scenarioExceptionMap: ScenarioExceptionMap) extends EngineException(msg)
 
   def rfnMaker: (Either[Exception, R]) => RFn
   def logger: TddLogger
@@ -114,8 +115,9 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       }
     })
     def becauseString = because match { case Some(b) => b.description; case _ => "" }
-
   }
+
+  type ScenarioExceptionMap = Map[Scenario, Throwable]
   val scenarioLens = Lens[RealScenarioBuilder, Scenario](
     (b) => b.useCases match {
       case u :: ut => u.scenarios match {
@@ -172,6 +174,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     def visitUseCase(useCaseindex: Int, u: UseCase)
     def visitScenario(useCaseindex: Int, u: UseCase, scenarioIndex: Int, s: Scenario)
     def visitUseCaseEnd(u: UseCase)
+    def end
   }
 
   trait ScenarioWalker {
@@ -185,6 +188,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
           v.visitScenario(ui, u, si, s)
         v.visitUseCaseEnd(u)
       }
+      v.end
     }
   }
 
@@ -212,7 +216,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
   }
   trait EngineToString {
     def root: RorN
-    def buildRoot(root: RorN, scenarios: List[Scenario]): RorN;
+    def buildRoot(root: RorN, scenarios: List[Scenario]): (RorN, ScenarioExceptionMap)
 
     def toString(indent: String, root: RorN): String = {
       root match {
@@ -262,7 +266,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     def constructionString(root: RorN, cs: List[Scenario]) =
       increasingScenariosList(cs).reverse.map((cs) =>
         try {
-          val r = buildRoot(root, cs.reverse)
+          val (r, s) = buildRoot(root, cs.reverse)
           toStringWithScenarios("", r)
         } catch {
           case e: Throwable => e.getClass() + "\n" + e.getMessage()
@@ -298,14 +302,22 @@ trait EngineUniverse[R] extends EngineTypes[R] {
 
     }
 
-    def buildFromScenarios(root: RorN, cs: List[Scenario]): RorN = {
+    def buildFromScenarios(root: RorN, cs: List[Scenario], seMap: ScenarioExceptionMap): (RorN, ScenarioExceptionMap) = {
       cs match {
         case c :: tail =>
-          validateBecause(c);
-          //                  validateScenario(root, c);
-          buildFromScenarios(withScenario(None, root, c, true), tail)
+          try {
+            validateBecause(c);
+            val newRoot = withScenario(None, root, c, true)
+            validateScenario(newRoot, c);
+            buildFromScenarios(newRoot, tail, seMap)
+          } catch {
+            case e: ThreadDeath =>
+              throw e
+            case e: Throwable =>
+              buildFromScenarios(root, tail, seMap + (c -> e))
+          }
 
-        case _ => root;
+        case _ => (root, seMap);
       }
     }
 
@@ -377,7 +389,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
 
     private def withScenario(parent: Option[Node], n: RorN, s: Scenario, parentWasTrue: Boolean): RorN =
       try {
-        println("Scenario: " + s)
+//        println("Scenario: " + s)
         val result: RorN = n match {
           case null =>
             if (s.because.isDefined)
@@ -398,8 +410,8 @@ trait EngineUniverse[R] extends EngineTypes[R] {
                       val existingScenario = p.scenarioThatCausedNode
                       s.configure;
                       throw new ScenarioConflictException("Cannot differentiate between\nExisting: " + existing +
-                        "\nBeingAdded: " + s.description + " " + s.params +
-                        "\n\nDetails existing:\n" + existingScenario + "\nScenario:\n" + s, s, null)
+                        "\nBeing Added: " + s.description + " " + s.params +
+                        "\n\nDetails of Existing Scenario: " + existingScenario + "\n\nDetails of New Scenario: " + s, s, null)
                     }
                     //                  logger.debugCompile( "Adding " + newCnC + "to yes of leaf " + parent.toString)
                     logger.addingUnder(s.description.get, parentWasTrue, p.scenarioThatCausedNode.description.get)
@@ -476,7 +488,10 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     def useCases: List[UseCase];
     lazy val scenarios: List[Scenario] = useCases.flatMap(_.scenarios)
 
-    val root: RorN = buildRoot(defaultRoot, scenarios)
+    private val rootAndExceptionMap = buildRoot(defaultRoot, scenarios)
+    val root: RorN = rootAndExceptionMap._1
+    val scenarioExceptionMap: ScenarioExceptionMap = rootAndExceptionMap._2
+
     if (!EngineTest.testing)
       validateScenarios(root, scenarios)
 
@@ -490,36 +505,22 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       result
     }
 
-    def buildRoot(root: RorN, scenarios: List[Scenario]): RorN = {
+    def buildRoot(root: RorN, scenarios: List[Scenario]): (RorN, ScenarioExceptionMap) = {
       scenarios match {
         case s :: rest =>
-          try {
-            s.configure
-            validateBecause(s)
-            val newRoot = buildFromScenarios(root, scenarios);
-            validateScenario(newRoot, s)
-            if (!EngineTest.testing)
-              checkScenario(newRoot, s) //check later
-            newRoot
-
-          } catch {
-
-            case e: ScenarioConflictException =>
-              val index = scenarios.indexOf(e.scenario)
-              val safeCs = scenarios.take(index)
-              val msg = constructionString(root, safeCs) + "\n" + e.getMessage()
-              throw new ScenarioConflictException(msg, e.scenario, e)
-
-            case e: ScenarioException if EngineTest.testing =>
-              EngineTest.exceptions = EngineTest.exceptions + (e.scenario -> e); root
-            case e: Throwable if EngineTest.testing =>
-              EngineTest.exceptions = EngineTest.exceptions + (s -> e); root
-            case e: EngineException =>
-              throw e;
-            case e: Throwable =>
-              throw e
+          val newRootAndExceptionMap = buildFromScenarios(root, scenarios, Map());
+          val (newRoot, seMap) = newRootAndExceptionMap
+          if (!EngineTest.testing) {
+            seMap.size match {
+              case 0 => ;
+              case 1 => throw seMap.values.head
+              case _ =>
+                throw new MultipleExceptions(s"Could not build Engine $seMap", seMap)
+            }
           }
-        case _ => root
+          newRootAndExceptionMap
+
+        case _ => (root, Map())
       }
 
     }
@@ -539,6 +540,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     }
 
     def validateScenarios {
+      println("In validate scenarios")
       for (c <- scenarios)
         validateScenario(root, c)
     }

@@ -64,7 +64,8 @@ object Tax {
     code((income: Float, a: AllowanceAndLimit, basicAllowance: Float) => {
       val excess = Math.max(0, income - a.limit)
       val reduction = excess / 2
-      Math.max(basicAllowance, income - reduction)
+      val result= Math.max(basicAllowance, a.allowance - reduction)
+      result
     }).
 
     useCase("Higher Personal Allowance Partially Reduced ").
@@ -77,16 +78,16 @@ object Tax {
 
   //This just ties it all together. 
   val singlePersonsAllowance = Engine[Person, SinglePersonsAllowanceReference, Float].
-    useCase("Personal Allowance - If you were born before 6 April 1948 and your income is between £26,100 and £100,000"). //http://www.google.co.uk 
-    scenario(Person("Edward", 20000, Dates.april1st1930), TaxReference.singlePersonsAllowanceReference, "Edward – born before 6 April 1938, higher Personal Allowance not reduced").
+    useCase("Personal Allowance - If you were born before 6 April 1948 and your income is between26,100 and 100,000"). //http://www.google.co.uk 
+    scenario(Person("Edward", 20000, Dates.april1st1930), TaxReference.singlePersonsAllowanceReference, "Edward  born before 6 April 1938, higher Personal Allowance not reduced").
     expected(10660).
     code((p: Person, a: SinglePersonsAllowanceReference) => reducePersonalAllowanceByIncome(p.income, allowanceSelectionByDate(p.dateOfBirth, a), a.basicAllowance)).
 
-    scenario(Person("Diana", 28000, Dates.april1st1930), TaxReference.singlePersonsAllowanceReference, "Diana – born before 6 April 1938, higher Personal Allowance partially reduced ").
+    scenario(Person("Diana", 28000, Dates.april1st1930), TaxReference.singlePersonsAllowanceReference, "Diana  born before 6 April 1938, higher Personal Allowance partially reduced ").
     expected(9710).
     because((p: Person, a: SinglePersonsAllowanceReference) => p.dateOfBirth.before(Dates.april6th1938) & p.income > a.before6thApril1938.limit).
 
-    scenario(Person("Charles", 40000, Dates.april1st1940), TaxReference.singlePersonsAllowanceReference, "Charles – born between 6 April 1938 and 5 April 1948, higher Personal Allowance reduced to basic Personal Allowance").
+    scenario(Person("Charles", 40000, Dates.april1st1940), TaxReference.singlePersonsAllowanceReference, "Charles  born between 6 April 1938 and 5 April 1948, higher Personal Allowance reduced to basic Personal Allowance").
     build
 
 }
