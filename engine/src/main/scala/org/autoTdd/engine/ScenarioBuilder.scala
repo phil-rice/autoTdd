@@ -167,6 +167,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     def ifPrint: (String, Node) => String
     def elsePrint: (String, Node) => String
     def endPrint: (String, Node) => String
+    def titlePrint: (String, Scenario) => String
   }
 
   trait ScenarioVisitor {
@@ -244,6 +245,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       def ifPrint = (indent, node) => indent + "if(" + node.because.pretty + ")\n"
       def elsePrint = (indent, node) => indent + "else\n";
       def endPrint = (indent, node) => "";
+      def titlePrint: (String, Scenario) => String = (indent, scenario) => "";
     }
 
     def toStringWith(indent: String, root: RorN, printer: IfThenPrinter): String = {
@@ -261,13 +263,16 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       }
     }
 
-    def toStringWithScenarios(indent: String, root: RorN): String = toStringWith(indent, root, new DefaultIfThenPrinter())
+    def toStringWithScenarios(indent: String, root: RorN): String =
+      toStringWith(indent, root, new DefaultIfThenPrinter())
 
-    def constructionString(root: RorN, cs: List[Scenario]) =
+    def constructionString(root: RorN, cs: List[Scenario], printer: IfThenPrinter) =
       increasingScenariosList(cs).reverse.map((cs) =>
         try {
+          val c = cs.head
+          val title = printer.titlePrint("", c)
           val (r, s) = buildRoot(root, cs.reverse)
-          toStringWithScenarios("", r)
+          title + toStringWith("", r, printer)
         } catch {
           case e: Throwable => e.getClass() + "\n" + e.getMessage()
         }).mkString("\n")
@@ -389,7 +394,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
 
     private def withScenario(parent: Option[Node], n: RorN, s: Scenario, parentWasTrue: Boolean): RorN =
       try {
-//        println("Scenario: " + s)
+        //        println("Scenario: " + s)
         val result: RorN = n match {
           case null =>
             if (s.because.isDefined)
@@ -495,7 +500,12 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     if (!EngineTest.testing)
       validateScenarios(root, scenarios)
 
-    def constructionString: String = constructionString(defaultRoot, scenarios)
+    def constructionString: String =
+      constructionString(defaultRoot, scenarios, new DefaultIfThenPrinter {
+        override def titlePrint =
+          (indent, scenario) =>
+            indent + "Adding " + scenario.description + " " + logger(scenario.params) + "\n";
+      })
     def logParams(p: Any*) =
       logger.executing(p.toList)
 

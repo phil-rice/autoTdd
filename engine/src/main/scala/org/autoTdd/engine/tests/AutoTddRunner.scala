@@ -114,8 +114,9 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner with JunitUniverse[Any
                 notifier.fireTestIgnored(sd)
               else
                 try {
-                  val actual = engine.applyParam(engine.root, Scenario.params, true)
-                  Assert.assertEquals(Scenario.expected, Some(actual))
+                  val actual = Some(engine.applyParam(engine.root, Scenario.params, true))
+                  if (Scenario.expected != actual)
+                    Assert.assertEquals(Scenario.expected, actual)
                   notifier.fireTestFinished(sd)
                 } catch {
                   //              case e: AssertionFailedError => notifier.fireTestFailure(new Failure(cd, e))
