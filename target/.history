@@ -85,3 +85,13 @@ compile
 test
 publish-local
 project eclipse
+reload
+publish-local-signed
+pgp-cmd gen-key
+set pgpReadOnly := false
+pgp-cmd gen-key
+project constraint
+publish-local-signed
+reload
+publish-signed
+exit

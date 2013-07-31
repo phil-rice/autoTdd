@@ -39,21 +39,21 @@ object Tax {
 
   val allowanceSelectionByDate = Engine[Date, SinglePersonsAllowanceReference, AllowanceAndLimit]().
     useCase("Born before 6th April 1938").
-    scenario(Dates.april1st1930, TaxReference.singlePersonsAllowanceReference, "Few years before").
-    expected(AllowanceAndLimit(10660, 26100)).
-    code((d: Date, ref: SinglePersonsAllowanceReference) => ref.before6thApril1938).
+      scenario(Dates.april1st1930, TaxReference.singlePersonsAllowanceReference, "Few years before").
+         expected(AllowanceAndLimit(10660, 26100)).
+         code((d: Date, ref: SinglePersonsAllowanceReference) => ref.before6thApril1938).
 
     useCase("Born between 6 April 1938 and 5 April 1948").
-    scenario(Dates.april1st1940, TaxReference.singlePersonsAllowanceReference, "In the middle").
-    expected(AllowanceAndLimit(10500, 26100)).
-    code((d: Date, ref: SinglePersonsAllowanceReference) => ref.after6thApril1938).
-    because((d: Date, ref: SinglePersonsAllowanceReference) => d.after(Dates.april6th1938)).
+       scenario(Dates.april1st1940, TaxReference.singlePersonsAllowanceReference, "In the middle").
+          expected(AllowanceAndLimit(10500, 26100)).
+          code((d: Date, ref: SinglePersonsAllowanceReference) => ref.after6thApril1938).
+          because((d: Date, ref: SinglePersonsAllowanceReference) => d.after(Dates.april6th1938)).
     
     useCase("Born after 5 April 1948").
-    scenario(Dates.april1st1960, TaxReference.singlePersonsAllowanceReference, "Some time after").
-    expected(AllowanceAndLimit(9440, 100000)).
-    code((d: Date, ref: SinglePersonsAllowanceReference) => ref.after5thApril1948).
-    because((d: Date, ref: SinglePersonsAllowanceReference) => d.after(Dates.april6th1948)).
+      scenario(Dates.april1st1960, TaxReference.singlePersonsAllowanceReference, "Some time after").
+         expected(AllowanceAndLimit(9440, 100000)).
+             code((d: Date, ref: SinglePersonsAllowanceReference) => ref.after5thApril1948).
+             because((d: Date, ref: SinglePersonsAllowanceReference) => d.after(Dates.april6th1948)).
 
     build
 
