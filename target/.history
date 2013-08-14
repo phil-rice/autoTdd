@@ -95,3 +95,51 @@ publish-local-signed
 reload
 publish-signed
 exit
+reload
+project eclipse
+gpg
+use-gpg --list-keys
+use-gpg 
+use-gpg  list-keys
+pgp-cmd list-keys
+pgp-cmd send-key b76f98b7 hkp://keyserver.ubuntu.com
+pgp-cmd send-key b76f98b7 hkp://pgp.mit.edu
+reload
+compile
+eclipse
+reload
+compile
+reload
+compile
+eclipse
+sbt
+compile
+reload
+update
+cimpile
+compile
+reload
+compile
+eclipse
+reload
+compile
+eclipse
+reload;compile;eclipse
+reload
+compcompile
+eclipse
+compile
+eclipse
+reload
+compile
+eclipse
+update
+reload
+exit
+compile
+eclipse
+compile
+reload
+compile
+eclipse
+exit

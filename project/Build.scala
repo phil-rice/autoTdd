@@ -48,6 +48,11 @@ object BuildSettings {
     EclipseKeys.withSource := true,
     EclipseKeys.eclipseOutput := Some("bin"),
     libraryDependencies ++= Seq(
+	  "org.scalaj" % "scalaj-time_2.10.2" % "0.7",
+	  "org.hsqldb" % "hsqldb" % "2.0.0",     
+      "mysql" % "mysql-connector-java" % "5.1.6",            	  
+	  "commons-dbcp" % "commons-dbcp" % "1.2.2",            
+      "org.springframework" % "spring-jdbc" % "3.2.3.RELEASE",                  
       "org.scala-lang" % "scala-reflect" % "2.10.1",
       "org.scala-lang" % "scala-compiler" % "2.10.1",
       "org.scalatest" % "scalatest_2.10" % "1.9.1",
@@ -79,9 +84,10 @@ object HelloBuild extends Build {
   lazy val constraint = Project(id = "constraint", settings = buildSettings, base = file("constraint"))
   lazy val engine = Project(id = "engine", settings = buildSettings, base = file("engine")) dependsOn (constraint)
   lazy val engine_test = Project(id = "engine_test", settings = buildSettings, base = file("engine-tests")) dependsOn (constraint, engine)
-  lazy val examples = Project(id = "examples", settings = buildSettings, base = file("examples")) dependsOn (constraint, engine)
+  lazy val examples = Project(id = "examples", settings = buildSettings, base = file("examples")) dependsOn (constraint, engine)  
+  lazy val carers = Project(id = "carers", settings = buildSettings, base = file("carers")) dependsOn (constraint, engine)
   lazy val eclipse = Project(id = "eclipse", settings = eclipseSettings ++ Seq(copyDepTask), base = file("eclipse2")) // dependsOn (constraint, engine)
-  lazy val root = Project(id = "root", settings = buildSettings ++ Seq(copyTask, copyDepTask), base = file(".")) aggregate (constraint, engine, examples, engine_test)
+  lazy val root = Project(id = "root", settings = buildSettings ++ Seq(copyTask, copyDepTask), base = file(".")) aggregate (constraint, engine, examples, engine_test,carers)
 
   import java.io.File
 

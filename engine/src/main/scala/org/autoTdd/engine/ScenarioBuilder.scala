@@ -597,9 +597,12 @@ trait Engine3Types[P1, P2, P3, R] extends EngineTypes[R] {
 class Engine
 
 object Engine {
-  def apply[P, R]() = new BuilderFactory1[P, R]().builder
-  def apply[P1, P2, R]() = new BuilderFactory2[P1, P2, R]().builder
-  def apply[P1, P2, P3, R]() = new BuilderFactory3[P1, P2, P3, R]().builder
+  def apply[P, R]() = new BuilderFactory1[P, R]().builder;
+  def apply[P1, P2, R]() = new BuilderFactory2[P1, P2, R]().builder;
+  def apply[P1, P2, P3, R]() = new BuilderFactory3[P1, P2, P3, R]().builder;
+
+  def state[S, P, R]() = new BuilderFactory2[S, P, (S, R)]().builder;
+  def state[S, P1, P2, R]() = new BuilderFactory3[S, P1, P2, (S, R)]().builder;
 }
 
 class BuilderFactory1[P, R](override val logger: TddLogger = TddLogger.noLogger) extends EngineUniverse[R] with Engine1Types[P, R] {

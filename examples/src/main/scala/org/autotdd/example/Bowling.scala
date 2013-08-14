@@ -26,7 +26,7 @@ object Bowling {
 
   val makeFrame = Engine[List[Int], Int, Frame]().
     useCase("NormalFrames are produced when the two balls at and after the ith ball don't add up to 10").
-    scenario(List(7, 2, 5, 5, 3, 0, 10, 2, 4), 0).expected(NormalFrame(7, 2)).code((rolls: List[Int], i: Int) => NormalFrame(get(rolls, i), get(rolls, i + 1))).
+      scenario(List(7, 2, 5, 5, 3, 0, 10, 2, 4), 0).expected(NormalFrame(7, 2)).code((rolls: List[Int], i: Int) => NormalFrame(get(rolls, i), get(rolls, i + 1))).
     scenario(List(7, 2, 5, 5, 3, 0, 10, 2, 4), 4).expected(NormalFrame(3, 0)).
 
     useCase("Strike Frames are produced when the ith ball equals 10. They include the ith ball, and the next two balls").
