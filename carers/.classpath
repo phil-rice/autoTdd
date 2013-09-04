@@ -19,6 +19,7 @@
 	<classpathentry kind="lib" path="C:/Users/Phil/.ivy2/cache/commons-logging/commons-logging/jars/commons-logging-1.1.1.jar" sourcepath="C:/Users/Phil/.ivy2/cache/commons-logging/commons-logging/srcs/commons-logging-1.1.1-sources.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Phil/.ivy2/cache/org.springframework/spring-tx/jars/spring-tx-3.2.3.RELEASE.jar" sourcepath="C:/Users/Phil/.ivy2/cache/org.springframework/spring-tx/srcs/spring-tx-3.2.3.RELEASE-sources.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Phil/.ivy2/cache/aopalliance/aopalliance/jars/aopalliance-1.0.jar" sourcepath="C:/Users/Phil/.ivy2/cache/aopalliance/aopalliance/srcs/aopalliance-1.0-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Phil/.ivy2/cache/org.scala-stm/scala-stm_2.10/jars/scala-stm_2.10-0.7.jar" sourcepath="C:/Users/Phil/.ivy2/cache/org.scala-stm/scala-stm_2.10/srcs/scala-stm_2.10-0.7-sources.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Phil/.ivy2/cache/org.scala-lang/scala-reflect/jars/scala-reflect-2.10.1.jar" sourcepath="C:/Users/Phil/.ivy2/cache/org.scala-lang/scala-reflect/srcs/scala-reflect-2.10.1-sources.jar"/>
 	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_COMPILER_CONTAINER"/>
 	<classpathentry kind="lib" path="C:/Users/Phil/.ivy2/cache/org.scalatest/scalatest_2.10/jars/scalatest_2.10-1.9.1.jar" sourcepath="C:/Users/Phil/.ivy2/cache/org.scalatest/scalatest_2.10/srcs/scalatest_2.10-1.9.1-sources.jar"/>

@@ -143,3 +143,16 @@ reload
 compile
 eclipse
 exit
+compile
+~ compile
+reload
+compile
+reload
+update
+eclipse
+reload
+eclipse
+exit
+eclipse
+git status
+exit

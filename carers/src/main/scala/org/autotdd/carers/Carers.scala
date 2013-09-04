@@ -1,22 +1,27 @@
 package org.autotdd.carers
 
 import java.net._
-import scala.io.Source
+import scala.concurrent.stm._
 import scala.xml._
+import org.apache.commons.dbcp.BasicDataSource
+import org.autotdd.engine._
 import org.joda.time._
 import org.joda.time.format._
-import org.joda.convert._
-import org.autotdd.engine._
-import org.apache.commons.dbcp.BasicDataSource
 import org.springframework.jdbc.core.JdbcTemplate
-import javax.sql.DataSource
+import org.junit.runner.RunWith
+import org.autotdd.engine.tests.AutoTddRunner
 
 object Xmls {
 
   def validateClaim(id: String) = {
-    val xmlString = Source.fromURL(getClass.getClassLoader.getResource(s"ValidateClaim/{id}.xml")).mkString
-    val xml = XML.loadString(xmlString)
-    xml
+    try {
+      val url = getClass.getClassLoader.getResource( s"ValidateClaim/{id}.xml")
+      val xmlString = scala.io.Source.fromURL(url).mkString
+      val xml = XML.loadString(xmlString)
+      xml
+    } catch {
+      case e: Exception => throw new RuntimeException("Cannot load " + id, e)
+    }
   }
 
   lazy val ageUnder16 = validateClaim("CL100104A")
@@ -46,13 +51,21 @@ object Dbase {
 
 }
 
+class Cache[K, V] extends {
+  val data = Ref[Map[K, V]](Map())
+  def findOrCreate(k: K, v: V) = {
+    val f = (m: Map[K, V]) => m + (k -> v)
+    //    data.transform(f);
+  }
+}
+
 trait NinoToValidateClaim {
-  def ninoToValidateClaim(w: World, nino: String): (World, Elem)
+  def ninoToValidateClaim(w: World, nino: String): Elem
 }
 
 class NinoToValidateClaimFile extends NinoToValidateClaim {
-  def ninoToDecision(nino: String): Elem = {
-    val xmlString = Source.fromURL(getClass.getClassLoader.getResource(s"ValidateClaim/${nino}.xml")).mkString
+  def ninoToValidateClaim(w: World, nino: String): Elem = {
+    val xmlString = scala.io.Source.fromURL(getClass.getClassLoader.getResource(s"ValidateClaim/${nino}.xml")).mkString
     val xml = XML.loadString(xmlString)
     xml
   }
@@ -60,19 +73,22 @@ class NinoToValidateClaimFile extends NinoToValidateClaim {
 }
 
 trait NinoToDecision {
-  def ninoToDecision(w: World, nino: String): (World, Elem)
+  def ninoToDecision(implicit i: InTxn, w: World, nino: String): Elem
 }
 
 class NinoToDecisionMysql() extends NinoToDecision {
-  def addToCache(w: World, nino: String, result: Elem): (World, Elem) = {
-    (World.ninoToDecisionL.mod(w, (c) => c + (nino -> result)), result)
+  def addToCache(implicit i: InTxn, w: World, nino: String, result: Elem) = {
+    w.caches.ninoToDecision.transform((m) => m + (nino -> result))
+    result
   }
 
-  def ninoToDecision(w: World, nino: String): (World, Elem) = {
+  def apply(implicit i: InTxn, w: World, nino: String): Elem = ninoToDecision(i, w, nino)
+
+  def ninoToDecision(implicit i: InTxn, w: World, nino: String): Elem = {
     val l = Dbase.template.queryForList("SELECT *FROM   INFORMATION_SCHEMA.SYSTEM_TABLES")
     l.size match {
-      case 0 => addToCache(w, nino, <noDecision/>)
-      case 1 => addToCache(w, nino, XML.loadString(l.get(0).toString))
+      case 0 => addToCache(i, w, nino, <noDecision/>)
+      case 1 => addToCache(i, w, nino, XML.loadString(l.get(0).toString))
       case _ => throw new IllegalStateException("Have two decisions for nino " + nino);
     }
   }
@@ -82,34 +98,27 @@ object World {
   implicit def worldToNanoToValidateClaim(w: World) = w.toValidateClaim
   implicit def worldToNanoToDecision(w: World) = w.toDecision
 
-  val ninoToDecisionL = Lens(
-    get = (w: World) => w.caches.ninoToDecision,
-    set = (w: World, c: Map[String, Elem]) => w.copy(caches = w.caches.copy(ninoToDecision = c)))
-
 }
 
-case class Caches(ninoToDecision: Map[String, Elem] = Map())
+case class Caches(ninoToDecision: Ref[Map[String, Elem]] = Ref(Map()))
 
 case class World(today: DateTime, toDecision: NinoToDecision, toValidateClaim: NinoToValidateClaim, caches: Caches = Caches()) {
 
 }
-
+@RunWith(classOf[AutoTddRunner])
 object Carers {
 
   def blankTestWorld = World(Xmls.asDate("2010-1-1"), new NinoToDecisionMysql(), new NinoToValidateClaimFile())
 
-  def hasQualifyingBenefit = Engine.state[World, String, Boolean]().
+  def hasQualifyingBenefit = Engine.stm[World, String, Boolean]().
     useCase("To have a valid claim the dependent must have data present in the database").
     scenario(blankTestWorld, "CL100104A", "Data present in database").
-    expected {
-      val (newWorld, decision) = blankTestWorld.ninoToDecision(blankTestWorld, "CL100105A")
-      (newWorld, true)
-    }.code((w: World, nino: String) => {
-      val (newWorld, decision) = w.ninoToDecision(w, nino);
-      (newWorld, decision match {
-        case <noDecision/> => false;
-        case _ => true;
-      })
+    expected(true).
+
+    scenario(blankTestWorld, "CL100106A", "Data not present in database").
+    expected(false).
+    because((i: InTxn, w: World, nino: String) => {
+      w.ninoToDecision(i, w, nino) != <noDecision/>
     });
 
   def engine = Engine[World, Elem, Option[Integer]]().
@@ -132,7 +141,7 @@ object Carers {
   def main(args: Array[String]) {
     val x = Xmls.ageUnder16
     println(x)
-    println(Carers.engine(Carers.testWorld, x))
+    println(Carers.engine(Carers.blankTestWorld, x))
     println(Dbase.template)
   }
 }

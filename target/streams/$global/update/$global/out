@@ -160,6 +160,34 @@
 [0m[[0mdebug[0m] [0m== resolving dependencies org.springframework#spring-jdbc;3.2.3.RELEASE->org.springframework#spring-tx;3.2.3.RELEASE [runtime->runtime(*)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.springframework#spring-jdbc;3.2.3.RELEASE->org.springframework#spring-tx;3.2.3.RELEASE [runtime->compile][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->org.springframework#spring-jdbc;3.2.3.RELEASE [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->default(compile)][0m
+[0m[[0minfo[0m] [0mResolving com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 {compile=[default(compile)]}[0m
+[0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0[0m
+[0m[[0mdebug[0m] [0m	local: revision in cache: com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0[0m
+[0m[[0mdebug[0m] [0m	found com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 in public[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->compile][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0minfo[0m] [0mResolving com.typesafe#config;1.0.2 ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: com.typesafe#config;1.0.2 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: com.typesafe#config;1.0.2[0m
+[0m[[0mdebug[0m] [0m	local: revision in cache: com.typesafe#config;1.0.2[0m
+[0m[[0mdebug[0m] [0m	found com.typesafe#config;1.0.2 in public[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->master][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->org.scala-lang#scala-reflect;2.10.1 [compile->default(compile)][0m
 [0m[[0minfo[0m] [0mResolving org.scala-lang#scala-reflect;2.10.1 ...[0m
 [0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: org.scala-lang#scala-reflect;2.10.1 {compile=[default(compile)]}[0m
@@ -341,6 +369,24 @@
 [0m[[0mdebug[0m] [0m== resolving dependencies org.springframework#spring-tx;3.2.3.RELEASE->org.springframework#spring-core;3.2.3.RELEASE [runtime->runtime(*)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.springframework#spring-tx;3.2.3.RELEASE->org.springframework#spring-core;3.2.3.RELEASE [runtime->compile][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->org.springframework#spring-jdbc;3.2.3.RELEASE [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->compile][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->master][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->org.scala-lang#scala-reflect;2.10.1 [compile->default(compile)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->org.scala-lang#scala-reflect;2.10.1 [compile->runtime][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->org.scala-lang#scala-reflect;2.10.1 [compile->compile][0m
@@ -493,6 +539,24 @@
 [0m[[0mdebug[0m] [0m== resolving dependencies org.springframework#spring-tx;3.2.3.RELEASE->org.springframework#spring-core;3.2.3.RELEASE [runtime->runtime(*)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.springframework#spring-tx;3.2.3.RELEASE->org.springframework#spring-core;3.2.3.RELEASE [runtime->compile][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->org.springframework#spring-jdbc;3.2.3.RELEASE [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->compile][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->master][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->org.scala-lang#scala-reflect;2.10.1 [compile->default(compile)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->org.scala-lang#scala-reflect;2.10.1 [compile->runtime][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->org.scala-lang#scala-reflect;2.10.1 [compile->compile][0m
@@ -648,6 +712,24 @@
 [0m[[0mdebug[0m] [0m== resolving dependencies org.springframework#spring-tx;3.2.3.RELEASE->org.springframework#spring-core;3.2.3.RELEASE [runtime->runtime(*)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.springframework#spring-tx;3.2.3.RELEASE->org.springframework#spring-core;3.2.3.RELEASE [runtime->compile][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->org.springframework#spring-jdbc;3.2.3.RELEASE [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->compile][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->master][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->org.scala-lang#scala-reflect;2.10.1 [compile->default(compile)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->org.scala-lang#scala-reflect;2.10.1 [compile->runtime][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->org.scala-lang#scala-reflect;2.10.1 [compile->compile][0m
@@ -802,6 +884,24 @@
 [0m[[0mdebug[0m] [0m== resolving dependencies org.springframework#spring-tx;3.2.3.RELEASE->org.springframework#spring-core;3.2.3.RELEASE [runtime->runtime(*)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.springframework#spring-tx;3.2.3.RELEASE->org.springframework#spring-core;3.2.3.RELEASE [runtime->compile][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->org.springframework#spring-jdbc;3.2.3.RELEASE [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->compile][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->master][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->org.scala-lang#scala-reflect;2.10.1 [compile->default(compile)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->org.scala-lang#scala-reflect;2.10.1 [compile->runtime][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->org.scala-lang#scala-reflect;2.10.1 [compile->compile][0m
@@ -956,6 +1056,24 @@
 [0m[[0mdebug[0m] [0m== resolving dependencies org.springframework#spring-tx;3.2.3.RELEASE->org.springframework#spring-core;3.2.3.RELEASE [runtime->runtime(*)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.springframework#spring-tx;3.2.3.RELEASE->org.springframework#spring-core;3.2.3.RELEASE [runtime->compile][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->org.springframework#spring-jdbc;3.2.3.RELEASE [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->compile][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->org.scala-lang#scala-library;2.10.1 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0->com.typesafe#config;1.0.2 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0 [compile->master][0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0mdependency descriptor has been mediated: dependency: org.scala-lang#scala-library;2.11.0-M4 {compile=[compile(*), master(*)], runtime=[runtime(*)]} => dependency: org.scala-lang#scala-library;2.10.1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->org.scala-lang#scala-reflect;2.10.1 [compile->default(compile)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->org.scala-lang#scala-reflect;2.10.1 [compile->runtime][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.autotdd#root_2.10;1.0.0-SNAPSHOT->org.scala-lang#scala-reflect;2.10.1 [compile->compile][0m
@@ -1042,6 +1160,7 @@
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] mysql#mysql-connector-java;5.1.6!mysql-connector-java.jar[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] commons-dbcp#commons-dbcp;1.2.2!commons-dbcp.jar[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.springframework#spring-jdbc;3.2.3.RELEASE!spring-jdbc.jar[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] com.typesafe.akka#akka-actor_2.11.0-M4;2.2.0!akka-actor_2.11.0-M4.jar[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-lang#scala-reflect;2.10.1!scala-reflect.jar[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scalatest#scalatest_2.10;1.9.1!scalatest_2.10.jar[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] log4j#log4j;1.2.17!log4j.jar(bundle)[0m
@@ -1054,8 +1173,9 @@
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.springframework#spring-tx;3.2.3.RELEASE!spring-tx.jar[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] commons-logging#commons-logging;1.1.1!commons-logging.jar[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] aopalliance#aopalliance;1.0!aopalliance.jar[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] com.typesafe#config;1.0.2!config.jar(bundle)[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-lang#scala-actors;2.10.0!scala-actors.jar[0m
-[0m[[0mdebug[0m] [0m:: resolution report :: resolve 533ms :: artifacts dl 27ms[0m
+[0m[[0mdebug[0m] [0m:: resolution report :: resolve 791ms :: artifacts dl 49ms[0m
 [0m[[0mdebug[0m] [0m	report for org.autotdd#root_2.10;1.0.0-SNAPSHOT compile produced in C:\Users\Phil\git\autoTdd\target\resolution-cache\reports\org.autotdd-root_2.10-compile.xml[0m
 [0m[[0mdebug[0m] [0m	report for org.autotdd#root_2.10;1.0.0-SNAPSHOT runtime produced in C:\Users\Phil\git\autoTdd\target\resolution-cache\reports\org.autotdd-root_2.10-runtime.xml[0m
 [0m[[0mdebug[0m] [0m	report for org.autotdd#root_2.10;1.0.0-SNAPSHOT test produced in C:\Users\Phil\git\autoTdd\target\resolution-cache\reports\org.autotdd-root_2.10-test.xml[0m
@@ -1068,7 +1188,7 @@
 [0m[[0mdebug[0m] [0m	report for org.autotdd#root_2.10;1.0.0-SNAPSHOT sources produced in C:\Users\Phil\git\autoTdd\target\resolution-cache\reports\org.autotdd-root_2.10-sources.xml[0m
 [0m[[0mdebug[0m] [0m	report for org.autotdd#root_2.10;1.0.0-SNAPSHOT docs produced in C:\Users\Phil\git\autoTdd\target\resolution-cache\reports\org.autotdd-root_2.10-docs.xml[0m
 [0m[[0mdebug[0m] [0m	report for org.autotdd#root_2.10;1.0.0-SNAPSHOT pom produced in C:\Users\Phil\git\autoTdd\target\resolution-cache\reports\org.autotdd-root_2.10-pom.xml[0m
-[0m[[0mdebug[0m] [0m	resolve done (533ms resolve - 27ms download)[0m
+[0m[[0mdebug[0m] [0m	resolve done (791ms resolve - 49ms download)[0m
 [0m[[0minfo[0m] [0mDone updating.[0m
 [0m[[0mdebug[0m] [0mPotentially incompatible versions of dependencies of {file:/C:/Users/Phil/git/autoTdd/}root:[0m
 [0m[[0mdebug[0m] [0m   org.scala-lang: 2.10.1, 2.10.0[0m

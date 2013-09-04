@@ -2,6 +2,7 @@ package org.autotdd.engine
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
+import scala.concurrent.stm._
 import java.text.MessageFormat
 
 class NeedUseCaseException extends Exception
@@ -603,6 +604,9 @@ object Engine {
 
   def state[S, P, R]() = new BuilderFactory2[S, P, (S, R)]().builder;
   def state[S, P1, P2, R]() = new BuilderFactory3[S, P1, P2, (S, R)]().builder;
+
+  def stm[P, R]() = new BuilderFactory2Stm[P, R]().builder;
+  def stm[P1, P2, R]() = new BuilderFactory3Stm[ P1, P2, R]().builder;
 }
 
 class BuilderFactory1[P, R](override val logger: TddLogger = TddLogger.noLogger) extends EngineUniverse[R] with Engine1Types[P, R] {
@@ -627,6 +631,60 @@ class BuilderFactory1[P, R](override val logger: TddLogger = TddLogger.noLogger)
     }
   }
 }
+
+trait StmUniverse[R] extends EngineUniverse[R] {
+
+  trait StmScenarioBuilder extends ScenarioWalker {
+    def useCases: List[UseCase]
+    def withCases(useCases: List[UseCase]): RealScenarioBuilder;
+    def thisAsBuilder: RealScenarioBuilder
+    def because(b: Because[B], comment: String = "") = scenarioLens.mod(thisAsBuilder, (s) => s.copy(because = Some(b.copy(comment = comment))))
+    def useCase(description: String) = withCases(UseCase(description, List()) :: useCases);
+    def expected(e: R) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(expected = Some(e)))
+    def code(c: CodeFn[B, RFn, R], comment: String = "") = scenarioLens.mod(thisAsBuilder, (s) => s.copy(code = Some(c.copy(comment = comment))))
+    def configuration[K](cfg: CfgFn) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(configuration = Some(cfg)))
+    def assertion(a: Assertion[A], comment: String = "") = scenarioLens.mod(thisAsBuilder, (s) => s.copy(assertions = a.copy(comment = comment) :: s.assertions))
+
+    def useCasesForBuild: List[UseCase] =
+      useCases.map(u => UseCase(u.description,
+        u.scenarios.reverse.zipWithIndex.collect {
+          case (s, i) => s.copy(description = Some(s.description.getOrElse(u.description + "[" + i + "]")))
+        })).reverse;
+
+    protected def newScenario(description: String, params: List[Any]) =
+      useCases match {
+        case h :: t => {
+          val descriptionString = if (description == null) None else Some(description);
+          withCases(UseCase(h.description, Scenario(descriptionString, params) :: h.scenarios) :: t)
+        }
+        case _ => throw new NeedUseCaseException
+      }
+  }
+}
+
+class BuilderFactory2Stm[P, R](override val logger: TddLogger = TddLogger.noLogger) extends StmUniverse[R] with Engine2Types[InTxn, P, R] {
+  type RealScenarioBuilder = Builder2Stm
+  def builder = new Builder2Stm
+
+  class Builder2Stm(val useCases: List[UseCase] = List()) extends ScenarioBuilder {
+    def thisAsBuilder = this
+    def withCases(useCases: List[UseCase]) = new Builder2Stm(useCases)
+    def scenario(p: P, description: String = null) = newScenario(description, List(p))
+    def build = new Engine with Function2[InTxn, P, R] {
+      def useCases = useCasesForBuild
+      def defaultRoot = null
+      def apply(inTxn: InTxn, p: P): R = {
+        logParams(p)
+        val rfn: RFn = evaluate((b) => b(inTxn, p), root);
+        val result: R = rfn(inTxn, p)
+        logResult(result)
+      }
+      override def toString() = toStringWithScenarios
+    }
+
+  }
+}
+
 class BuilderFactory2[P1, P2, R](override val logger: TddLogger = TddLogger.noLogger) extends EngineUniverse[R] with Engine2Types[P1, P2, R] {
   type RealScenarioBuilder = Builder2
   def builder = new Builder2
@@ -641,6 +699,26 @@ class BuilderFactory2[P1, P2, R](override val logger: TddLogger = TddLogger.noLo
         logParams(p1, p2)
         val rfn: RFn = evaluate((b) => b(p1, p2), root);
         val result: R = rfn(p1, p2)
+        logResult(result)
+      }
+      override def toString() = toStringWithScenarios
+    }
+  }
+}
+class BuilderFactory3Stm[P1, P2, R](override val logger: TddLogger = TddLogger.noLogger) extends EngineUniverse[R] with Engine3Types[InTxn, P1, P2, R] {
+  type RealScenarioBuilder = Builder3Stm
+  def builder = new Builder3Stm
+  class Builder3Stm(val useCases: List[UseCase] = List()) extends ScenarioBuilder {
+    def thisAsBuilder = this
+    def withCases(useCases: List[UseCase]) = new Builder3Stm(useCases)
+    def scenario(p1: P1, p2: P2, description: String = null) = newScenario(description, List(p1, p2))
+    def build = new Engine with Function2[P1, P2, R] {
+      def useCases = useCasesForBuild
+      def defaultRoot = null
+      def apply(p1: P1, p2: P2): R = atomic { inTxn =>
+        logParams(p1, p2)
+        val rfn: RFn = evaluate((b) => b(inTxn, p1, p2), root);
+        val result: R = rfn(inTxn, p1, p2)
         logResult(result)
       }
       override def toString() = toStringWithScenarios
