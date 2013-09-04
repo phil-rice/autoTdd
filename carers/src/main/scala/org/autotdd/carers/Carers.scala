@@ -15,7 +15,7 @@ object Xmls {
 
   def validateClaim(id: String) = {
     try {
-      val url = getClass.getClassLoader.getResource( s"ValidateClaim/{id}.xml")
+      val url = getClass.getClassLoader.getResource("ValidateClaim/CL100104A.xml")
       val xmlString = scala.io.Source.fromURL(url).mkString
       val xml = XML.loadString(xmlString)
       xml
@@ -122,6 +122,10 @@ object Carers {
     });
 
   def engine = Engine[World, Elem, Option[Integer]]().
+    useCase("DP's without the required level of qualifing benefit will result in the disallowance of the claim to CA.").
+    scenario(blankTestWorld, Xmls.dpWithoutLevelOfQualifyingBenefit).
+    expected(None).
+
     useCase("Customers under age 16 are not entitled to CA").
     scenario(blankTestWorld, Xmls.ageUnder16).
     expected(None).
@@ -130,12 +134,12 @@ object Carers {
     expected(None).
     because((w: World, e: Elem) => {
       val birthDate = Xmls.asDate((e \\ "ClaimantBirthDate" \ "PersonBirthDate") text)
-      birthDate.plusYears(16).isBefore(w.today)
+      val d =birthDate.plusYears(16)
+      val result=d.isAfter(w.today)
+      println("Date: " + d +"\nToday: " + w.today+"\nResult: " + result)
+      result
     }).
 
-    useCase("DP's without the required level of qualifing benefit will result in the disallowance of the claim to CA.").
-    scenario(blankTestWorld, Xmls.dpWithoutLevelOfQualifyingBenefit).
-    expected(None).
     build;
 
   def main(args: Array[String]) {

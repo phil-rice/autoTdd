@@ -137,12 +137,25 @@ trait EngineUniverse[R] extends EngineTypes[R] {
   case class UseCase(description: String, scenarios: List[Scenario]);
 
   trait ScenarioBuilder extends ScenarioWalker {
+    def validateBecause(s: Scenario) = {
+      s.configure
+      s.because match {
+        case Some(b) =>
+          if (!makeClosureForBecause(s.params).apply(b.because))
+            throw new ScenarioBecauseException(s.becauseString + " is not true for " + s.params, s);
+        case None =>
+      }
+    }
+
     def useCases: List[UseCase]
     def withCases(useCases: List[UseCase]): RealScenarioBuilder;
     def thisAsBuilder: RealScenarioBuilder
-    def because(b: Because[B], comment: String = "") = scenarioLens.mod(thisAsBuilder, (s) => s.copy(because = Some(b.copy(comment = comment))))
+    def because(b: Because[B], comment: String = "") = scenarioLens.mod(thisAsBuilder,
+        (s) =>{
+          validateBecause(s); 
+          s.copy(because = Some(b.copy(comment = comment)))})
     def useCase(description: String) = withCases(UseCase(description, List()) :: useCases);
-    def expected(e: R) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(expected = Some(e)))
+    def expected(e: R) = scenarioLens.mod(thisAsBuilder, (s) => { validateBecause(s); s.copy(expected = Some(e)) })
     def code(c: CodeFn[B, RFn, R], comment: String = "") = scenarioLens.mod(thisAsBuilder, (s) => s.copy(code = Some(c.copy(comment = comment))))
     def configuration[K](cfg: CfgFn) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(configuration = Some(cfg)))
     def assertion(a: Assertion[A], comment: String = "") = scenarioLens.mod(thisAsBuilder, (s) => s.copy(assertions = a.copy(comment = comment) :: s.assertions))
@@ -280,7 +293,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
   }
 
   trait BuildEngine extends EvaluateEngine with EngineToString {
-    protected def validateBecause(s: Scenario) {
+    def validateBecause(s: Scenario) {
       s.configure
       s.because match {
         case Some(b) =>
@@ -606,7 +619,7 @@ object Engine {
   def state[S, P1, P2, R]() = new BuilderFactory3[S, P1, P2, (S, R)]().builder;
 
   def stm[P, R]() = new BuilderFactory2Stm[P, R]().builder;
-  def stm[P1, P2, R]() = new BuilderFactory3Stm[ P1, P2, R]().builder;
+  def stm[P1, P2, R]() = new BuilderFactory3Stm[P1, P2, R]().builder;
 }
 
 class BuilderFactory1[P, R](override val logger: TddLogger = TddLogger.noLogger) extends EngineUniverse[R] with Engine1Types[P, R] {
