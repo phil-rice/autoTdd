@@ -156,3 +156,10 @@ exit
 eclipse
 git status
 exit
+compile
+sbt
+compile
+reload
+compile
+eclipse
+exit

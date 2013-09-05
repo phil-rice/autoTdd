@@ -539,6 +539,8 @@ trait EngineUniverse[R] extends EngineTypes[R] {
               case 0 => ;
               case 1 => throw seMap.values.head
               case _ =>
+                for (e <- seMap.values)
+                  e.printStackTrace()
                 throw new MultipleExceptions(s"Could not build Engine $seMap", seMap)
             }
           }

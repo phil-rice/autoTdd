@@ -10,6 +10,8 @@ import org.joda.time.format._
 import org.springframework.jdbc.core.JdbcTemplate
 import org.junit.runner.RunWith
 import org.autotdd.engine.tests.AutoTddRunner
+import java.io.File
+import java.nio.file.Files
 
 object Xmls {
 
@@ -26,11 +28,17 @@ object Xmls {
 
   lazy val ageUnder16 = validateClaim("CL100104A")
   lazy val lessThen35Hours = validateClaim("CL100105A")
+  lazy val notInGB = validateClaim("CL100107A")
   lazy val dpWithoutLevelOfQualifyingBenefit = validateClaim("CL100106A")
   lazy val customerNotGbResidentAndResident = validateClaim("CL100105A")
 
   private val formatter = DateTimeFormat.forPattern("yyyy-MM-dd");
   def asDate(s: String): DateTime = formatter.parseDateTime(s);
+  def asYesNo(s: String): Boolean =
+    s match {
+      case "yes" => true;
+      case "no" => false
+    }
 
 }
 
@@ -67,6 +75,7 @@ class NinoToValidateClaimFile extends NinoToValidateClaim {
   def ninoToValidateClaim(w: World, nino: String): Elem = {
     val xmlString = scala.io.Source.fromURL(getClass.getClassLoader.getResource(s"ValidateClaim/${nino}.xml")).mkString
     val xml = XML.loadString(xmlString)
+
     xml
   }
 
@@ -105,6 +114,9 @@ case class Caches(ninoToDecision: Ref[Map[String, Elem]] = Ref(Map()))
 case class World(today: DateTime, toDecision: NinoToDecision, toValidateClaim: NinoToValidateClaim, caches: Caches = Caches()) {
 
 }
+
+case class ReasonAndPayment(reason: String, payment: Option[Integer] = None)
+
 @RunWith(classOf[AutoTddRunner])
 object Carers {
 
@@ -121,31 +133,41 @@ object Carers {
       w.ninoToDecision(i, w, nino) != <noDecision/>
     });
 
-  def engine = Engine[World, Elem, Option[Integer]]().
+  def engine = Engine[World, Elem, ReasonAndPayment]().
     useCase("DP's without the required level of qualifing benefit will result in the disallowance of the claim to CA.").
     scenario(blankTestWorld, Xmls.dpWithoutLevelOfQualifyingBenefit).
-    expected(None).
+    expected(ReasonAndPayment("carer.dp.withoutLevelOfQualifyingBenefit")).
 
     useCase("Customers under age 16 are not entitled to CA").
     scenario(blankTestWorld, Xmls.ageUnder16).
-    expected(None).
+    expected(ReasonAndPayment("carer.claimant.under16")).
+
     useCase("Customers with Hours of caring must be 35 hours or more in any one week").
     scenario(blankTestWorld, Xmls.lessThen35Hours).
-    expected(None).
+    expected(ReasonAndPayment("carer.claimant.under35hoursCaring")).
     because((w: World, e: Elem) => {
       val birthDate = Xmls.asDate((e \\ "ClaimantBirthDate" \ "PersonBirthDate") text)
-      val d =birthDate.plusYears(16)
-      val result=d.isAfter(w.today)
-      println("Date: " + d +"\nToday: " + w.today+"\nResult: " + result)
+      val d = birthDate.plusYears(16)
+      val result = d.isAfter(w.today)
       result
     }).
-
+    useCase("Customer who is not considered resident and present in GB is not entitled to CA.").
+    scenario(blankTestWorld, Xmls.notInGB).
+    expected(ReasonAndPayment("carers.claimant.notResident")).
+    because((w: World, e: Elem) => {
+       Xmls.asYesNo((e \\ "ClaimData" \ "ClaimAlwaysUK") text)
+    }).
     build;
 
   def main(args: Array[String]) {
     val x = Xmls.ageUnder16
-    println(x)
-    println(Carers.engine(Carers.blankTestWorld, x))
-    println(Dbase.template)
+    println("X is " + x)
+    println
+    println
+    println(Carers.engine(Carers.blankTestWorld, Xmls.ageUnder16))
+    //    println(Dbase.template)
+    println("done")
+    
+    
   }
 }

@@ -20,7 +20,7 @@ object BuildSettings {
     pomIncludeRepository := { _ => false },
 
     pomExtra := (
-      <url>http://jsuereth.com/scala-arm</url>
+      <url>http://www.autotdd.com</url>
       <licenses>
         <license>
           <name>BSD-style</name>
@@ -29,8 +29,8 @@ object BuildSettings {
         </license>
       </licenses>
       <scm>
-        <url>git@github.com:jsuereth/scala-arm.git</url>
-        <connection>scm:git:git@github.com:jsuereth/scala-arm.git</connection>
+        <url>https://github.com/phil-rice/autoTdd</url>
+        <connection>https://github.com/phil-rice/autoTdd.git</connection>
       </scm>
       <developers>
         <developer>
