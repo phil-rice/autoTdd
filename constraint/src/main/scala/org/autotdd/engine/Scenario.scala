@@ -9,7 +9,6 @@ class EngineException(msg: String, cause: Throwable) extends Exception(msg, caus
   def this(msg: String) = this(msg, null)
 }
 class InvalidBecauseException(msg: String) extends EngineException(msg, null)
-class NoExpectedException(msg: String) extends EngineException(msg, null)
 
 case class Configurator[K](item: K, fn: (K) => Unit);
 

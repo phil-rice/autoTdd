@@ -27,11 +27,11 @@ class EngineFirstTwoScenarioTests extends EngineStringStringTests {
     assertEngineMatches(e, Right(Node(because = "B", inputs = List("B"), yes = Left(CodeAndScenarios("X", List(bScenario))), no = Left(CodeAndScenarios("Z", List(defaultScenario))), scenarioThatCausedNode = bScenario)))
   }
 
-  it should "Throw AssertionException if second scenario is assertion and comes to wrong result" in {
+  it should "Throw ScenarioConflictingWithDefaultException if second scenario is assertion and comes to wrong result" in {
     val b = builderWithDefault.scenario("A").expected("X");
     evaluating {
       b.build
-    } should produce[AssertionException]
+    } should produce[ScenarioConflictingWithDefaultException]
   }
 
   it should "Add scenario to root if adding assertion" in {

@@ -97,21 +97,21 @@ class EngineSecondScenarioTests extends EngineStringStringTests {
 
   }
 
-  it should "Throw AssertionException if scenario matches root condition and comes to wrong conclusion" in {
+  it should "Throw ScenarioConflictingWithDefaultException if scenario matches root condition and comes to wrong conclusion" in {
     val bldr = builderWithDefault.
       scenario("AB").expected("X")
 
     evaluating {
       bldr.build
-    } should produce[AssertionException]
+    } should produce[ScenarioConflictingWithDefaultException]
 
   }
-  it should "Throw AssertionException if scenario doesnt match root condition and comes to wrong conclusion" in {
+  it should "Throw ScenarioConflictingWithDefaultException if scenario doesnt match root condition and comes to wrong conclusion" in {
     val bldr = builderWithDefault.
       scenario("A").because("A").expected("X"). //
       scenario("B").expected("Y"); //no because so should have come to 
 
-    evaluating { bldr.build } should produce[AssertionException]
+    evaluating { bldr.build } should produce[ScenarioConflictingWithDefaultException]
   }
 
 }

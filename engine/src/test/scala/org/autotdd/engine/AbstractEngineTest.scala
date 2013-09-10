@@ -36,7 +36,11 @@ trait AbstractEngineTest[R] extends EngineUniverse[R] with FlatSpec with ShouldM
           fail("First fail at " + i + " Expected: [" + expectedString.substring(i, i + 10) + "] Actual: [ " + actualString.substring(i, i + 10) + "]\n" + msg)
         }
       }
-      fail(msg)
+      expectedString.length() - actualString.length() match{
+        case x if x<0 =>fail(s"Actual ran over end at ${expectedString.length}\n ${msg}")
+        case x if x>0 =>fail(s"Actual fell short end at ${actualString.length}\n ${msg}")
+      }
+        
     }
     assert(expected == actual, msg)
   }
@@ -50,15 +54,15 @@ trait AbstractEngineTest[R] extends EngineUniverse[R] with FlatSpec with ShouldM
     assert(expected.toList == actual, "\nExpected: " + expected + "\nActual: " + full)
   }
 
-//  def checkSingleException[E](code: => Unit, exceptionClass: Class[E]): E =
-//    try {
-//      code
-//      throw new AssertionFailedError("Expected " + exceptionClass.getName());
-//    } catch {
-//      case e: Exception if exceptionClass == e.get  => 
-//        assert(1==e.scenarioExceptionMap.size, s"Expected one exception of type $exceptionClass got ${e.scenarioExceptionMap}")
-//        e.scenarioExceptionMap.keys.head.asInstanceOf[E]
-//    }
+  //  def checkSingleException[E](code: => Unit, exceptionClass: Class[E]): E =
+  //    try {
+  //      code
+  //      throw new AssertionFailedError("Expected " + exceptionClass.getName());
+  //    } catch {
+  //      case e: Exception if exceptionClass == e.get  => 
+  //        assert(1==e.scenarioExceptionMap.size, s"Expected one exception of type $exceptionClass got ${e.scenarioExceptionMap}")
+  //        e.scenarioExceptionMap.keys.head.asInstanceOf[E]
+  //    }
 }
 
 trait AbstractEngine1Test[P, R] extends BuilderFactory1[P, R] with AbstractEngineTest[R] with Engine1Types[P, R]

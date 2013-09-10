@@ -32,15 +32,15 @@ class EngineConstructionStringTest extends EngineStringStringTests {
     " else\n" +
     "  Z:UseCase1[0]\n"
 
-//  "An engine's construction string" should "be included in scenario conflict exceptions to help explain how the exception happened" in {
-//    val bldrA = builderWithDefault.
-//      scenario("AB").because(becauseA).expected("X")
-//    val bldr = bldrA.
-//      scenario("AB").because(becauseA).expected("Y")
-//    val e = evaluating { bldr.build } should produce[ScenarioConflictException]
-//    val cs = bldrA.build.constructionString
-//    assert(e.getMessage().contains(cs), "Message: " + e.getMessage() + "\n-------\nConstruction String: " + cs)
-//  }
+  //  "An engine's construction string" should "be included in scenario conflict exceptions to help explain how the exception happened" in {
+  //    val bldrA = builderWithDefault.
+  //      scenario("AB").because(becauseA).expected("X")
+  //    val bldr = bldrA.
+  //      scenario("AB").because(becauseA).expected("Y")
+  //    val e = evaluating { bldr.build } should produce[ScenarioConflictException]
+  //    val cs = bldrA.build.constructionString
+  //    assert(e.getMessage().contains(cs), "Message: " + e.getMessage() + "\n-------\nConstruction String: " + cs)
+  //  }
 
   it should "return the aggregate of the toString of an engine created from the scenarios, one after another" in {
     val bldr = builderWithDefault.
@@ -49,7 +49,10 @@ class EngineConstructionStringTest extends EngineStringStringTests {
       scenario("AB").because(becauseAB).expected("XAB")
     val e = bldr.build
     val cs = e.constructionString
-    assertEquals(wCString + "\n" + w_aCString + "\n" + w_b_aCString + "\n" + w_ab_b_aCString, cs)
+    assertEquals("Adding Some(UseCase1[0]) List(W)\n" + wCString + "\n" +
+      "Adding Some(UseCase1[1]) List(A)\n" + w_aCString + "\n" +
+      "Adding Some(UseCase1[2]) List(B)\n" + w_b_aCString + "\n" +
+      "Adding Some(UseCase1[3]) List(AB)\n" + w_ab_b_aCString, cs)
   }
 
   "An engine's increasingScenariosList method" should "return a list of increasing numbers of scenarios" in {
