@@ -63,12 +63,12 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     val fullScenario = false
     def apply(s: Scenario) = scenario2Str(s)
     def existingAndBeingAdded(existing: Scenario, s: Scenario) =
-      s"\nExisting: ${scenario2Str(existing)}\nBeing Added: ${s}\nDetailed Existing ${params(existing)}\nDetailed Being Added ${params(s)}"
+      s"Existing: ${existing.descriptionString}\nBeing Added: ${s.descriptionString}\nDetailed existing:\n${existing}\nDetailed of being Added:\n${s}"
     def full(s: Scenario) = s + "\nDetailed:\n  " + params(s)
-    def params(s: Scenario) = s.params.mkString("\n  ")
+    def params(s: Scenario) = s.paramPrinter(s.params)
     def scenario2Str(s: Scenario) =
       if (fullScenario)
-        s.description.getOrElse(logger(s.params))
+        s.descriptionString
       else
         logger(s.params)
 
@@ -87,22 +87,29 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     def adding(existing: Scenario, s: Scenario, actual: R) =
       new ScenarioResultException(s"\nActual Result: ${actual}\nExpected ${s.expected.get}\n Scenario ${ExceptionScenarioPrinter(s)}\nExisting Scenario${ExceptionScenarioPrinter(s)}", s)
   }
+
+  class ScenarioResultException(msg: String, scenario: Scenario) extends ScenarioException(msg, scenario)
+  class AssertionException(msg: String, scenario: Scenario) extends ScenarioException(msg, scenario)
   class ScenarioConflictingWithDefaultException(msg: String, val actual: R, scenario: Scenario) extends ScenarioException(msg, scenario)
+
   object ScenarioConflictingWithDefaultException {
     def apply(actual: R, s: Scenario) =
       new ScenarioConflictingWithDefaultException(s"\nActual Result: ${actual}\nExpected ${s.expected.get}\n Scenario ${ExceptionScenarioPrinter.full(s)}", actual, s)
   }
 
-  class ScenarioResultException(msg: String, scenario: Scenario) extends ScenarioException(msg, scenario)
-  class AssertionException(msg: String, scenario: Scenario) extends ScenarioException(msg, scenario)
+  object ScenarioConflictingWithoutBecauseException {
+    def apply(expected: R, actual: R, s: Scenario, beingAdded: Scenario) =
+      new ScenarioConflictingWithoutBecauseException(s"\nCame to wrong conclusion: ${actual}\nInstead of ${expected}\n${ExceptionScenarioPrinter.existingAndBeingAdded(s, beingAdded)}", s, beingAdded)
+  }
+
   object ScenarioConflictException {
     def apply(existing: Scenario, beingAdded: Scenario, cause: Throwable = null) =
-      new ScenarioConflictException("Cannot differentiate between\nExisting: " + ExceptionScenarioPrinter(existing) +
-        "\nBeing Added: " + ExceptionScenarioPrinter(beingAdded) +
-        "\n\nDetails of Existing Scenario: " + ExceptionScenarioPrinter.full(existing) + "\n\nDetails of New Scenario: " + ExceptionScenarioPrinter.full(beingAdded), existing, beingAdded, null)
+      new ScenarioConflictException(s"Cannot differentiate based on:\n ${beingAdded.becauseString}" +
+        s"\n${ExceptionScenarioPrinter.existingAndBeingAdded(existing, beingAdded)}", existing, beingAdded, null)
   }
   class ScenarioConflictException(msg: String, scenario: Scenario, beingAdded: Scenario, cause: Throwable = null) extends ScenarioException(msg, scenario, cause)
-  class MultipleExceptions(msg: String, val scenarioExceptionMap: ScenarioExceptionMap) extends EngineException(msg)
+  class ScenarioConflictingWithoutBecauseException(msg: String, scenario: Scenario, beingAdded: Scenario, cause: Throwable = null) extends ScenarioConflictException(msg, scenario, beingAdded, cause)
+  class MultipleExceptions(msg: String, val scenarioExceptionMap: ScenarioExceptionMap) extends EngineException(msg, scenarioExceptionMap.first.get)
 
   def rfnMaker: (Either[Exception, R]) => RFn
   def logger: TddLogger
@@ -133,16 +140,17 @@ trait EngineUniverse[R] extends EngineTypes[R] {
   }
 
   case class Scenario(
+    locator: String,
     description: Option[String],
     params: List[Any],
+    paramPrinter: LoggerDisplayProcessor,
     expected: Option[R] = None,
     code: Option[CodeFn[B, RFn, R]] = None,
     because: Option[Because[B]] = None,
     assertions: List[Assertion[A]] = List(),
     configuration: Option[CfgFn] = None) {
 
-    def configure =
-      if (configuration.isDefined) makeClosureForCfg(params)(configuration.get)
+    def configure = if (configuration.isDefined) makeClosureForCfg(params)(configuration.get)
     lazy val actualCode: CodeFn[B, RFn, R] = code.getOrElse({
       //    println("Expected: " + expected)
       //    println("Constraint: " + this)
@@ -152,9 +160,18 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       }
     })
     def becauseString = because match { case Some(b) => b.description; case _ => "" }
+    def descriptionString = description.getOrElse(locator)
+    override def toString =
+      s"Scenario(${descriptionString}, ${params.map(paramPrinter).mkString(",")}, because=${becauseString}, expected=${logger(expected.getOrElse("<N/A>"))})"
   }
 
-  type ScenarioExceptionMap = Map[Scenario, Throwable]
+  case class ScenarioExceptionMap(map: Map[Scenario, Throwable] = Map(), first: Option[Throwable] = None) {
+    def size = map.size
+    def values = map.values
+    def +(x: (Scenario, Throwable)) = ScenarioExceptionMap(map + x, Some(first.getOrElse(x._2)))
+    def apply(s: Scenario) = map(s)
+    def contains(s: Scenario) = map.contains(s)
+  }
   val scenarioLens = Lens[RealScenarioBuilder, Scenario](
     (b) => b.useCases match {
       case u :: ut => u.scenarios match {
@@ -198,10 +215,8 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     def assertion(a: Assertion[A], comment: String = "") = scenarioLens.mod(thisAsBuilder, (s) => s.copy(assertions = a.copy(comment = comment) :: s.assertions))
 
     def useCasesForBuild: List[UseCase] =
-      useCases.map(u => UseCase(u.description,
-        u.scenarios.reverse.zipWithIndex.collect {
-          case (s, i) => s.copy(description = Some(s.description.getOrElse(u.description + "[" + i + "]")))
-        })).reverse;
+      useCases.map(u => UseCase(u.description, u.scenarios.reverse)).reverse;
+
     def scenariosForBuild: List[Scenario] =
       useCasesForBuild.flatMap((u) => u.scenarios);
 
@@ -209,7 +224,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       useCases match {
         case h :: t => {
           val descriptionString = if (description == null) None else Some(description);
-          withCases(UseCase(h.description, Scenario(descriptionString, params) :: h.scenarios) :: t)
+          withCases(UseCase(h.description, Scenario(s"${h.description}[${h.scenarios.size}]", descriptionString, params, logger) :: h.scenarios) :: t)
         }
         case _ => throw new NeedUseCaseException
       }
@@ -294,7 +309,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       }))
 
     class DefaultIfThenPrinter extends IfThenPrinter {
-      def resultPrint = (indent, result) => indent + result.pretty + ":" + result.scenarios.map((s) => s.description.getOrElse("")).mkString(",") + "\n"
+      def resultPrint = (indent, result) => indent + result.pretty + ":" + result.scenarios.map((s) => s.descriptionString).mkString(",") + "\n"
       def ifPrint = (indent, node) => indent + "if(" + node.because.pretty + ")\n"
       def elsePrint = (indent, node) => indent + "else\n";
       def endPrint = (indent, node) => "";
@@ -452,7 +467,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
           case null =>
             if (s.because.isDefined)
               throw new CannotHaveBecauseInFirstScenarioException
-            logger.newRoot(s.description.get)
+            logger.newRoot(s.descriptionString)
             Left(CodeAndScenarios(s.actualCode, List(s)))
           case Left(l: CodeAndScenarios) =>
             val cd: CodeFn[B, RFn, R] = s.actualCode
@@ -470,15 +485,15 @@ trait EngineUniverse[R] extends EngineTypes[R] {
                       throw ScenarioConflictException(p.scenarioThatCausedNode, s)
                     }
                     //                   logger.debugCompile( "Adding " + newCnC + "to yes of leaf " + parent.toString)
-                    logger.addingUnder(s.description.get, parentWasTrue, p.scenarioThatCausedNode.description.get)
+                    logger.addingUnder(s.descriptionString, parentWasTrue, p.scenarioThatCausedNode.descriptionString)
                     Right(Node(b, s.params, Left(newCnC), Left(l), s)) //Adding to the 'yes' of the current
                   case _ => //No parent so we are the root.
                     resultsSame(l, s) match {
                       case true =>
-                        logger.addScenarioForRoot(s.description.get)
+                        logger.addScenarioForRoot(s.descriptionString)
                         Left(l.copy(scenarios = s :: l.scenarios)); // we come to same conclusion as root, so we just add ourselves as assertion
                       case false =>
-                        logger.addFirstIfThenElse(s.description.get)
+                        logger.addFirstIfThenElse(s.descriptionString)
                         Right(Node(b, s.params, Left(newCnC), Left(l), s)) //So we are if b then new result else default 
                     }
                 }
@@ -491,20 +506,20 @@ trait EngineUniverse[R] extends EngineTypes[R] {
                   case Left(result) if result == s.expected.get =>
                     parentWasTrue match {
                       case true =>
-                        if (actualResultIfUseThisScenariosCode == Left(s.expected.get)) {
-                          logger.addScenarioFor(s.description.get, l.code)
-                          Left(l.copy(scenarios = s :: l.scenarios))
-                        } else
-                          throw new AssertionException("Adding assertion and got wrong value.\nAdding: " + s.description + "\nDetails: " + s + "\nto: " + l + "\nActual result: " + actualResultIfUseThisScenariosCode, s)
+                        logger.addScenarioFor(s.descriptionString, l.code)
+                        Left(l.copy(scenarios = s :: l.scenarios))
                       case false => //Only way here is when I am coming down a no node. By definition I have a parent and it was false
                         if (parent.isDefined && resultsSame(parent.get.no.left.get, s)) {
-                          logger.addScenarioFor(s.description.get, l.code)
+                          logger.addScenarioFor(s.descriptionString, l.code)
                           Left(l.copy(scenarios = s :: l.scenarios))
                         } else
                           throw new AssertionException("Adding assertion to else and got wrong value.\nAdding: " + s + "\nto: " + parent.get.no + "\n", s)
                     }
                   case Left(result) =>
-                    throw ScenarioConflictingWithDefaultException(result, s)
+                    if (parent.isDefined)
+                      throw ScenarioConflictingWithoutBecauseException(s.expected.get, result, parent.get.scenarioThatCausedNode, s)
+                    else
+                      throw ScenarioConflictingWithDefaultException(result, s)
                 }
               }
             }
@@ -553,9 +568,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
 
     def constructionString: String =
       constructionString(defaultRoot, scenarios, new DefaultIfThenPrinter {
-        override def titlePrint =
-          (indent, scenario) =>
-            indent + "Adding " + scenario.description + " " + logger(scenario.params) + "\n";
+        override def titlePrint = (indent, scenario) => s"${indent}Adding ${scenario}\n";
       })
     def logParams(p: Any*) =
       logger.executing(p.toList)
@@ -569,21 +582,21 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     def buildRoot(root: RorN, scenarios: List[Scenario]): (RorN, ScenarioExceptionMap) = {
       scenarios match {
         case s :: rest =>
-          val newRootAndExceptionMap = buildFromScenarios(root, scenarios, Map());
+          val newRootAndExceptionMap = buildFromScenarios(root, scenarios, ScenarioExceptionMap());
           val (newRoot, seMap) = newRootAndExceptionMap
           if (!EngineTest.testing) {
             seMap.size match {
               case 0 => ;
               case 1 => throw seMap.values.head
               case _ =>
-                for (e <- seMap.values)
-                  e.printStackTrace()
+//                for (e <- seMap.values)
+//                  e.printStackTrace()
                 throw new MultipleExceptions(s"Could not build Engine $seMap", seMap)
             }
           }
           newRootAndExceptionMap
 
-        case _ => (root, Map())
+        case _ => (root, ScenarioExceptionMap())
       }
 
     }
@@ -603,7 +616,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     }
 
     def validateScenarios {
-      println("In validate scenarios")
+      //      println("In validate scenarios")
       for (c <- scenarios)
         validateScenario(root, c)
     }
@@ -707,7 +720,7 @@ trait StmUniverse[R] extends EngineUniverse[R] {
       useCases match {
         case h :: t => {
           val descriptionString = if (description == null) None else Some(description);
-          withCases(UseCase(h.description, Scenario(descriptionString, params) :: h.scenarios) :: t)
+          withCases(UseCase(h.description, Scenario(s"${h.description}[${h.scenarios.size}]", descriptionString, params, logger) :: h.scenarios) :: t)
         }
         case _ => throw new NeedUseCaseException
       }

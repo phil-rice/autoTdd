@@ -49,10 +49,10 @@ class EngineConstructionStringTest extends EngineStringStringTests {
       scenario("AB").because(becauseAB).expected("XAB")
     val e = bldr.build
     val cs = e.constructionString
-    assertEquals("Adding Some(UseCase1[0]) List(W)\n" + wCString + "\n" +
-      "Adding Some(UseCase1[1]) List(A)\n" + w_aCString + "\n" +
-      "Adding Some(UseCase1[2]) List(B)\n" + w_b_aCString + "\n" +
-      "Adding Some(UseCase1[3]) List(AB)\n" + w_ab_b_aCString, cs)
+    assertEquals("Adding Scenario(UseCase1[0], W, because=, expected=Z)\n" + wCString + "\n" +
+      "Adding Scenario(UseCase1[1], A, because=hA, expected=XA)\n" + w_aCString + "\n" +
+      "Adding Scenario(UseCase1[2], B, because=hB, expected=XB)\n" + w_b_aCString + "\n" +
+      "Adding Scenario(UseCase1[3], AB, because=hAB, expected=XAB)\n" + w_ab_b_aCString, cs)
   }
 
   "An engine's increasingScenariosList method" should "return a list of increasing numbers of scenarios" in {
@@ -84,7 +84,7 @@ class EngineConstructionStringTest extends EngineStringStringTests {
 
     val (actual, seMap) = e.buildRoot(e.defaultRoot, List(w, a, b, ab))
     assertEngineMatches(e, actual)
-    assertEquals(Map(), seMap)
+    assertEquals(0, seMap.size)
   }
 
 }

@@ -20,7 +20,7 @@ object Xmls {
       val url = getClass.getClassLoader.getResource("ValidateClaim/CL100104A.xml")
       val xmlString = scala.io.Source.fromURL(url).mkString
       val xml = XML.loadString(xmlString)
-      xml
+      xmlm 
     } catch {
       case e: Exception => throw new RuntimeException("Cannot load " + id, e)
     }
@@ -111,8 +111,9 @@ object World {
 
 case class Caches(ninoToDecision: Ref[Map[String, Elem]] = Ref(Map()))
 
-case class World(today: DateTime, toDecision: NinoToDecision, toValidateClaim: NinoToValidateClaim, caches: Caches = Caches()) {
-
+case class World(today: DateTime, toDecision: NinoToDecision, toValidateClaim: NinoToValidateClaim, caches: Caches = Caches()) extends LoggerDisplay {
+  def loggerDisplay(dp: LoggerDisplayProcessor): String =
+    "World"
 }
 
 case class ReasonAndPayment(reason: String, payment: Option[Integer] = None)
@@ -141,6 +142,12 @@ object Carers {
     useCase("Customers under age 16 are not entitled to CA").
     scenario(blankTestWorld, Xmls.ageUnder16).
     expected(ReasonAndPayment("carer.claimant.under16")).
+    because((w: World, e: Elem) => {
+      val birthDate = Xmls.asDate((e \\ "ClaimantBirthDate" \ "PersonBirthDate") text)
+      val d = birthDate.plusYears(16)
+      val result = d.isAfter(w.today)
+      result
+    }).
 
     useCase("Customers with Hours of caring must be 35 hours or more in any one week").
     scenario(blankTestWorld, Xmls.lessThen35Hours).
@@ -155,19 +162,15 @@ object Carers {
     scenario(blankTestWorld, Xmls.notInGB).
     expected(ReasonAndPayment("carers.claimant.notResident")).
     because((w: World, e: Elem) => {
-       Xmls.asYesNo((e \\ "ClaimData" \ "ClaimAlwaysUK") text)
+      Xmls.asYesNo((e \\ "ClaimData" \ "ClaimAlwaysUK") text)
     }).
     build;
 
   def main(args: Array[String]) {
     val x = Xmls.ageUnder16
-    println("X is " + x)
-    println
-    println
     println(Carers.engine(Carers.blankTestWorld, Xmls.ageUnder16))
     //    println(Dbase.template)
     println("done")
-    
-    
+
   }
 }

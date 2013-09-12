@@ -28,7 +28,7 @@ trait AbstractScenarioTests[R] extends FirstScenarioTest[R] {
   }
 
   "The ScenarioBuilder" should "allow the scenario lens to set /get the scenario" in {
-    val expected = new Scenario(None, List())
+    val expected = new Scenario("", None, List(), logger)
     val newBuilder = scenarioLens.set(builderWithScenario, expected);
     assert(List(expected) == newBuilder.useCases.head.scenarios, newBuilder.useCases.head.scenarios) //i.e. this has replaced the head scenario
     assert(expected == scenarioLens.get(newBuilder), scenarioLens.get(newBuilder))
@@ -73,17 +73,16 @@ trait AbstractScenarioTests[R] extends FirstScenarioTest[R] {
     checkRfn(c)
   }
 
-   
   "A built engine" should "have all the scenarios in it's list of scenarios" in {
     val b = builderWithScenario.expected(firstResult)
     val engine = build(b)
     assertEquals("UseCases", b.useCasesForBuild, engine.useCases)
-    val expectedScenario = Scenario(Some(firstUseCaseDescription + "[0]"), firstParams, Some(firstResult));
+    val expectedScenario = Scenario(firstUseCaseDescription + "[0]", None, firstParams, logger, Some(firstResult));
     assertEquals(List(expectedScenario), engine.scenarios)
   }
-  
+
   it should "allow a specified description for a use ca to be used" in {
-    
+
   }
 
 }
@@ -113,13 +112,20 @@ class Scenario1Tests extends FirstScenario1Test[Int, Int] with AbstractScenarioT
     val firstScenaro = e.scenarios(0)
     val secondScenaro = e.scenarios(1)
     assertEquals(2, e.scenarios.size)
-    
+
     assertEquals("", firstScenaro.becauseString)
     assertEquals(Some(firstResult), firstScenaro.expected)
-    
+
     assertEquals("((x: Int) => x.>(2))", secondScenaro.becauseString)
     assertEquals(Some(7), secondScenaro.expected)
+  }
 
+  it should "have a tostring method that includes the locator and the descriptor if it exists" in {
+    val b = builderWithUseCase.scenario(111).expected(123).scenario(222, "withDescription").because((x: Int) => x == 222).expected(234).build;
+    val s0 = b.scenarios(0);
+    val s1 = b.scenarios(1);
+    assertEquals("Scenario(UseCase1[0], 111, because=, expected=123)", s0.toString)
+    assertEquals("Scenario(withDescription, 222, because=((x: Int) => x.==(222)), expected=234)", s1.toString)
   }
 
 }
