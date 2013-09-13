@@ -20,7 +20,7 @@ object Xmls {
       val url = getClass.getClassLoader.getResource("ValidateClaim/CL100104A.xml")
       val xmlString = scala.io.Source.fromURL(url).mkString
       val xml = XML.loadString(xmlString)
-      xmlm 
+      xml
     } catch {
       case e: Exception => throw new RuntimeException("Cannot load " + id, e)
     }
@@ -123,18 +123,18 @@ object Carers {
 
   def blankTestWorld = World(Xmls.asDate("2010-1-1"), new NinoToDecisionMysql(), new NinoToValidateClaimFile())
 
-  def hasQualifyingBenefit = Engine.stm[World, String, Boolean]().
-    useCase("To have a valid claim the dependent must have data present in the database").
-    scenario(blankTestWorld, "CL100104A", "Data present in database").
-    expected(true).
+//  val hasQualifyingBenefit = Engine.stm[World, String, Boolean]().
+//    useCase("To have a valid claim the dependent must have data present in the database").
+//    scenario(blankTestWorld, "CL100104A", "Data present in database").
+//    expected(true).
+//
+//    scenario(blankTestWorld, "CL100106A", "Data not present in database").
+//    expected(false).
+//    because((i: InTxn, w: World, nino: String) => {
+//      w.ninoToDecision(i, w, nino) != <noDecision/>
+//    });
 
-    scenario(blankTestWorld, "CL100106A", "Data not present in database").
-    expected(false).
-    because((i: InTxn, w: World, nino: String) => {
-      w.ninoToDecision(i, w, nino) != <noDecision/>
-    });
-
-  def engine = Engine[World, Elem, ReasonAndPayment]().
+  val engine = Engine[World, Elem, ReasonAndPayment]().
     useCase("DP's without the required level of qualifing benefit will result in the disallowance of the claim to CA.").
     scenario(blankTestWorld, Xmls.dpWithoutLevelOfQualifyingBenefit).
     expected(ReasonAndPayment("carer.dp.withoutLevelOfQualifyingBenefit")).
@@ -168,6 +168,7 @@ object Carers {
 
   def main(args: Array[String]) {
     val x = Xmls.ageUnder16
+    
     println(Carers.engine(Carers.blankTestWorld, Xmls.ageUnder16))
     //    println(Dbase.template)
     println("done")

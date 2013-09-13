@@ -13,6 +13,7 @@ import java.io.File
 import scala.collection.mutable.StringBuilder
 import sys.process._
 import java.lang.reflect.Field
+import junit.framework.AssertionFailedError
 
 object AutoTddRunner {
   val separator = "\n#########\n"
@@ -58,7 +59,8 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner with JunitUniverse[Any
     add(engineDescription, engine)
   }
 
-  private def clean(s: String) = s.replace("(", "<").replace(")", ">").replace("\n", "\\n")
+  private var i = 0;
+  private def clean(s: String) = "desc" + (i += 1) //"s.replace("(", "<").replace("{", "<").replace(")", ">").replace("}", ">").replace("\n", "\\n").replace("\\", "/")
 
   def add(engineDescription: Description, engine: Engine) {
     getDescription.addChild(engineDescription)
@@ -95,42 +97,61 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner with JunitUniverse[Any
     //        new File(AutoTddRunner.directory, clazz.getName() + "." + ed.getDisplayName() + ".attd"))((pw) => pw.write(e.toString))
   }
 
+  def log(s: String) = println(s)
+
   def run(notifier: RunNotifier) {
     EngineTest.test(() => {
       notifier.fireTestStarted(getDescription)
       for (ed <- getDescription.getChildren) {
+        log("notifier.fireTestStarted(ed)" + ed)
         notifier.fireTestStarted(ed)
         val engine = engineMap(ed)
         for (ud <- ed.getChildren) {
+          log("notifier.fireTestStarted(ud)" + ud)
           notifier.fireTestStarted(ud)
           for (sd <- ud.getChildren) {
+            log("notifier.fireTestStarted(sd)" + sd)
             notifier.fireTestStarted(sd)
             val Scenario = ScenarioMap(sd)
-            if (EngineTest.exceptions.contains(Scenario))
+            if (EngineTest.exceptions.contains(Scenario)) {
+              log("notifier.fireTestFailure(sd)" + sd)
               notifier.fireTestFailure(new Failure(sd, EngineTest.exceptions(Scenario)))
-            else {
+            } else {
               //            val b = engine.makeClosureForBecause(Scenario.params);
-              if (engine.root == null)
+              if (engine.root == null) {
                 notifier.fireTestIgnored(sd)
-              else
+                log("notifier.fireTestIgnored(sd)" + sd)
+              } else
                 try {
                   val actual = Some(engine.applyParam(engine.root, Scenario.params, true))
-                  if (Scenario.expected != actual)
-                    Assert.assertEquals(Scenario.expected, actual)
-                  notifier.fireTestFinished(sd)
+                  if (Scenario.expected != actual) {
+                    log("notifier.fireTestFinished(sd)" + sd)
+                    notifier.fireTestFinished(sd)
+                  } else {
+                    log("notifier.fireTestFinished(sd)" + sd)
+                    notifier.fireTestFinished(sd)
+                  }
                 } catch {
-                  //              case e: AssertionFailedError => notifier.fireTestFailure(new Failure(cd, e))
-                  case e: Throwable => notifier.fireTestFailure(new Failure(sd, e))
+                  //                  case e: AssertionFailedError => 
+                  //                    notifier.fireTestFailure(new Failure(sd, e))
+                  case e: Throwable =>
+                    e.printStackTrace()
+                    val f = new Failure(sd, e)
+                    log("notifier.fireTestFailure(sd)" + sd)
+                    notifier.fireTestFailure(f)
                 }
             }
+            log("notifier.fireTestFinished(sd)" + ed)
             notifier.fireTestFinished(ed)
           }
+          log("notifier.fireTestFinished(ud)" + ud)
           notifier.fireTestFinished(ud)
         }
         //        println("Scenarios for: " + ed.getDisplayName())
         //        for (c <- engine.Scenarios)
         //          println("  " + c)
       }
+      log("notifier.fireTestFinished(getDescription)" + getDescription)
       notifier.fireTestFinished(getDescription)
     })
   }
