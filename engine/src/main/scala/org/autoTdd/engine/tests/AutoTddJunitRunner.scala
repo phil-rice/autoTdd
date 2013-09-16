@@ -15,7 +15,7 @@ import sys.process._
 import java.lang.reflect.Field
 import junit.framework.AssertionFailedError
 
-object AutoTddRunner {
+object AutoTddJuitRunner {
   val separator = "\n#########\n"
   val userHome = System.getProperty("user.home");
   val directory = new File(userHome, ".autoTdd")
@@ -32,11 +32,7 @@ trait NotActuallyFactory[R] extends EngineUniverse[R] {
 
 }
 
-class AutoTddRunner(val clazz: Class[Any]) extends Runner with JunitUniverse[Any] with NotActuallyFactory[Any] {
-
-  val getDescription = Description.createSuiteDescription("ATDD: " + clazz.getName);
-
-  val instance = EngineTest.test(() => { instantiate(clazz) });
+trait AutoTddRunner extends Runner with JunitUniverse[Any] with NotActuallyFactory[Any] {
 
   var engineMap: Map[Description, Engine] = Map()
   var ScenarioMap: Map[Description, Scenario] = Map()
@@ -44,55 +40,46 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner with JunitUniverse[Any
 
   def scenarioReporter(f: File) = new JunitScenarioReporter(new JunitFileManipulator(f), logger)
 
-  for (m <- clazz.getDeclaredMethods().filter((m) => returnTypeIsEngine(m))) {
-    val engineDescription = Description.createSuiteDescription(m.getName())
-    val engine: Engine = m.invoke(instance).asInstanceOf[Engine];
-    println(m.getName())
+  def addEngineForTest(name: String, engine: Any) = addEngine(name, engine.asInstanceOf[Engine])
+
+  def addEngine(name: String, engine: Engine) = {
+    val engineDescription = Description.createSuiteDescription(name)
+    println(name)
     println(engine)
     add(engineDescription, engine)
-  }
-  for (f <- clazz.getFields().filter((f) => typeIsEngine(f))) {
-    val engineDescription = Description.createSuiteDescription(f.getName())
-    val engine: Engine = f.get(instance).asInstanceOf[Engine];
-    println(f.getName())
-    println(engine)
-    add(engineDescription, engine)
+    engineDescription
   }
 
-  private var i = 0;
-  private def clean(s: String) = "desc" + (i += 1) //"s.replace("(", "<").replace("{", "<").replace(")", ">").replace("}", ">").replace("\n", "\\n").replace("\\", "/")
+  //  private var i = 0;
 
   def add(engineDescription: Description, engine: Engine) {
     getDescription.addChild(engineDescription)
-    val file = fileFor(clazz, engineDescription, "html")
-    val manipulator = new JunitFileManipulator(file)
-    val reporter = (scenarioReporter(file))
-    engine.walkScenarios(reporter, true);
-    manipulator.append("\n\n" + <pre>{ engine.constructionString }</pre>)
+
+    //    manipulator.append("\n\n" + <new(null, "pre", e>, false, pre>new }</pre>engine.constructionString }</pre>$buf_*) }</pre>)
 
     engineMap = engineMap + (engineDescription -> engine)
 
-    for (u <- engine.useCases) {
-      val useCaseDescription = Description.createSuiteDescription(clean(u.description))
+    for (u <- engine.useCases) yield {
+      val useCaseDescription = Description.createSuiteDescription(Strings.clean(u.description))
       engineDescription.addChild(useCaseDescription)
 
-      for (s <- u.scenarios) {
-        val name = s.description.collect { case d: String => d + "/" }.getOrElse("") + s.params.reduce((acc, p) => acc + ", " + p) + " => " + s.expected + " " + s.becauseString
-        val cleanedName = clean(name)
+      for (s <- u.scenarios) yield {
+        val name = s.description.getOrElse(s.params.map(logger).mkString(",")) + " => " + logger(s.expected.getOrElse("<NoExpected>")) + " " + s.becauseString
+        val cleanedName = Strings.clean(name)
         println("   " + cleanedName)
         val scenarioDescription = Description.createSuiteDescription(cleanedName)
         useCaseDescription.addChild(scenarioDescription)
         ScenarioMap = ScenarioMap + (scenarioDescription -> s.asInstanceOf[Scenario])
-        saveResults(clazz, engineDescription, engine)
+
       }
     }
   }
 
-  def fileFor(clazz: Class[Any], ed: Description, extension: String) = new File(AutoTddRunner.directory, clazz.getName() + "." + ed.getDisplayName() + "." + extension)
+  def fileFor(clazz: Class[Any], ed: Description, extension: String) = new File(AutoTddJuitRunner.directory, clazz.getName() + "." + ed.getDisplayName() + "." + extension)
 
   def saveResults(clazz: Class[Any], ed: Description, e: Any) {
     import Files._
-    AutoTddRunner.directory.mkdirs()
+    AutoTddJuitRunner.directory.mkdirs()
     printToFile(fileFor(clazz, ed, "attd"))((pw) => pw.write(e.toString))
     //        new File(AutoTddRunner.directory, clazz.getName() + "." + ed.getDisplayName() + ".attd"))((pw) => pw.write(e.toString))
   }
@@ -102,20 +89,20 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner with JunitUniverse[Any
   def run(notifier: RunNotifier) {
     EngineTest.test(() => {
       notifier.fireTestStarted(getDescription)
-      for (ed <- getDescription.getChildren) {
+      for (ed <- getDescription.getChildren) yield {
         log("notifier.fireTestStarted(ed)" + ed)
         notifier.fireTestStarted(ed)
         val engine = engineMap(ed)
-        for (ud <- ed.getChildren) {
+        for (ud <- ed.getChildren) yield {
           log("notifier.fireTestStarted(ud)" + ud)
           notifier.fireTestStarted(ud)
-          for (sd <- ud.getChildren) {
+          for (sd <- ud.getChildren) yield {
             log("notifier.fireTestStarted(sd)" + sd)
             notifier.fireTestStarted(sd)
-            val Scenario = ScenarioMap(sd)
-            if (EngineTest.exceptions.contains(Scenario)) {
+            val scenario = ScenarioMap(sd)
+            if (engine.scenarioExceptionMap.contains(scenario)) {
               log("notifier.fireTestFailure(sd)" + sd)
-              notifier.fireTestFailure(new Failure(sd, EngineTest.exceptions(Scenario)))
+              notifier.fireTestFailure(new Failure(sd, engine.scenarioExceptionMap(scenario)))
             } else {
               //            val b = engine.makeClosureForBecause(Scenario.params);
               if (engine.root == null) {
@@ -123,30 +110,27 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner with JunitUniverse[Any
                 log("notifier.fireTestIgnored(sd)" + sd)
               } else
                 try {
-                  val actual = Some(engine.applyParam(engine.root, Scenario.params, true))
-                  if (Scenario.expected != actual) {
+                  val actual = Some(engine.applyParam(engine.root, scenario.params, true))
+                  if (scenario.expected == actual) {
                     log("notifier.fireTestFinished(sd)" + sd)
                     notifier.fireTestFinished(sd)
-                  } else {
-                    log("notifier.fireTestFinished(sd)" + sd)
-                    notifier.fireTestFinished(sd)
-                  }
+                  } else
+                    throw new AssertionFailedError("Expected:\n" + scenario.expected + "\nActual:\n" + actual)
                 } catch {
                   //                  case e: AssertionFailedError => 
-                  //                    notifier.fireTestFailure(new Failure(sd, e))
                   case e: Throwable =>
-                    e.printStackTrace()
+                    //                    e.printStackTrace()
                     val f = new Failure(sd, e)
                     log("notifier.fireTestFailure(sd)" + sd)
                     notifier.fireTestFailure(f)
                 }
             }
-            log("notifier.fireTestFinished(sd)" + ed)
-            notifier.fireTestFinished(ed)
           }
           log("notifier.fireTestFinished(ud)" + ud)
           notifier.fireTestFinished(ud)
         }
+        log("notifier.fireTestFinished(ed)" + ed)
+        notifier.fireTestFinished(ed)
         //        println("Scenarios for: " + ed.getDisplayName())
         //        for (c <- engine.Scenarios)
         //          println("  " + c)
@@ -176,6 +160,28 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner with JunitUniverse[Any
     return false;
   }
 
+}
+class AutoTddJunitRunner(val clazz: Class[Any]) extends AutoTddRunner {
+
+  val getDescription = Description.createSuiteDescription("ATDD: " + clazz.getName);
+
+  val instance = EngineTest.test(() => { instantiate(clazz) });
+
+  override def addEngine(name: String, engine: Engine) = {
+    val ed = super.addEngine(name, engine)
+    recordEngine(clazz, ed, engine)
+    ed
+  }
+
+  for (m <- clazz.getDeclaredMethods().filter((m) => returnTypeIsEngine(m))) {
+    val engine: Engine = m.invoke(instance).asInstanceOf[Engine];
+    addEngine(m.getName(), engine)
+  }
+  for (f <- clazz.getFields().filter((f) => typeIsEngine(f))) {
+    val engine: Engine = f.get(instance).asInstanceOf[Engine];
+    addEngine(f.getName, engine)
+  }
+
   def instantiate(clazz: Class[_]): Any = {
     val rm = ru.runtimeMirror(clazz.getClassLoader())
     val declaredFields = clazz.getDeclaredFields().toList
@@ -190,6 +196,15 @@ class AutoTddRunner(val clazz: Class[Any]) extends Runner with JunitUniverse[Any
       case e: Throwable =>
         throw new RuntimeException(s"Class: $clazz Field: $moduleField", e);
     }
+  }
+
+  def recordEngine(clazz: Class[Any], engineDescription: Description, engine: Engine) {
+    val file = fileFor(clazz, engineDescription, "html")
+    val manipulator = new JunitFileManipulator(file)
+    val reporter = scenarioReporter(file)
+    engine.walkScenarios(reporter, true);
+    manipulator.append("\n\n" + <pre>{ engine.constructionString }</pre>)
+    saveResults(clazz, engineDescription, engine)
   }
 
   trait SomeTrait { def someMethod: String }

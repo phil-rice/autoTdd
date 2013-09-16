@@ -4,21 +4,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.FlatSpec
 import junit.framework.AssertionFailedError
 
-trait AbstractEngineTest[R] extends EngineUniverse[R] with FlatSpec with ShouldMatchers with NodeComparator[R] {
-  def logger: TddLogger
-  def builder: RealScenarioBuilder
-  def firstUseCaseDescription = "UseCase1"
-  def builderWithUseCase: RealScenarioBuilder = builder.useCase(firstUseCaseDescription)
-  def checkScenariosExist[X](engine: Engine, expected: String*) {
-    assert(engine.scenarios.size == expected.size)
-    for ((c, a) <- (engine.scenarios, expected).zipped) {
-      assert(c.becauseString == a, "Expected: [" + a + "]\nBecauseString = [" + c.becauseString + "]\n\nActual " + c + "\n   Scenarios: " + engine.scenarios + "\nEngine:\n" + engine)
-    }
-  }
-  def assertEngineMatches(e: Engine, n2: RorN) {
-    val actual = compareNodes(e.root.asInstanceOf[RorN], n2)
-    assert(actual == List(), "\n" + actual.mkString("\n\n") + "\n\nExpected:\n" + n2 + "\n\nRoot:\n" + e.root)
-  }
+trait AbstractTest extends FlatSpec with ShouldMatchers {
   def assertEquals[T1, T2](prefix: String, expected: T1, actual: T2) {
     assert(expected == actual, prefix + "\nExpected\n" + expected + "\nActual\n" + actual)
   }
@@ -36,22 +22,31 @@ trait AbstractEngineTest[R] extends EngineUniverse[R] with FlatSpec with ShouldM
           fail("First fail at " + i + " Expected: [" + expectedString.substring(i, i + 10) + "] Actual: [ " + actualString.substring(i, i + 10) + "]\n" + msg)
         }
       }
-      expectedString.length() - actualString.length() match{
-        case x if x<0 =>fail(s"Actual ran over end at ${expectedString.length}\n ${msg}")
-        case x if x>0 =>fail(s"Actual fell short end at ${actualString.length}\n ${msg}")
+      expectedString.length() - actualString.length() match {
+        case x if x < 0 => fail(s"Actual ran over end at ${expectedString.length}\n ${msg}")
+        case x if x > 0 => fail(s"Actual fell short end at ${actualString.length}\n ${msg}")
       }
-        
+
     }
     assert(expected == actual, msg)
   }
-  def checkMessages[X](expected: String*) {
-    val actual = logger.asInstanceOf[TestLogger].messages
-    assert(expected.toList == actual, "\nExpected: " + expected + "\nActual: " + actual)
+
+}
+
+trait AbstractEngineTest[R] extends EngineUniverse[R] with AbstractTest with NodeComparator[R] {
+  def logger: TddLogger
+  def builder: RealScenarioBuilder
+  def firstUseCaseDescription = "UseCase1"
+  def builderWithUseCase: RealScenarioBuilder = builder.useCase(firstUseCaseDescription)
+  def checkScenariosExist[X](engine: Engine, expected: String*) {
+    assert(engine.scenarios.size == expected.size)
+    for ((c, a) <- (engine.scenarios, expected).zipped) {
+      assert(c.becauseString == a, "Expected: [" + a + "]\nBecauseString = [" + c.becauseString + "]\n\nActual " + c + "\n   Scenarios: " + engine.scenarios + "\nEngine:\n" + engine)
+    }
   }
-  def checkLastMessages(expected: String*) {
-    val full = logger.asInstanceOf[TestLogger].messages
-    val actual = full.takeRight(expected.size)
-    assert(expected.toList == actual, "\nExpected: " + expected + "\nActual: " + full)
+  def assertEngineMatches(e: Engine, n2: RorN) {
+    val actual = compareNodes(e.root.asInstanceOf[RorN], n2)
+    assert(actual == List(), "\n" + actual.mkString("\n\n") + "\n\nExpected:\n" + n2 + "\n\nRoot:\n" + e.root)
   }
 
   //  def checkSingleException[E](code: => Unit, exceptionClass: Class[E]): E =
@@ -63,6 +58,15 @@ trait AbstractEngineTest[R] extends EngineUniverse[R] with FlatSpec with ShouldM
   //        assert(1==e.scenarioExceptionMap.size, s"Expected one exception of type $exceptionClass got ${e.scenarioExceptionMap}")
   //        e.scenarioExceptionMap.keys.head.asInstanceOf[E]
   //    }
+  def checkMessages[X](expected: String*) {
+    val actual = logger.asInstanceOf[TestLogger].messages
+    assert(expected.toList == actual, "\nExpected: " + expected + "\nActual: " + actual)
+  }
+  def checkLastMessages(expected: String*) {
+    val full = logger.asInstanceOf[TestLogger].messages
+    val actual = full.takeRight(expected.size)
+    assert(expected.toList == actual, "\nExpected: " + expected + "\nActual: " + full)
+  }
 }
 
 trait AbstractEngine1Test[P, R] extends BuilderFactory1[P, R] with AbstractEngineTest[R] with Engine1Types[P, R]

@@ -4,7 +4,7 @@ import java.util.Date
 import org.autotdd.engine.Engine
 import java.text.SimpleDateFormat
 import org.junit.runner.RunWith
-import org.autotdd.engine.tests.AutoTddRunner
+import org.autotdd.engine.tests._
 
 case class Person(name: String, income: Float, dateOfBirth: Date)
 
@@ -34,7 +34,7 @@ object TaxReference {
 class Tax {
 
 }
-@RunWith(classOf[AutoTddRunner])
+@RunWith(classOf[AutoTddJunitRunner])
 object Tax {
 
   val allowanceSelectionByDate = Engine[Date, SinglePersonsAllowanceReference, AllowanceAndLimit]().

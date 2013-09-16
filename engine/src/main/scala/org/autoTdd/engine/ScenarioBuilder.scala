@@ -16,7 +16,6 @@ object EngineTest {
   def testing = _testing
   private var _testing = false
 
-  var exceptions: Map[Any, Throwable] = Map()
 
   def test[T](x: () => T) = {
     _testing = true;

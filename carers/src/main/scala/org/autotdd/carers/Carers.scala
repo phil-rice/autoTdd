@@ -9,7 +9,7 @@ import org.joda.time._
 import org.joda.time.format._
 import org.springframework.jdbc.core.JdbcTemplate
 import org.junit.runner.RunWith
-import org.autotdd.engine.tests.AutoTddRunner
+import org.autotdd.engine.tests._
 import java.io.File
 import java.nio.file.Files
 
@@ -118,25 +118,25 @@ case class World(today: DateTime, toDecision: NinoToDecision, toValidateClaim: N
 
 case class ReasonAndPayment(reason: String, payment: Option[Integer] = None)
 
-@RunWith(classOf[AutoTddRunner])
+@RunWith(classOf[AutoTddJunitRunner])
 object Carers {
 
   def blankTestWorld = World(Xmls.asDate("2010-1-1"), new NinoToDecisionMysql(), new NinoToValidateClaimFile())
 
-//  val hasQualifyingBenefit = Engine.stm[World, String, Boolean]().
-//    useCase("To have a valid claim the dependent must have data present in the database").
-//    scenario(blankTestWorld, "CL100104A", "Data present in database").
-//    expected(true).
-//
-//    scenario(blankTestWorld, "CL100106A", "Data not present in database").
-//    expected(false).
-//    because((i: InTxn, w: World, nino: String) => {
-//      w.ninoToDecision(i, w, nino) != <noDecision/>
-//    });
+  val hasQualifyingBenefit = Engine.stm[World, String, Boolean]().
+    useCase("To have a valid claim the dependent must have data present in the database").
+    scenario(blankTestWorld, "CL100104A", "Data present in database").
+    expected(true).
+
+    scenario(blankTestWorld, "CL100106A", "Data not present in database").
+    expected(false).
+    because((i: InTxn, w: World, nino: String) => {
+      w.ninoToDecision(i, w, nino) != <noDecision/>
+    });
 
   val engine = Engine[World, Elem, ReasonAndPayment]().
     useCase("DP's without the required level of qualifing benefit will result in the disallowance of the claim to CA.").
-    scenario(blankTestWorld, Xmls.dpWithoutLevelOfQualifyingBenefit).
+    scenario(blankTestWorld, Xmls.dpWithoutLevelOfQualifyingBenefit, "No Qualifying Benefit").
     expected(ReasonAndPayment("carer.dp.withoutLevelOfQualifyingBenefit")).
 
     useCase("Customers under age 16 are not entitled to CA").
@@ -146,7 +146,7 @@ object Carers {
       val birthDate = Xmls.asDate((e \\ "ClaimantBirthDate" \ "PersonBirthDate") text)
       val d = birthDate.plusYears(16)
       val result = d.isAfter(w.today)
-      result
+      result 
     }).
 
     useCase("Customers with Hours of caring must be 35 hours or more in any one week").

@@ -5,7 +5,7 @@ import org.junit.runner.RunWith
 import org.autotdd.engine._
 import org.autotdd.engine.tests._
 
-@RunWith(classOf[AutoTddRunner])
+@RunWith(classOf[AutoTddJunitRunner])
 object Bowling {
 
   //get returns the ith ball or zero   

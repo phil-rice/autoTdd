@@ -2,10 +2,10 @@ package org.autotdd.example
 
 import org.autotdd.engine.Engine
 import org.junit.runner.RunWith
-import org.autotdd.engine.tests.AutoTddRunner
+import org.autotdd.engine.tests._
 
 case class TrafficLight(red: Boolean = false, orange: Boolean = false, green: Boolean = false)
-@RunWith(classOf[AutoTddRunner])
+@RunWith(classOf[AutoTddJunitRunner])
 object DecideAction {
 
   //This isn't complex enough to really need use cases
