@@ -30,7 +30,7 @@ class RunListenerForTests extends RunListener {
 @RunWith(classOf[JUnitRunner])
 class AutoTddRunnerTests extends AbstractEngine1Test[String, String] {
 
-  "An engine" should "act as a JUnit test" in {
+  "An engine" should "notify started and finished for root, engine, usecase and scenario wihen one scenario" in {
     val engine1 = builder.useCase("uc1").
       scenario("one", "d1").
       expected("exp").build
@@ -45,6 +45,39 @@ class AutoTddRunnerTests extends AbstractEngine1Test[String, String] {
       "testFinished: Engine",
       "testFinished: Test"), runAndGetListOfNotifications(engine1))
   }
+  "An engine" should "notify started and finished for root, engine, usecase and scenario wihen two scenarios in same use case" in {
+    val engine1 = builder.useCase("uc1").
+      scenario("one", "d1").
+      expected("exp").
+      scenario("two").
+      expected("exp2").
+      because((p: String) => p == "two").
+      build
+    assertEquals(Map(), engine1.scenarioExceptionMap.map)
+    assertEquals(List(
+      "testStarted: Test",
+      "testStarted: Engine",
+      "testStarted: uc1",
+      "testStarted: d1 => ep ", //the space is there to separate the because
+      "testFinished: d1 => ep ",
+      "testFinished: uc1",
+      "testFinished: Engine",
+      "testFinished: Test"), runAndGetListOfNotifications(engine1))
+  }
+
+  //  "An engine" should "report no root as part of the Junit test when there are no scenarios" in {
+  //	  val engine1 = builder.build
+  //			  assertEquals(Map(), engine1.scenarioExceptionMap.map)
+  //	  assertEquals(List(
+  //			  "testStarted: Test",
+  //			  "testStarted: Engine",
+  //			  "testStarted: uc1",
+  //			  "testStarted: d1 => ep ", //the space is there to separate the because
+  //			  "testFinished: d1 => ep ",
+  //			  "testFinished: uc1",
+  //			  "testFinished: Engine",
+  //			  "testFinished: Test"), runAndGetListOfNotifications(engine1))
+  //  }
 
   def runAndGetListOfNotifications(engine: Engine) = {
     val runner = new AutoTddRunnerForTests
