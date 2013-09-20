@@ -1,7 +1,7 @@
 package org.autotdd.engine
 
 object Strings {
-  val alphas = stringToKvs("abcdefghijklmnopqrstuvwzyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+  val alphas = stringToKvs("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
   val digits = stringToKvs("0123456789")
   val brackets = bracketsToKvs("<{(>})", "<<<>>>")
   val misc = stringToKvs("., /=")

@@ -115,7 +115,7 @@ trait AutoTddRunner extends Runner with JunitUniverse[Any] with NotActuallyFacto
                     log("notifier.fireTestFinished(sd)" + sd)
                     notifier.fireTestFinished(sd)
                   } else
-                    throw new AssertionFailedError("Expected:\n" + scenario.expected + "\nActual:\n" + actual)
+                    throw new AssertionFailedError("Expected:\n" + scenario.expected + "\nActual:\n" + actual+"\n" + scenario)
                 } catch {
                   //                  case e: AssertionFailedError => 
                   case e: Throwable =>

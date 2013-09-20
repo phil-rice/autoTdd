@@ -1,18 +1,13 @@
 package org.autotdd.engine.test
 
-import org.autotdd.engine.AbstractEngine1Test
-import org.autotdd.engine.DisplayTest
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 import org.autotdd.engine._
+import org.autotdd.engine.AbstractEngine1Test
 import org.autotdd.engine.tests._
-import org.autotdd.engine.tests.AutoTddJuitRunner
 import org.junit.runner._
+import org.junit.runner.RunWith
 import org.junit.runner.notification._
-
-class AutoTddRunnerForTests extends AutoTddRunner {
-  val getDescription = Description.createSuiteDescription("Test")
-}
+import org.scalatest.exceptions.TestFailedException
+import org.scalatest.junit.JUnitRunner
 
 class RunListenerForTests extends RunListener {
   var list = List[String]()
@@ -29,6 +24,9 @@ class RunListenerForTests extends RunListener {
 }
 @RunWith(classOf[JUnitRunner])
 class AutoTddRunnerTests extends AbstractEngine1Test[String, String] {
+  class AutoTddRunnerForTests extends AutoTddRunner {
+    val getDescription = Description.createSuiteDescription("Test")
+  }
 
   "An engine" should "notify started and finished for root, engine, usecase and scenario wihen one scenario" in {
     val engine1 = builder.useCase("uc1").
@@ -39,8 +37,8 @@ class AutoTddRunnerTests extends AbstractEngine1Test[String, String] {
       "testStarted: Test",
       "testStarted: Engine",
       "testStarted: uc1",
-      "testStarted: d1 => ep ", //the space is there to separate the because
-      "testFinished: d1 => ep ",
+      "testStarted: d1 => exp ", //the space is there to separate the because
+      "testFinished: d1 => exp ",
       "testFinished: uc1",
       "testFinished: Engine",
       "testFinished: Test"), runAndGetListOfNotifications(engine1))
@@ -58,26 +56,33 @@ class AutoTddRunnerTests extends AbstractEngine1Test[String, String] {
       "testStarted: Test",
       "testStarted: Engine",
       "testStarted: uc1",
-      "testStarted: d1 => ep ", //the space is there to separate the because
-      "testFinished: d1 => ep ",
+      "testStarted: d1 => exp ", //the space is there to separate the because
+      "testFinished: d1 => exp ",
+      "testStarted: two => exp2 <<p String> => p.==<two>>",
+      "testFinished: two => exp2 <<p String> => p.==<two>>",
       "testFinished: uc1",
       "testFinished: Engine",
       "testFinished: Test"), runAndGetListOfNotifications(engine1))
   }
 
-  //  "An engine" should "report no root as part of the Junit test when there are no scenarios" in {
-  //	  val engine1 = builder.build
-  //			  assertEquals(Map(), engine1.scenarioExceptionMap.map)
-  //	  assertEquals(List(
-  //			  "testStarted: Test",
-  //			  "testStarted: Engine",
-  //			  "testStarted: uc1",
-  //			  "testStarted: d1 => ep ", //the space is there to separate the because
-  //			  "testFinished: d1 => ep ",
-  //			  "testFinished: uc1",
-  //			  "testFinished: Engine",
-  //			  "testFinished: Test"), runAndGetListOfNotifications(engine1))
-  //  }
+  "An engine" should "report an exception while building to junit" in {
+    val engine1 = EngineTest.test(() => builder.useCase("uc1").
+      scenario("one", "d1").
+      expected("exp").
+      because((p: String) => p == "two").
+      build)
+    assertEquals(1, engine1.scenarioExceptionMap.map.size)
+    val exception: ScenarioBecauseException = engine1.scenarioExceptionMap.map.values.head.asInstanceOf[ScenarioBecauseException]
+    assertEquals(List(
+      "testStarted: Test",
+      "testStarted: Engine",
+      "testStarted: uc1",
+      "testStarted: d1 => exp <<p String> => p.==<two>>",
+      "testFailure: d1 => exp <<p String> => p.==<two>>: ((p: String) => p.==(\"two\")) is not true for Scenario(d1, one, because=((p: String) => p.==(\"two\")), expected=exp)\nDetailed:\n  List(one)",
+      "testFinished: uc1",
+      "testFinished: Engine",
+      "testFinished: Test"), runAndGetListOfNotifications(engine1))
+  }
 
   def runAndGetListOfNotifications(engine: Engine) = {
     val runner = new AutoTddRunnerForTests
