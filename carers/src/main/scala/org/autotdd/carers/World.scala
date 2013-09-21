@@ -47,23 +47,6 @@ object Xmls {
 
 }
 
-object Dbase {
-  val dataSource = new BasicDataSource();
-
-  dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-  dataSource.setUsername("root");
-  dataSource.setPassword("iwtbde");
-  dataSource.setUrl("jdbc:mysql://localhost/ca");
-  dataSource.setMaxActive(10);
-  dataSource.setMaxIdle(5);
-  dataSource.setInitialSize(5);
-
-  val template = new JdbcTemplate(dataSource)
-
-  println("Result: " + template.queryForList("SELECT *FROM   INFORMATION_SCHEMA.SYSTEM_TABLES"))
-
-}
-
 class Cache[K, V] extends {
   val data = Ref[Map[K, V]](Map())
   def findOrCreate(k: K, v: V) = {
@@ -72,49 +55,27 @@ class Cache[K, V] extends {
   }
 }
 
-trait NinoToValidateClaim {
-  def ninoToValidateClaim(w: World, nino: String): Elem
-}
-
-class NinoToValidateClaimFile extends NinoToValidateClaim {
-  def ninoToValidateClaim(w: World, nino: String): Elem = {
-    val xmlString = scala.io.Source.fromURL(getClass.getClassLoader.getResource(s"ValidateClaim/${nino}.xml")).mkString
-    val xml = XML.loadString(xmlString)
-    xml
-  }
-
-}
-
-trait NinoToDecision {
-  def ninoToDecision(implicit i: InTxn, w: World, nino: String): Elem
-}
-
-class NinoToDecisionMysql() extends NinoToDecision {
-  def addToCache(implicit i: InTxn, w: World, nino: String, result: Elem) = {
-    w.caches.ninoToDecision.transform((m) => m + (nino -> result))
-    result
-  }
-
-  def apply(implicit i: InTxn, w: World, nino: String): Elem = ninoToDecision(i, w, nino)
-
-  def ninoToDecision(implicit i: InTxn, w: World, nino: String): Elem = {
-    val l = Dbase.template.queryForList("SELECT *FROM   INFORMATION_SCHEMA.SYSTEM_TABLES")
-    l.size match {
-      case 0 => addToCache(i, w, nino, <noDecision/>)
-      case 1 => addToCache(i, w, nino, XML.loadString(l.get(0).toString))
-      case _ => throw new IllegalStateException("Have two decisions for nino " + nino);
+trait NinoToCis {
+  def ninoToCis(nino: String) =
+    try {
+      val full = s"Cis/${nino}.txt"
+      val url = getClass.getClassLoader.getResource(full)
+      val xmlString = scala.io.Source.fromURL(url).mkString
+      val xml = XML.loadString(xmlString)
+      xml
+    } catch {
+      case e: Exception => throw new RuntimeException("Cannot load " + nino, e)
     }
-  }
 }
 
-case class Caches(ninoToDecision: Ref[Map[String, Elem]] = Ref(Map()))
 object World {
-  implicit def worldToNanoToValidateClaim(w: World) = w.toValidateClaim
-  implicit def worldToNanoToDecision(w: World) = w.toDecision
-  def blankTestWorld = World(Xmls.asDate("2010-1-1"), new NinoToDecisionMysql(), new NinoToValidateClaimFile())
+  implicit def worldToCis(w: World) = w.ninoToCis
+		  def apply(): World = apply("2010-1-1")
+  def apply(claimDate: String): World = apply(Xmls.asDate(claimDate))
+  def apply(claimDate: DateTime): World = World(Xmls.asDate("2010-7-5"), claimDate, new NinoToCis() {})
 
 }
-case class World(today: DateTime, toDecision: NinoToDecision, toValidateClaim: NinoToValidateClaim, caches: Caches = Caches()) extends LoggerDisplay {
+case class World(today: DateTime, dateOfClaim: DateTime, ninoToCis: NinoToCis) extends LoggerDisplay {
   def loggerDisplay(dp: LoggerDisplayProcessor): String =
     "World"
 }

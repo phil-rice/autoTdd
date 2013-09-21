@@ -10,11 +10,11 @@ object Income {
 
   val income = Engine[World, Elem, ReasonAndAmount]().
     useCase("No employmentData").
-    scenario(World.blankTestWorld, <root/>).
+    scenario(World(), <root/>).
     expected(ReasonAndAmount("income.notEmployed")).
 
     useCase("Annually paid").
-    scenario(World.blankTestWorld, <root><EmploymentData>
+    scenario(World(), <root><EmploymentData>
                                            <EmploymentStartDate>1999-05-09</EmploymentStartDate>
                                            <EmploymentJobType>IT SPECIALIST</EmploymentJobType>
                                            <EmploymentPayrollNumber>796451234531</EmploymentPayrollNumber>
@@ -38,7 +38,7 @@ object Income {
     because((w: World, e: Elem) => Xmls.tagPresent(e, "EmploymentData") & "Annually" == ((e \\ "EmploymentPayPeriodicity").text)).
 
     useCase("Weekly paid").
-    scenario(World.blankTestWorld, <root><EmploymentData>
+    scenario(World(), <root><EmploymentData>
                                            <EmploymentStartDate>1999-05-09</EmploymentStartDate>
                                            <EmploymentJobType>IT SPECIALIST</EmploymentJobType>
                                            <EmploymentPayrollNumber>796451234531</EmploymentPayrollNumber>

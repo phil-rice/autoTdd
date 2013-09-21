@@ -10,7 +10,7 @@ object Expenses {
 
   val childCareExpenses = Engine[World, Elem, ReasonAndAmount]().
     useCase("ExpensesChild no").
-    scenario(World.blankTestWorld, <ExpensesData>
+    scenario(World(), <ExpensesData>
                                      <ExpensesOccPension>no</ExpensesOccPension>
                                      <ExpensesPsnPension>no</ExpensesPsnPension>
                                      <ExpensesNecessary>no</ExpensesNecessary>
@@ -22,7 +22,7 @@ object Expenses {
                                    </ExpensesData>).
     expected(ReasonAndAmount("expense.child.noExpenses")).
     useCase("ExpensesChild yes ").
-    scenario(World.blankTestWorld, <ExpensesData>
+    scenario(World(), <ExpensesData>
                                      <ExpensesOccPension>no</ExpensesOccPension>
                                      <ExpensesPsnPension>no</ExpensesPsnPension>
                                      <ExpensesNecessary>no</ExpensesNecessary>
@@ -41,7 +41,7 @@ object Expenses {
 
   val privatePensionExpenses = Engine[World, Elem, ReasonAndAmount]().
     useCase("ExpensesPsnPension no").
-    scenario(World.blankTestWorld, <ExpensesData>
+    scenario(World(), <ExpensesData>
                                      <ExpensesOccPension>no</ExpensesOccPension>
                                      <ExpensesPsnPension>no</ExpensesPsnPension>
                                      <ExpensesNecessary>no</ExpensesNecessary>
@@ -54,7 +54,7 @@ object Expenses {
     expected(ReasonAndAmount("expense.pension.private.noExpenses")).
 
     useCase("ExpensesPsnPension yes").
-    scenario(World.blankTestWorld, <ExpensesData>
+    scenario(World(), <ExpensesData>
                                      <ExpensesOccPension>no</ExpensesOccPension>
                                      <ExpensesPsnPension>yes</ExpensesPsnPension>
                                      <ExpensesPsnPensionAmount>30</ExpensesPsnPensionAmount>
@@ -71,7 +71,7 @@ object Expenses {
 
   val occupationalExpenses = Engine[World, Elem, ReasonAndAmount]().
     useCase("ExpensesOccPension no").
-    scenario(World.blankTestWorld, <ExpensesData>
+    scenario(World(), <ExpensesData>
                                      <ExpensesOccPension>no</ExpensesOccPension>
                                      <ExpensesPsnPension>no</ExpensesPsnPension>
                                      <ExpensesNecessary>no</ExpensesNecessary>
@@ -83,7 +83,7 @@ object Expenses {
                                    </ExpensesData>).
     expected(ReasonAndAmount("expense.pension.occupational.noExpenses")).
     useCase("ExpensesOccPension yes").
-    scenario(World.blankTestWorld, <ExpensesData>
+    scenario(World(), <ExpensesData>
                                      <ExpensesOccPension>yes</ExpensesOccPension>
                                      <ExpensesOccPensionAmount>30</ExpensesOccPensionAmount>
                                      <ExpensesOccPensionPeriodicity>Weekly</ExpensesOccPensionPeriodicity>
@@ -100,7 +100,7 @@ object Expenses {
 
   val expenses = Engine[World, Elem, ReasonsAndAmount]().
     useCase("uc1").
-    scenario(World.blankTestWorld, <ExpensesData>
+    scenario(World(), <ExpensesData>
                                      <ExpensesOccPension>no</ExpensesOccPension>
                                      <ExpensesPsnPension>yes</ExpensesPsnPension>
                                      <ExpensesPsnPensionAmount>30</ExpensesPsnPensionAmount>

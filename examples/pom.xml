@@ -21,8 +21,9 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.autotdd</groupId>
-			<artifactId>engine</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<artifactId>engine_2.10</artifactId>
+			<version>1.0.0</version>
 		</dependency>
+
 	</dependencies>
 </project>
