@@ -1,0 +1,34 @@
+The following should have failed on the date in middle test, as it broke earlier tests. It didn't... Fix
+
+@RunWith(classOf[AutoTddJunitRunner])
+object Time {
+
+  implicit def stringToDate(s: String): DateTime = Xmls.asDate(s)
+
+  val dateRangeInDate = Engine[DateTime, DateRange, Boolean]().
+    useCase("Returns false if date Not In Range").
+    scenario("2010-6-1", DateRange("2010-1-1", "2010-2-1"), "Range in past").
+    expected(false).
+
+    scenario("2010-6-1", DateRange("2010-8-1", "2010-9-1"), "Range in future").
+    expected(false).
+
+    scenario("2010-6-10", DateRange("2010-6-11", "2010-6-12"), "Range starts tomorrow").
+    expected(false).
+
+    scenario("2010-6-10", DateRange("2010-6-8", "2010-6-9"), "Range ends yesterday").
+    expected(false).
+
+    useCase("Date In Range").
+    scenario("2010-6-10", DateRange("2010-6-8", "2010-6-12"), "Date in middle").
+    expected(true).
+    because((d: DateTime, dr: DateRange) => true).
+
+    scenario("2010-6-18", DateRange("2010-6-8", "2010-6-12"), "Date on first day").
+    expected(true).
+    
+    scenario("2010-6-12", DateRange("2010-6-8", "2010-6-12"), "Date on last day").
+    expected(true).
+    
+    build
+}

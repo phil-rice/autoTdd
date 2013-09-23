@@ -53,18 +53,18 @@
 		<Claim35Hours>yes</Claim35Hours>
 		<ClaimBreakInCare>yes</ClaimBreakInCare>
 		<ClaimBreaks>
-			<BreakInCare1>
+			<BreakInCare>
 				<BICFromDate>2010-05-30</BICFromDate>
 				<BICToDate>2010-06-13</BICToDate>
 				<BICReason>Hospitalisation</BICReason>
 				<BICType>Hospital</BICType>
-			</BreakInCare1>
-			<BreakInCare2>
+			</BreakInCare>
+			<BreakInCare>
 				<BICFromDate>2010-06-21</BICFromDate>
 				<BICToDate>2010-06-30</BICToDate>
 				<BICReason>Hospitalisation</BICReason>
 				<BICType>Hospital</BICType>
-			</BreakInCare2>
+			</BreakInCare>
 		</ClaimBreaks>
 		<ClaimPrior35Hours>yes</ClaimPrior35Hours>
 		<ClaimPrior35HoursDate>2010-05-17</ClaimPrior35HoursDate>
