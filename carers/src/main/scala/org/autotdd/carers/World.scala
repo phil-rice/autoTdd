@@ -10,6 +10,7 @@ import scala.xml.XML
 import org.joda.time.DateTime
 import org.autotdd.engine.LoggerDisplayProcessor
 import scala.concurrent.stm.Ref
+import scala.language.implicitConversions
 
 object Xmls {
 

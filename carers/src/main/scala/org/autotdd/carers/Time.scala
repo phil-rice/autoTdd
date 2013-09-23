@@ -5,6 +5,7 @@ import org.autotdd.engine.Engine
 import org.autotdd.engine.tests.AutoTddJunitRunner
 import scala.xml.Elem
 import org.joda.time.DateTime
+import scala.language.implicitConversions
 
 class IllegalDateRangeException(val dateRange: DateRange) extends Exception(dateRange.toString())
 

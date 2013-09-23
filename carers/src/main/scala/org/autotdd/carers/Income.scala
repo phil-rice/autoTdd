@@ -34,7 +34,7 @@ object Income {
                                            <EmploymentOwedMonies>no</EmploymentOwedMonies>
                                          </EmploymentData></root>).
     expected(ReasonAndAmount(7000.0 / 52, "income.annual")).
-    code((w: World, e: Elem) => ReasonAndAmount(Xmls.asFloat((e \\ "EmploymentGrossSalary") text) / 52, "income.annual")).
+    code((w: World, e: Elem) => ReasonAndAmount(Xmls.asFloat((e \\ "EmploymentGrossSalary"). text) / 52, "income.annual")).
     because((w: World, e: Elem) => Xmls.tagPresent(e, "EmploymentData") & "Annually" == ((e \\ "EmploymentPayPeriodicity").text)).
 
     useCase("Weekly paid").
@@ -58,7 +58,7 @@ object Income {
                                            <EmploymentOwedMonies>no</EmploymentOwedMonies>
                                          </EmploymentData></root>).
     expected(ReasonAndAmount(100.0, "income.weekly")).
-    code((w: World, e: Elem) => ReasonAndAmount(Xmls.asFloat((e \\ "EmploymentGrossSalary") text), "income.weekly")).
+    code((w: World, e: Elem) => ReasonAndAmount(Xmls.asFloat((e \\ "EmploymentGrossSalary") .text), "income.weekly")).
     because((w: World, e: Elem) => Xmls.tagPresent(e, "EmploymentData") & "Weekly" == ((e \\ "EmploymentPayPeriodicity").text)).
     build
 

@@ -35,8 +35,8 @@ object Expenses {
                                      <ExpensesCareDP>no</ExpensesCareDP>
                                    </ExpensesData>).
     expected(ReasonAndAmount(15, "expense.child.valid")).
-    because((w: World, x: Elem) => Xmls.asYesNo((x \\ "ExpensesChild")text)).
-    code((w: World, x: Elem) => ReasonAndAmount(Xmls.asFloat((x \ "ExpensesChildAmount") text) / 2, "expense.child.valid")).
+    because((w: World, x: Elem) => Xmls.asYesNo((x \\ "ExpensesChild").text)).
+    code((w: World, x: Elem) => ReasonAndAmount(Xmls.asFloat((x \ "ExpensesChildAmount"). text) / 2, "expense.child.valid")).
     build
 
   val privatePensionExpenses = Engine[World, Elem, ReasonAndAmount]().
@@ -64,8 +64,8 @@ object Expenses {
                                      <ExpensesCareDP>no</ExpensesCareDP>
                                    </ExpensesData>).
     expected(ReasonAndAmount(15, "expense.pension.private.valid")).
-    because((w: World, x: Elem) => Xmls.asYesNo((x \\ "ExpensesPsnPension")text)).
-    code((w: World, x: Elem) => ReasonAndAmount(Xmls.asFloat((x \ "ExpensesPsnPensionAmount") text) / 2, "expense.pension.private.valid")).
+    because((w: World, x: Elem) => Xmls.asYesNo((x \\ "ExpensesPsnPension").text)).
+    code((w: World, x: Elem) => ReasonAndAmount(Xmls.asFloat((x \ "ExpensesPsnPensionAmount"). text) / 2, "expense.pension.private.valid")).
 
     build
 
@@ -93,8 +93,8 @@ object Expenses {
                                      <ExpensesCareDP>no</ExpensesCareDP>
                                    </ExpensesData>).
     expected(ReasonAndAmount(15, "expense.pension.occupational.valid")).
-    because((w: World, x: Elem) => Xmls.asYesNo((x \\ "ExpensesOccPension")text)).
-    code((w: World, x: Elem) => ReasonAndAmount(Xmls.asFloat((x \ "ExpensesOccPensionAmount") text) / 2, "expense.pension.occupational.valid")).
+    because((w: World, x: Elem) => Xmls.asYesNo((x \\ "ExpensesOccPension").text)).
+    code((w: World, x: Elem) => ReasonAndAmount(Xmls.asFloat((x \ "ExpensesOccPensionAmount") .text) / 2, "expense.pension.occupational.valid")).
 
     build
 
