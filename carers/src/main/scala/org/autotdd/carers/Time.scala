@@ -34,6 +34,8 @@ object Time {
 
     scenario("2010-6-12", "2010-6-8" -> "2010-6-12", "Date on last day").
     expected(true).
+    
+    
     useCase("Returns false if date Not In Range").
     scenario("2010-6-1", "2010-1-1" -> "2010-2-1", "Range in past").
     because((d: DateTime, dr: DateRange) => d.isAfter(dr.to) || d.isBefore(dr.from)).

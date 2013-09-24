@@ -69,9 +69,20 @@ trait NinoToCis {
     }
 }
 
+case class WorldTime(today: DateTime, dateOfClaim: DateTime)
+case class WorldServices(ninoToCis: NinoToCis)
+
+case class World2(time: WorldTime, application: Elem, services: WorldServices) {
+  lazy val nino = (application \\ "ClaimantNINO").text
+  lazy val claimCis = services.ninoToCis.ninoToCis(nino)
+
+  lazy val dpNino = (application \\ "DependantNINO").text
+  lazy val dpCis = services.ninoToCis.ninoToCis(dpNino)
+}
+
 object World {
   implicit def worldToCis(w: World) = w.ninoToCis
-		  def apply(): World = apply("2010-1-1")
+  def apply(): World = apply("2010-1-1")
   def apply(claimDate: String): World = apply(Xmls.asDate(claimDate))
   def apply(claimDate: DateTime): World = World(Xmls.asDate("2010-7-5"), claimDate, new NinoToCis() {})
 
