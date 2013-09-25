@@ -17,3 +17,11 @@ Does a date range cover the week specified by a date?
 i.e. if any part of the carebreak is in a week, that week is trashed (seems harsh...)
 
 
+
+
+
+Learning
+I want a good caching story
+I want to be able to work with a cache that's passed in: Lens will do that.
+
+
