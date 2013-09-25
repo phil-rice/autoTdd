@@ -68,17 +68,52 @@ trait NinoToCis {
       case e: Exception => throw new RuntimeException("Cannot load " + nino, e)
     }
 }
+object Dbase {
+  val dataSource = new BasicDataSource();
 
-case class WorldTime(today: DateTime, dateOfClaim: DateTime)
-case class WorldServices(ninoToCis: NinoToCis)
+  dataSource.setDriverClassName("com.mysql.jdbc.Driver");
+  dataSource.setUsername("root");
+  dataSource.setPassword("iwtbde");
+  dataSource.setUrl("jdbc:mysql://localhost/ca");
+  dataSource.setMaxActive(10);
+  dataSource.setMaxIdle(5);
+  dataSource.setInitialSize(5);
 
-case class World2(time: WorldTime, application: Elem, services: WorldServices) {
-  lazy val nino = (application \\ "ClaimantNINO").text
-  lazy val claimCis = services.ninoToCis.ninoToCis(nino)
+  val template = new JdbcTemplate(dataSource)
 
-  lazy val dpNino = (application \\ "DependantNINO").text
-  lazy val dpCis = services.ninoToCis.ninoToCis(dpNino)
+
 }
+//trait NinoToDecision {
+//  def ninoToDecision(implicit i: InTxn, w: World, nino: String): Elem
+//}
+//
+//class NinoToDecisionMysql() extends NinoToDecision {
+//  def addToCache(implicit i: InTxn, w: World, nino: String, result: Elem) = {
+//    w.caches.ninoToDecision.transform((m) => m + (nino -> result))
+//    result
+//  }
+//
+//  def apply(implicit i: InTxn, w: World, nino: String): Elem = ninoToDecision(i, w, nino)
+//
+//  def ninoToDecision(implicit i: InTxn, w: World, nino: String): Elem = {
+//    val l = Dbase.template.queryForList("SELECT *FROM   INFORMATION_SCHEMA.SYSTEM_TABLES")
+//    l.size match {
+//      case 0 => addToCache(i, w, nino, <noDecision/>)
+//      case 1 => addToCache(i, w, nino, XML.loadString(l.get(0).toString))
+//      case _ => throw new IllegalStateException("Have two decisions for nino " + nino);
+//    }
+//  }
+//}
+//case class WorldTime(today: DateTime, dateOfClaim: DateTime)
+//case class WorldServices(ninoToCis: NinoToCis)
+//
+//case class World2(time: WorldTime, application: Elem, services: WorldServices) {
+//  lazy val nino = (application \\ "ClaimantNINO").text
+//  lazy val claimCis = services.ninoToCis.ninoToCis(nino)
+//
+//  lazy val dpNino = (application \\ "DependantNINO").text
+//  lazy val dpCis = services.ninoToCis.ninoToCis(dpNino)
+//}
 
 object World {
   implicit def worldToCis(w: World) = w.ninoToCis

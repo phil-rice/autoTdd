@@ -16,7 +16,6 @@ object EngineTest {
   def testing = _testing
   private var _testing = false
 
-
   def test[T](x: () => T) = {
     _testing = true;
     try {
@@ -81,6 +80,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
   class NoExpectedException(msg: String, scenario: Scenario, cause: Throwable) extends ScenarioException(msg, scenario, cause)
 
   class EngineResultException(msg: String) extends EngineException(msg)
+  class NoBecauseException(msg: String,  scenario: Scenario) extends ScenarioException(msg, scenario)
   class ScenarioBecauseException(msg: String, scenario: Scenario) extends ScenarioException(msg, scenario)
   object ScenarioResultException {
     def adding(existing: Scenario, s: Scenario, actual: R) =
@@ -492,6 +492,17 @@ trait EngineUniverse[R] extends EngineTypes[R] {
                         logger.addScenarioForRoot(s.descriptionString)
                         Left(l.copy(scenarios = s :: l.scenarios)); // we come to same conclusion as root, so we just add ourselves as assertion
                       case false =>
+                        if (!s.because.isDefined)
+                          throw new NoBecauseException(s"Scenario\n${s}", s)
+
+                        val because = s.because.get.because
+                        for (scenario <- l.scenarios) {
+                          scenario.configure
+                          val b = makeClosureForBecause(scenario.params);
+                          val result = b(because);
+                          if (result)
+                            throw ScenarioConflictException(scenario, s);
+                        }
                         logger.addFirstIfThenElse(s.descriptionString)
                         Right(Node(b, s.params, Left(newCnC), Left(l), s)) //So we are if b then new result else default 
                     }
@@ -588,8 +599,8 @@ trait EngineUniverse[R] extends EngineTypes[R] {
               case 0 => ;
               case 1 => throw seMap.values.head
               case _ =>
-//                for (e <- seMap.values)
-//                  e.printStackTrace()
+                //                for (e <- seMap.values)
+                //                  e.printStackTrace()
                 throw new MultipleExceptions(s"Could not build Engine $seMap", seMap)
             }
           }

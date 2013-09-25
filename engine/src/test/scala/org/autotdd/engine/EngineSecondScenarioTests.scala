@@ -7,7 +7,12 @@ import org.scalatest.junit.JUnitRunner
 class EngineSecondScenarioTests extends EngineStringStringTests {
 
   override val logger = new ConsoleLogger
-
+  it should "throw Exception if second scenario has because clause that matches first" in {
+    val bldr = builderWithUseCase.
+      scenario("A").expected("X").
+      scenario("AB").because("A").expected("Y");
+    val e = evaluating { bldr.build } should produce[ScenarioConflictException]
+  }
   "An  engine" should "Add assertions to the no if scenario comes to correct value" in {
     val bldr = builderWithDefault.
       scenario("A").because("A").expected("X").
@@ -76,6 +81,8 @@ class EngineSecondScenarioTests extends EngineStringStringTests {
         no = Left(CodeAndScenarios("Z", List(w))))))
   }
 
+
+
   //TODO Consider how to deal with identical result, different because. It's not clear to me what I should do
   it should "throw ScenarioConflictException if  cannot differentiate inputs, identical result, different because" in {
     val bldr = builderWithDefault.
@@ -121,6 +128,5 @@ class EngineSecondScenarioTests extends EngineStringStringTests {
       scenario("AB").expected("Y")
     evaluating { b.build } should produce[ScenarioConflictingWithoutBecauseException]
   }
-  
- 
+
 }
