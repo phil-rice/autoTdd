@@ -36,15 +36,14 @@ class EngineThreeScenarioTests extends EngineStringStringTests {
     builderAB.build.validateScenarios
   }
   
-  "An engine" should "allow any combination of three scenarios to work" in {
+ it should "allow any combination of three scenarios to work" in {
     builderA_B.build.validateScenarios
     builderA_AB.build.validateScenarios
     builderB_A.build.validateScenarios
     builderB_AB.build.validateScenarios
-
   }
   
-  "An engine" should "allow any combination of four scenarios to work" in {
+ it should "allow any combination of four scenarios to work" in {
     builderA_B_AB.build.validateScenarios
     builderA_AB_B.build.validateScenarios
     builderB_A_AB.build.validateScenarios
@@ -52,4 +51,6 @@ class EngineThreeScenarioTests extends EngineStringStringTests {
     builderAB_A_B.build.validateScenarios
     builderAB_B_A.build.validateScenarios
   }
+ 
+
 }

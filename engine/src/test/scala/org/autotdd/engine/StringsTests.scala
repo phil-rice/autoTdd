@@ -14,6 +14,6 @@ class StringsTests extends AbstractTest {
 
   }
   "The default StringCleaner" should "use alphas digits miscand brackets" in {
-    assertEquals("abc123 ()()().,", Strings.clean("abc123;' #\n~()<>{}.,\\\\")) //no defined characters
+    assertEquals("abc123 <><><>.,", Strings.clean("abc123;' #\n~()<>{}.,\\\\")) //no defined characters
   }
 }

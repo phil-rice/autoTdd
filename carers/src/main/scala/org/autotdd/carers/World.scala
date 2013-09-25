@@ -61,9 +61,13 @@ trait NinoToCis {
     try {
       val full = s"Cis/${nino}.txt"
       val url = getClass.getClassLoader.getResource(full)
-      val xmlString = scala.io.Source.fromURL(url).mkString
-      val xml = XML.loadString(xmlString)
-      xml
+      if (url == null)
+        <NoCis/>
+      else {
+        val xmlString = scala.io.Source.fromURL(url).mkString
+        val xml = XML.loadString(xmlString)
+        xml
+      }
     } catch {
       case e: Exception => throw new RuntimeException("Cannot load " + nino, e)
     }
@@ -80,7 +84,6 @@ object Dbase {
   dataSource.setInitialSize(5);
 
   val template = new JdbcTemplate(dataSource)
-
 
 }
 //trait NinoToDecision {

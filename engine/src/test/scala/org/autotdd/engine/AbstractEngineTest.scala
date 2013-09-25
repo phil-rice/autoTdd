@@ -19,7 +19,9 @@ trait AbstractTest extends FlatSpec with ShouldMatchers {
       val s: Traversable[Tuple2[Char, Char]] = for ((ce, ca) <- (expectedString, actualString).zipped) yield (ce, ca)
       for ((t, i) <- s.toList.zipWithIndex) {
         if (t._1 != t._2) {
-          fail("First fail at " + i + " Expected: [" + expectedString.substring(i, i + 10) + "] Actual: [ " + actualString.substring(i, i + 10) + "]\n" + msg)
+          val expectedMax = Math.min(i + 10, expectedString.length()-1)
+          val actualMax = Math.min(i + 10, actualString.length()-1)
+          fail("First fail at " + i + " Expected: [" + expectedString.substring(i, expectedMax) + "] Actual: [ " + actualString.substring(i, actualMax) + "]\n" + msg)
         }
       }
       expectedString.length() - actualString.length() match {
