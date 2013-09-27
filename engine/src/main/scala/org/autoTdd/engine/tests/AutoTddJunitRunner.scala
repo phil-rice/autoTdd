@@ -29,6 +29,7 @@ trait NotActuallyFactory[R] extends EngineUniverse[R] {
   def makeClosureForCfg(params: List[Any]) = ???
   def makeClosureForResult(params: List[Any]) = ???
   def makeClosureForAssertion(params: List[Any], r: R) = ???
+   def makeClosureForFragment[X](params: List[Any]): FragmentClosure[X] = ???
 
 }
 

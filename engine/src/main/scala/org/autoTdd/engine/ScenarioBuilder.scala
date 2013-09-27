@@ -54,6 +54,49 @@ trait EngineTypes[R] {
   def makeClosureForBecause(params: List[Any]): BecauseClosure
   def makeClosureForResult(params: List[Any]): ResultClosure
   def makeClosureForCfg(params: List[Any]): CfgClosure
+  def makeClosureForFragment[X](params: List[Any]): FragmentClosure[X]
+
+  /** turns parameters into fragment results. For example in XML in an engine 2 it might be (P1,P2)=>NodeSeq. I would love to know how to make this more type safe... */
+  type FragFn
+  /** turns the params into a Fragment. This can be modified by the fragment specifiers */
+  type ParamsToFragmentFn
+  /** In the xml engine this will be a string */
+  type FragmentModifier
+  type FragmentClosure[X] = (FragFn) => X
+  type F = Fragment[FragmentModifier, FragFn]
+}
+
+/**
+ * The fragment is used to say 'This data is important: I will be making decisions on it
+ *  The engine may choose to use these fragments to make
+ *  Some fragments are composable (for example in XML and Json, the path is made up of fragment specifiers) but others aren't
+ *  Some fragments may use other fragments: up to the specific implementation to deal with this
+ *  Fragments are only calculated once for each calculation, and they are calculated lazily, so they offer a performance boost as well as increasing the clarity of the code
+ *  FragFnturns parameters into fragment results. For example in XML in an engine 2 it might be (P1,P2)=>NodeSeq. I would love to know how to make this more type safe...
+ */
+//case class FragmentModifierList[FragmentModifier](linked: Boolean, val specifier: FragmentModifier, val modifier: Option[FragmentModifierList[FragmentModifier]] = None) {
+//  def %(s: FragmentModifier): FragmentModifierList[FragmentModifier] =
+//    modifier match {
+//      case Some(m) => FragmentModifierList[FragmentModifier](linked, specifier, Some(m % s))
+//      case None => FragmentModifierList[FragmentModifier](linked, specifier, Some(FragmentModifierList[FragmentModifier](true, s, None)))
+//    }
+//  def %%(s: FragmentModifier): FragmentModifierList[FragmentModifier] =
+//    modifier match {
+//      case Some(m) => FragmentModifierList[FragmentModifier](linked, specifier, Some(m %% s))
+//      case None => FragmentModifierList[FragmentModifier](linked, specifier, Some(FragmentModifierList[FragmentModifier](false, s, None)))
+//    }
+//}
+
+case class Fragment[FragmentModifier, FragFn](val rawFunction: FragFn, val modifiers: List[FragmentModifier]) {
+  //  def %(s: FragmentModifier): Fragment[FragmentModifier, FragFn] = modifiers match {
+  //    case Some(m) => Fragment[FragmentModifier, FragFn](rawFunction, Some(m % s))
+  //    case None => Fragment[FragmentModifier, FragFn](rawFunction, Some(FragmentModifierList[FragmentModifier](true, s, None)))
+  //  }
+  //
+  //  def %%(s: FragmentModifier): Fragment[FragmentModifier, FragFn] = modifiers match {
+  //    case Some(m) => Fragment[FragmentModifier, FragFn](rawFunction, Some(m %% s))
+  //    case None => Fragment[FragmentModifier, FragFn](rawFunction, Some(FragmentModifierList[FragmentModifier](false, s, None)))
+  //  }
 }
 
 trait EngineUniverse[R] extends EngineTypes[R] {
@@ -72,6 +115,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
 
   }
 
+  class CannotModifyFragmentThatDoesntExistException extends Exception;
   class ScenarioException(msg: String, val scenario: Scenario, cause: Throwable = null) extends EngineException(msg, cause)
 
   object NoExpectedException {
@@ -185,7 +229,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     },
     (b, s) => b.useCases match {
       case u :: ut => u.scenarios match {
-        case sold :: st => b.withCases(u.copy(scenarios = s :: st) :: ut, b.defaultCode)
+        case sold :: st => b.withCases(u.copy(scenarios = s :: st) :: ut, b.defaultCode, b.fragments)
         case _ => throw new NeedScenarioException
       }
       case _ => throw new NeedUseCaseException
@@ -206,7 +250,19 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     def defaultCode: Option[Code]
 
     def useCases: List[UseCase]
-    def withCases(useCases: List[UseCase], defaultCode: Option[Code]): RealScenarioBuilder;
+    def fragments: List[F]
+    def defaultFragmentFn: FragFn
+    def fragment(name: String, paramsToFragment: FragFn = defaultFragmentFn, modifiers: List[FragmentModifier] = List()) =
+      withCases(useCases, defaultCode, Fragment[FragmentModifier, FragFn](paramsToFragment, modifiers) :: fragments)
+
+    def \(modifier: FragmentModifier) = fragments match {
+      case h :: t =>
+        val newFragment = new Fragment[FragmentModifier, FragFn](h.rawFunction, (modifier :: h.modifiers).reverse)
+        withCases(useCases, defaultCode, newFragment :: t)
+      case _ => throw new CannotModifyFragmentThatDoesntExistException
+    }
+
+    def withCases(useCases: List[UseCase], defaultCode: Option[Code], fragments: List[F]): RealScenarioBuilder;
     def thisAsBuilder: RealScenarioBuilder
     def because(b: Because[B], comment: String = "") = scenarioLens.mod(thisAsBuilder,
       (s) => {
@@ -217,9 +273,9 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       if (defaultCode.isDefined)
         throw CannotDefineDefaultTwiceException(defaultCode.get, code)
       else
-        withCases(useCases, Some(code))
+        withCases(useCases, Some(code), fragments)
     }
-    def useCase(description: String) = withCases(UseCase(description, List()) :: useCases, defaultCode);
+    def useCase(description: String) = withCases(UseCase(description, List()) :: useCases, defaultCode, fragments);
     def expected(e: R) = scenarioLens.mod(thisAsBuilder, (s) => { validateBecause(s); s.copy(expected = Some(e)) })
     def code(c: CodeFn[B, RFn, R], comment: String = "") = scenarioLens.mod(thisAsBuilder, (s) => s.copy(code = Some(c.copy(comment = comment))))
     def configuration[K](cfg: CfgFn) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(configuration = Some(cfg)))
@@ -235,7 +291,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       useCases match {
         case h :: t => {
           val descriptionString = if (description == null) None else Some(description);
-          withCases(UseCase(h.description, Scenario(s"${h.description}[${h.scenarios.size}]", descriptionString, params, logger) :: h.scenarios) :: t, defaultCode)
+          withCases(UseCase(h.description, Scenario(s"${h.description}[${h.scenarios.size}]", descriptionString, params, logger) :: h.scenarios) :: t, defaultCode, fragments)
         }
         case _ => throw new NeedUseCaseException
       }
@@ -582,10 +638,10 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     }
   }
 
- abstract class Engine(val defaultCode: Option[Code]) extends BuildEngine with ScenarioWalker {
-    def defaultRoot: RorN =defaultCode match{
+  abstract class Engine(val defaultCode: Option[Code]) extends BuildEngine with ScenarioWalker {
+    def defaultRoot: RorN = defaultCode match {
       case Some(code) => Left(new CodeAndScenarios(code, List()))
-      case _=> null
+      case _ => null
     }
     def useCases: List[UseCase];
     lazy val scenarios: List[Scenario] = useCases.flatMap(_.scenarios)
@@ -601,7 +657,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       constructionString(defaultRoot, scenarios, new DefaultIfThenPrinter {
         override def titlePrint = (indent, scenario) => s"${indent}Adding ${scenario}\n";
       })
-      
+
     def logParams(p: Any*) =
       logger.executing(p.toList)
 
@@ -692,6 +748,33 @@ trait Engine3Types[P1, P2, P3, R] extends EngineTypes[R] {
   def makeClosureForAssertion(params: List[Any], r: R) = (a: A) => a(params(0).asInstanceOf[P1], params(1).asInstanceOf[P2], params(2).asInstanceOf[P3], r);
 }
 
+case class PojoFragmentDescriptor[FragFn](part: String, parent: Option[PojoFragmentDescriptor[FragFn]]) {
+  def %(part: String) = PojoFragmentDescriptor(part, Some(this))
+  def %%(part: String) = PojoFragmentDescriptor(part, Some(this))
+  def apply(from: Any): Any = ???
+}
+
+trait PojoFragmentTypes {
+  type FragmentModifier = String
+}
+trait PojoFragment1Types[P] extends PojoFragmentTypes {
+  type FragFn = (P) => Any
+  def defaultFragmentFn: FragFn = (p) => p
+  def makeClosureForFragment[X](params: List[Any]) = (f: FragFn) => f(params(0).asInstanceOf[P]).asInstanceOf[X]
+}
+
+trait PojoFragment2Types[P1, P2] extends PojoFragmentTypes {
+  type FragFn = (P1, P2) => Any
+  def defaultFragmentFn: FragFn = (p1, p2) => p2
+  def makeClosureForFragment[X](params: List[Any]) = (f: FragFn) => f(params(0).asInstanceOf[P1], params(1).asInstanceOf[P2]).asInstanceOf[X]
+}
+
+trait PojoFragment3Types[P1, P2, P3] extends PojoFragmentTypes {
+  type FragFn = (P1, P2, P3) => Any
+  def defaultFragmentFn: FragFn = (p1, p2, p3) => p3
+  def makeClosureForFragment[X](params: List[Any]) = (f: FragFn) => f(params(0).asInstanceOf[P1], params(1).asInstanceOf[P2], params(2).asInstanceOf[P3]).asInstanceOf[X]
+}
+
 class Engine
 
 object Engine {
@@ -702,18 +785,18 @@ object Engine {
   def state[S, P, R]() = new BuilderFactory2[S, P, (S, R)]().builder;
   def state[S, P1, P2, R]() = new BuilderFactory3[S, P1, P2, (S, R)]().builder;
 
-  def stm[P, R]() = new BuilderFactory2Stm[P, R]().builder;
-  def stm[P1, P2, R]() = new BuilderFactory3Stm[P1, P2, R]().builder;
+  //  def stm[P, R]() = new BuilderFactory2Stm[P, R]().builder;
+  //  def stm[P1, P2, R]() = new BuilderFactory3Stm[P1, P2, R]().builder;
 }
 
-class BuilderFactory1[P, R](override val logger: TddLogger = TddLogger.noLogger) extends EngineUniverse[R] with Engine1Types[P, R] {
+class BuilderFactory1[P, R](override val logger: TddLogger = TddLogger.noLogger) extends EngineUniverse[R] with Engine1Types[P, R] with PojoFragment1Types[P] {
   type RealScenarioBuilder = Builder1
 
   def builder = new Builder1
 
-  class Builder1(val useCases: List[UseCase] = List(), val defaultCode: Option[Code] = None) extends ScenarioBuilder {
+  class Builder1(val useCases: List[UseCase] = List(), val defaultCode: Option[Code] = None, val fragments: List[F] = List()) extends ScenarioBuilder with PojoFragment1Types[P] {
     def thisAsBuilder = this
-    def withCases(useCases: List[UseCase], code: Option[Code]) = new Builder1(useCases, code)
+    def withCases(useCases: List[UseCase], code: Option[Code], fragments: List[F]) = new Builder1(useCases, code, fragments)
     def scenario(p: P, description: String = null) = newScenario(description, List(p))
     def build = new Engine(defaultCode) with Function[P, R] {
       def useCases = useCasesForBuild
@@ -728,64 +811,13 @@ class BuilderFactory1[P, R](override val logger: TddLogger = TddLogger.noLogger)
   }
 }
 
-trait StmUniverse[R] extends EngineUniverse[R] {
-
-  trait StmScenarioBuilder extends ScenarioWalker {
-    def useCases: List[UseCase]
-    def withCases(useCases: List[UseCase]): RealScenarioBuilder;
-    def thisAsBuilder: RealScenarioBuilder
-    def because(b: Because[B], comment: String = "") = scenarioLens.mod(thisAsBuilder, (s) => s.copy(because = Some(b.copy(comment = comment))))
-    def useCase(description: String) = withCases(UseCase(description, List()) :: useCases);
-    def expected(e: R) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(expected = Some(e)))
-    def code(c: CodeFn[B, RFn, R], comment: String = "") = scenarioLens.mod(thisAsBuilder, (s) => s.copy(code = Some(c.copy(comment = comment))))
-    def configuration[K](cfg: CfgFn) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(configuration = Some(cfg)))
-    def assertion(a: Assertion[A], comment: String = "") = scenarioLens.mod(thisAsBuilder, (s) => s.copy(assertions = a.copy(comment = comment) :: s.assertions))
-
-    def useCasesForBuild: List[UseCase] =
-      useCases.map(u => UseCase(u.description,
-        u.scenarios.reverse.zipWithIndex.collect {
-          case (s, i) => s.copy(description = Some(s.description.getOrElse(u.description + "[" + i + "]")))
-        })).reverse;
-
-    protected def newScenario(description: String, params: List[Any]) =
-      useCases match {
-        case h :: t => {
-          val descriptionString = if (description == null) None else Some(description);
-          withCases(UseCase(h.description, Scenario(s"${h.description}[${h.scenarios.size}]", descriptionString, params, logger) :: h.scenarios) :: t)
-        }
-        case _ => throw new NeedUseCaseException
-      }
-  }
-}
-
-class BuilderFactory2Stm[P, R](override val logger: TddLogger = TddLogger.noLogger) extends StmUniverse[R] with Engine2Types[InTxn, P, R] {
-  type RealScenarioBuilder = Builder2Stm
-  def builder = new Builder2Stm
-
-  class Builder2Stm(val useCases: List[UseCase] = List(), val defaultCode: Option[Code] = None) extends ScenarioBuilder {
-    def thisAsBuilder = this
-    def withCases(useCases: List[UseCase], code: Option[Code]) = new Builder2Stm(useCases, code)
-    def scenario(p: P, description: String = null) = newScenario(description, List(p))
-    def build = new Engine(defaultCode) with Function2[InTxn, P, R] {
-      def useCases = useCasesForBuild
-      def apply(inTxn: InTxn, p: P): R = {
-        logParams(p)
-        val rfn: RFn = evaluate((b) => b(inTxn, p), root);
-        val result: R = rfn(inTxn, p)
-        logResult(result)
-      }
-      override def toString() = toStringWithScenarios
-    }
-
-  }
-}
-
-class BuilderFactory2[P1, P2, R](override val logger: TddLogger = TddLogger.noLogger) extends EngineUniverse[R] with Engine2Types[P1, P2, R] {
+class BuilderFactory2[P1, P2, R](override val logger: TddLogger = TddLogger.noLogger) extends EngineUniverse[R] with Engine2Types[P1, P2, R] with PojoFragment2Types[P1, P2] {
   type RealScenarioBuilder = Builder2
   def builder = new Builder2
-  class Builder2(val useCases: List[UseCase] = List(), val defaultCode: Option[Code] = None) extends ScenarioBuilder {
+
+  class Builder2(val useCases: List[UseCase] = List(), val defaultCode: Option[Code] = None, val fragments: List[F] = List()) extends ScenarioBuilder with PojoFragment2Types[P1, P2] {
     def thisAsBuilder = this
-    def withCases(useCases: List[UseCase], code: Option[Code]) = new Builder2(useCases, code)
+    def withCases(useCases: List[UseCase], code: Option[Code], fragments: List[F]) = new Builder2(useCases, code, fragments)
     def scenario(p1: P1, p2: P2, description: String = null) = newScenario(description, List(p1, p2))
     def build = new Engine(defaultCode) with Function2[P1, P2, R] {
       def useCases = useCasesForBuild
@@ -799,34 +831,17 @@ class BuilderFactory2[P1, P2, R](override val logger: TddLogger = TddLogger.noLo
     }
   }
 }
-class BuilderFactory3Stm[P1, P2, R](override val logger: TddLogger = TddLogger.noLogger) extends EngineUniverse[R] with Engine3Types[InTxn, P1, P2, R] {
-  type RealScenarioBuilder = Builder3Stm
-  def builder = new Builder3Stm
-  class Builder3Stm(val useCases: List[UseCase] = List(), val defaultCode: Option[Code] = None) extends ScenarioBuilder {
-    def thisAsBuilder = this
-    def withCases(useCases: List[UseCase], code: Option[Code]) = new Builder3Stm(useCases, code)
-    def scenario(p1: P1, p2: P2, description: String = null) = newScenario(description, List(p1, p2))
-    def build = new Engine(defaultCode) with Function2[P1, P2, R] {
-      def useCases = useCasesForBuild
-      def apply(p1: P1, p2: P2): R = atomic { inTxn =>
-        logParams(p1, p2)
-        val rfn: RFn = evaluate((b) => b(inTxn, p1, p2), root);
-        val result: R = rfn(inTxn, p1, p2)
-        logResult(result)
-      }
-      override def toString() = toStringWithScenarios
-    }
-  }
-}
-class BuilderFactory3[P1, P2, P3, R](override val logger: TddLogger = TddLogger.noLogger) extends EngineUniverse[R] with Engine3Types[P1, P2, P3, R] {
+
+class BuilderFactory3[P1, P2, P3, R](override val logger: TddLogger = TddLogger.noLogger) extends EngineUniverse[R] with Engine3Types[P1, P2, P3, R] with PojoFragment3Types[P1, P2, P3] {
 
   type RealScenarioBuilder = Builder3
   def builder = new Builder3
-  class Builder3(val useCases: List[UseCase] = List(), val defaultCode: Option[Code] = None) extends ScenarioBuilder {
+
+  class Builder3(val useCases: List[UseCase] = List(), val defaultCode: Option[Code] = None, val fragments: List[F] = List()) extends ScenarioBuilder with PojoFragment3Types[P1, P2, P3] {
     def thisAsBuilder = this
-    def withCases(useCases: List[UseCase], code: Option[Code]) = new Builder3(useCases, code)
+    def withCases(useCases: List[UseCase], code: Option[Code], fragments: List[F] = List()) = new Builder3(useCases, code, fragments)
     def scenario(p1: P1, p2: P2, p3: P3, description: String = null) = newScenario(description, List(p1, p2, p3))
-    def build = new Engine (defaultCode)with Function3[P1, P2, P3, R] {
+    def build = new Engine(defaultCode) with Function3[P1, P2, P3, R] {
       def useCases = useCasesForBuild
       def apply(p1: P1, p2: P2, p3: P3): R = {
         logParams(p1, p2)

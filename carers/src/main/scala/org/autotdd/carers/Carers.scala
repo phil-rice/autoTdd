@@ -38,7 +38,7 @@ object Carers {
       } else
         false
     }).
-
+    fragment(name="BirthDate", modifiers=List("ClaimantBirthDate", "PersonBirthDate")).
     useCase("Hours1 - Customers with Hours of caring must be 35 hours or more in any one week").
     scenario(World("2010-1-1"), Xmls.validateClaim("CL100105A"), "CL100105A-lessThen35Hours").
     expected(ReasonAndAmount("carer.claimant.under35hoursCaring")).
@@ -125,18 +125,18 @@ object Carers {
     scenario(World("2010-3-1"), Xmls.validateClaim("CL100116A"), "CL116A-income from renting").
     expected(ReasonAndAmount("carers.income.rental", None)).
 
-//    useCase("Overlapping benefit 2 - Customer receiving certain other benefits at a rate lower than the rate of CA will reduce the payable amount of CA.").
-//    scenario(World("2010-5-5"), Xmls.validateClaim("CL100117A"), "CL100117A-self employed earning too much").
-//    expected(ReasonAndAmount("carers.overlappingBenefit.higherRatePension", None)).
-//    because((w: World, e: Elem) => {
-//      val dependantNino = (e \\ "DependantNINO").text;
-//      val dependantXml = w.ninoToCis(dependantNino);
-//      (dependantXml \\ "AwardComponent").text == "DLA Middle Rate Care"
-//    }).
-//
-//    useCase("Break 6 - Break in care, at a hospital for 2 weeks - still gets paid").
-//    scenario(World("2010-5-5"), Xmls.validateClaim("CL100119A"), "CL100119A-dp in hospital for 2 weeks").
-//    expected(ReasonAndAmount("carers.validClaim", Some(95))).
+    //    useCase("Overlapping benefit 2 - Customer receiving certain other benefits at a rate lower than the rate of CA will reduce the payable amount of CA.").
+    //    scenario(World("2010-5-5"), Xmls.validateClaim("CL100117A"), "CL100117A-self employed earning too much").
+    //    expected(ReasonAndAmount("carers.overlappingBenefit.higherRatePension", None)).
+    //    because((w: World, e: Elem) => {
+    //      val dependantNino = (e \\ "DependantNINO").text;
+    //      val dependantXml = w.ninoToCis(dependantNino);
+    //      (dependantXml \\ "AwardComponent").text == "DLA Middle Rate Care"
+    //    }).
+    //
+    //    useCase("Break 6 - Break in care, at a hospital for 2 weeks - still gets paid").
+    //    scenario(World("2010-5-5"), Xmls.validateClaim("CL100119A"), "CL100119A-dp in hospital for 2 weeks").
+    //    expected(ReasonAndAmount("carers.validClaim", Some(95))).
     build;
 
   def main(args: Array[String]) {
