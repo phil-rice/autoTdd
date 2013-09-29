@@ -1,11 +1,13 @@
 package org.autotdd.carers
 
 import org.junit.runner.RunWith
-import org.autotdd.engine.Engine
+
+import org.autotdd.engine._
 import org.autotdd.engine.tests.AutoTddJunitRunner
 import scala.xml.Elem
 import scala.concurrent.stm.InTxn
 import scala.xml.XML
+import scala.xml.NodeSeq
 
 @RunWith(classOf[AutoTddJunitRunner])
 object Carers {
@@ -22,8 +24,39 @@ object Carers {
     i.amount.getOrElse(0)
   }
 
-  val engine = Engine[World, Elem, ReasonAndAmount]().
+  trait Fragments {
+    def fragment(): Fragment;
+
+  }
+  //  val eng = 
+  //  new XmlBuilderFactory2[World, Elem, ReasonAndAmount]{
+  //    val a = 1; 
+  //    val b = true
+  //  }.builder.because((w: World, e: Elem) => b);
+
+  trait Fragment {
+    def \(s: String): Fragment
+    def \\(s: String): Fragment
+  }
+
+  trait EngineFragments extends Fragments {
+    val birthdate = fragment() \ "ValidateClaim" \ "ClaimantBirthDate" \ "PersonBirthDate"
+    val DependantNino = fragment() \ "ValidateClaim" \ "DependantNINO"
+    val ClaimAlwaysUK = fragment() \ "ValidateClaim" \ " ClaimData" \ "ClaimAlwaysUK"
+    val ClaimCurrentResidentUK = fragment() \ "ValidateClaim" \ "ClaimData" \ "ClaimCurrentResidentUK"
+    val ClaimEducationFullTime = fragment() \ "ValidateClaim" \ "ClaimData" \ "ClaimEducationFullTime"
+    val ClaimRentalIncome = fragment() \ "ValidateClaim" \ "ClaimData" \ "ClaimRentalIncome"
+  }
+
+  val engine = XmlEngine[World, Elem, ReasonAndAmount]().
     withDefaultCode((w: World, e: Elem) => ReasonAndAmount("carer.default.notPaid")).
+
+    fragment("BirthDate").\("ValidateClaim").\("ClaimantBirthDate").\("PersonBirthDate").
+    fragment("DependantNino").\("ValidateClaim").\("DependantNINO").
+    fragment("ClaimAlwaysUK").\("ValidateClaim").\("ClaimData").\\("ClaimAlwaysUK").
+    fragment("ClaimCurrentResidentUK").\("ValidateClaim").\("ClaimData").\("ClaimCurrentResidentUK").
+    fragment("ClaimEducationFullTime").\("ValidateClaim").\("ClaimData").\("ClaimEducationFullTime").
+    fragment("ClaimRentalIncome").\("ValidateClaim").\("ClaimData").\("ClaimRentalIncome").
 
     useCase("Customers under age 16 are not entitled to CA").
     scenario(World("2010-6-9"), Xmls.validateClaim("CL100104A"), "Cl100104A-Age Under 16").
@@ -38,7 +71,6 @@ object Carers {
       } else
         false
     }).
-    fragment(name="BirthDate", modifiers=List("ClaimantBirthDate", "PersonBirthDate")).
     useCase("Hours1 - Customers with Hours of caring must be 35 hours or more in any one week").
     scenario(World("2010-1-1"), Xmls.validateClaim("CL100105A"), "CL100105A-lessThen35Hours").
     expected(ReasonAndAmount("carer.claimant.under35hoursCaring")).
