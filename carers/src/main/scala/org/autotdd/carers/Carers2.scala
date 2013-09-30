@@ -9,8 +9,6 @@ import org.autotdd.engine.Engine
 import org.junit.runner.RunWith
 import org.autotdd.engine.tests.AutoTddJunitRunner
 
-
-
 case class CarersXmlSituation(w: World, e: Elem) extends XmlSituation {
   import XmlFragment._
   lazy val birthdate = date(e) \ "ClaimantData" \ "ClaimantBirthDate" \ "PersonBirthDate"
@@ -20,7 +18,8 @@ case class CarersXmlSituation(w: World, e: Elem) extends XmlSituation {
   lazy val ClaimCurrentResidentUK = yesNo(e, default = false) \ "ClaimData" \ "ClaimCurrentResidentUK"
   lazy val ClaimEducationFullTime = yesNo(e, default = false) \ "ClaimData" \ "ClaimEducationFullTime"
   lazy val ClaimRentalIncome = yesNo(e, default = false) \ "ClaimData" \ "ClaimRentalIncome"
-  lazy val genderAtRegistration = string(e) \ "ClaimantData" \ "ClaimantGenderAtRegistration"
+  lazy val ClaimRentalIncome2 = integer(e) \ "ClaimData" \ "ClaimRentalIncome"
+//  lazy val genderAtRegistration = strsing(e) \ "ClaimantData" \ "ClaimantGenderAtRegistration"
 
   lazy val dependantXml: Elem = DependantNino.get() match {
     case Some(s) => w.ninoToCis(s);
@@ -30,9 +29,11 @@ case class CarersXmlSituation(w: World, e: Elem) extends XmlSituation {
 
   lazy val expenses = Expenses.expenses(w, e)
   lazy val income = Income.income(w, e)
+  
   lazy val nettIncome: Option[Double] =
     for (e <- expenses.amount; i <- income.amount)
       yield i - e
+      
   lazy val incomeOk =
     nettIncome match {
       case Some(i) => i < 100
@@ -119,5 +120,10 @@ object Carers2 {
     expected(ReasonAndAmount("carers.income.rental", None)).
 
     build
+
+  def main(args: Array[String]) {
+	  val situation: CarersXmlSituation= (World("2010-6-1"), "CL100113A")
+	  println(situation)
+  }
 
 }
