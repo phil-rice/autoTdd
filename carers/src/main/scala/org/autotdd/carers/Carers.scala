@@ -1,184 +1,127 @@
 package org.autotdd.carers
 
-import org.junit.runner.RunWith
-
-import org.autotdd.engine._
-import org.autotdd.engine.tests.AutoTddJunitRunner
-import scala.xml.Elem
-import scala.concurrent.stm.InTxn
-import scala.xml.XML
 import scala.xml.NodeSeq
+import scala.xml.Elem
+import org.joda.time.DateTime
+import org.joda.time.format._
+import scala.concurrent.stm._
+import org.autotdd.engine.Engine
+import org.junit.runner.RunWith
+import org.autotdd.engine.tests.AutoTddJunitRunner
+import org.autotdd.engine.XmlSituation
+import org.autotdd.engine.XmlFragment
 
-@RunWith(classOf[AutoTddJunitRunner])
-object Carers {
+case class CarersXmlSituation(w: World, e: Elem) extends XmlSituation {
+  import XmlFragment._
+  lazy val birthdate = date(e) \ "ClaimantData" \ "ClaimantBirthDate" \ "PersonBirthDate"
+  lazy val DependantNino = string(e) \ "DependantData" \ "DependantNINO"
+  lazy val ClaimAlwaysUK = yesNo(e, default = false) \ "ClaimData" \ "ClaimAlwaysUK"
+  lazy val Claim35Hours = yesNo(e, default = false) \ "ClaimData" \ "Claim35Hours"
+  lazy val ClaimCurrentResidentUK = yesNo(e, default = false) \ "ClaimData" \ "ClaimCurrentResidentUK"
+  lazy val ClaimEducationFullTime = yesNo(e, default = false) \ "ClaimData" \ "ClaimEducationFullTime"
+  lazy val ClaimRentalIncome = yesNo(e, default = false) \ "ClaimData" \ "ClaimRentalIncome"
+//  lazy val genderAtRegistration = strsing(e) \ "ClaimantData" \ "ClaimantGenderAtRegistration"
 
-  def calculateExpenses(w: World, e: Elem): ReasonsAndAmount = {
-    val expenses = (e \\ "ExpensesData").headOption match {
-      case Some(ed) => Expenses.expenses(w, ed.asInstanceOf[Elem])
-      case _ => ReasonsAndAmount(None, List(KeyAndParams("claim.expenses.noExpensesData")))
+  lazy val dependantXml: Elem = DependantNino.get() match {
+    case Some(s) => w.ninoToCis(s);
+    case None => <NoDependantXml/>
+  }
+  lazy val DependantAwardComponent = string(dependantXml, default = "") \\ "AwardComponent"
+
+  lazy val expenses = Expenses.expenses(w, e)
+  lazy val income = Income.income(w, e)
+  
+  lazy val nettIncome: Option[Double] =
+    for (e <- expenses.amount; i <- income.amount)
+      yield i - e
+      
+  lazy val incomeOk =
+    nettIncome match {
+      case Some(i) => i < 100
+      case _ => false
     }
-    expenses
-  }
-  def calculateWeeklyIncome(w: World, e: Elem): Double = {
-    val i = Income.income(w, e)
-    i.amount.getOrElse(0)
-  }
+  override def toString =  getClass.getSimpleName() + s"(\n  expenses=${expenses}\n  income=${income}\n  nettIncome=${nettIncome}\n  incomeOk = ${incomeOk}\n  ${fragmentsToString}\n${xmlsToString})"
 
-  trait Fragments {
-    def fragment(): Fragment;
+}
+@RunWith(classOf[AutoTddJunitRunner])
+object Carers2 {
+  implicit def worldElemToCarers(x: Tuple2[World, Elem]) = CarersXmlSituation(x._1, x._2)
+  implicit def worldStringToCarers(x: Tuple2[World, String]) = CarersXmlSituation(x._1, Xmls.validateClaim(x._2))
+  //  implicit def carersToWorld(x: CarersXmlSituation) = x.w
+  //  implicit def carersToElem(x: CarersXmlSituation) = x.e
 
-  }
-  //  val eng = 
-  //  new XmlBuilderFactory2[World, Elem, ReasonAndAmount]{
-  //    val a = 1; 
-  //    val b = true
-  //  }.builder.because((w: World, e: Elem) => b);
-
-  trait Fragment {
-    def \(s: String): Fragment
-    def \\(s: String): Fragment
-  }
-
-  trait EngineFragments extends Fragments {
-    val birthdate = fragment() \ "ValidateClaim" \ "ClaimantBirthDate" \ "PersonBirthDate"
-    val DependantNino = fragment() \ "ValidateClaim" \ "DependantNINO"
-    val ClaimAlwaysUK = fragment() \ "ValidateClaim" \ " ClaimData" \ "ClaimAlwaysUK"
-    val ClaimCurrentResidentUK = fragment() \ "ValidateClaim" \ "ClaimData" \ "ClaimCurrentResidentUK"
-    val ClaimEducationFullTime = fragment() \ "ValidateClaim" \ "ClaimData" \ "ClaimEducationFullTime"
-    val ClaimRentalIncome = fragment() \ "ValidateClaim" \ "ClaimData" \ "ClaimRentalIncome"
-  }
-
-  val engine = XmlEngine[World, Elem, ReasonAndAmount]().
-    withDefaultCode((w: World, e: Elem) => ReasonAndAmount("carer.default.notPaid")).
-
-    fragment("BirthDate").\("ValidateClaim").\("ClaimantBirthDate").\("PersonBirthDate").
-    fragment("DependantNino").\("ValidateClaim").\("DependantNINO").
-    fragment("ClaimAlwaysUK").\("ValidateClaim").\("ClaimData").\\("ClaimAlwaysUK").
-    fragment("ClaimCurrentResidentUK").\("ValidateClaim").\("ClaimData").\("ClaimCurrentResidentUK").
-    fragment("ClaimEducationFullTime").\("ValidateClaim").\("ClaimData").\("ClaimEducationFullTime").
-    fragment("ClaimRentalIncome").\("ValidateClaim").\("ClaimData").\("ClaimRentalIncome").
-
+  val engine = Engine[CarersXmlSituation, ReasonAndAmount]().
+    withDefaultCode((c: CarersXmlSituation) => ReasonAndAmount("carer.default.notPaid")).
     useCase("Customers under age 16 are not entitled to CA").
-    scenario(World("2010-6-9"), Xmls.validateClaim("CL100104A"), "Cl100104A-Age Under 16").
+    scenario((World("2010-6-9"), "CL100104A"), "Cl100104A-Age Under 16").
     expected(ReasonAndAmount("carer.claimant.under16")).
-    because((w: World, e: Elem) => {
-      val date = (e \\ "ClaimantBirthDate" \ "PersonBirthDate").text
-      if (date != "") {
-        val birthDate = Xmls.asDate(date)
-        val d = birthDate.plusYears(16)
-        val result = d.isAfter(w.today)
-        result
-      } else
-        false
+    because((c: CarersXmlSituation) => c.birthdate.get() match {
+      case Some(bd) => bd.plusYears(16).isAfter(c.w.today)
+      case _ => false
     }).
+
     useCase("Hours1 - Customers with Hours of caring must be 35 hours or more in any one week").
-    scenario(World("2010-1-1"), Xmls.validateClaim("CL100105A"), "CL100105A-lessThen35Hours").
+    scenario((World("2010-1-1"), "CL100105A"), "CL100105A-lessThen35Hours").
     expected(ReasonAndAmount("carer.claimant.under35hoursCaring")).
-    because((w: World, e: Elem) => !Xmls.asYesNo((e \\ "ClaimData" \ "Claim35Hours").text)).
+    because((c: CarersXmlSituation) => !c.Claim35Hours()).
 
     useCase("Qualifying Benefit 3 - DP's without the required level of qualyfing benefit will result in the disallowance of the claim to CA.").
-    scenario(World("2010-6-23"), Xmls.validateClaim("CL100106A"), "CL100106A-?????? ").
+    scenario((World("2010-6-23"), "CL100106A"), "CL100106A-?????? ").
     expected(ReasonAndAmount("carer.qualifyingBenefit.dpWithoutRequiredLevelOfQualifyingBenefit")).
-    because((w: World, e: Elem) => {
-      val dependantNino = (e \\ "DependantNINO").text;
-      val dependantXml = w.ninoToCis(dependantNino);
-      val length = dependantXml.child.length
-      length > 1 && (dependantXml \\ "AwardComponent").text != "DLA Middle Rate Care"
-    }).
+    because((c: CarersXmlSituation) => c.DependantAwardComponent() != "DLA Middle Rate Care").
 
     useCase("Residence 3- Customer who is not considered resident and present in GB is not entitled to CA.").
-    scenario(World("2010-6-7"), Xmls.validateClaim("CL100107A"), "CL100107A-notInGB").
+    scenario((World("2010-6-7"), "CL100107A"), "CL100107A-notInGB").
     expected(ReasonAndAmount("carers.claimant.notResident")).
-    because((w: World, e: Elem) => {
-      !Xmls.asYesNo((e \\ "ClaimData" \ "ClaimAlwaysUK").text)
-    }).
+    because((c: CarersXmlSituation) => !c.ClaimAlwaysUK()).
 
     useCase("Presence 2- Customers who have restrictions on their immigration status will be disallowed CA.").
-    scenario(World("2010-6-7"), Xmls.validateClaim("CL100108A"), "CL100108A-restriction on immigration status").
+    scenario((World("2010-6-7"), "CL100108A"), "CL100108A-restriction on immigration status").
     expected(ReasonAndAmount("carers.claimant.restriction.immigrationStatus")).
-    because((w: World, e: Elem) => {
-      !Xmls.asYesNo((e \\ "ClaimData" \ "ClaimCurrentResidentUK").text)
-    }).
+    because((c: CarersXmlSituation) => !c.ClaimCurrentResidentUK()).
 
     useCase("Full Time Eduction 2  -Customer in FTE 21 hours or more each week are not entitled to CA.").
-    scenario(World("2010-2-10"), Xmls.validateClaim("CL100109A"), "CL100109A-full time education").
+    scenario((World("2010-2-10"), "CL100109A"), "CL100109A-full time education").
     expected(ReasonAndAmount("carers.claimant.fullTimeEduction.moreThan21Hours")).
-    because((w: World, e: Elem) => {
-      Xmls.asYesNo((e \\ "ClaimData" \ "ClaimEducationFullTime").text)
-    }).
+    because((c: CarersXmlSituation) => c.ClaimEducationFullTime()).
 
     useCase("Employment 4  - Customer's claiming CA may claim an allowable expense of up to 50% of their childcare expenses where the child care is not being undertaken by a direct relative. This amount may then be deducted from their gross pay.").
-    scenario(World("2010-3-22"), Xmls.validateClaim("CL100110A"), "CL100110A-child care allowance").
-    expected(ReasonAndAmount("carers.validClaim", Some(95))).
-    code((w: World, e: Elem) => {
-      val expenses: Double = calculateExpenses(w, e).amount.getOrElse(0);
-      val weeklyIncome: Double = calculateWeeklyIncome(w, e)
-      ReasonAndAmount("carers.validClaim", Some(weeklyIncome - expenses))
-    }).
-    because((w: World, e: Elem) => {
-      val expenses: Double = calculateExpenses(w, e).amount.getOrElse(0);
-      val weeklyIncome: Double = calculateWeeklyIncome(w, e)
-      val nett = weeklyIncome - expenses
-      nett <= 100
-    }).
+    scenario((World("2010-3-22"), "CL100110A"), "CL100110A-child care allowance").
+    expected(ReasonAndAmount("carers.validClaim", Some(95.0))).
+    code((c: CarersXmlSituation) => ReasonAndAmount("carers.validClaim", c.nettIncome)).
+    because((c: CarersXmlSituation) => c.incomeOk).
 
     useCase("Employment 5 - Customers claiming CA may claim an allowable expense of up to 50% of their Private Pension contributions. This amount may then be deducted from their gross pay figure.").
-    scenario(World("2010-3-8"), Xmls.validateClaim("CL100111A"), "CL100111A-private pension").
-    expected(ReasonAndAmount("carers.validClaim", Some(95))).
+    scenario((World("2010-3-8"), "CL100111A"), "CL100111A-private pension").
+    expected(ReasonAndAmount("carers.validClaim", Some(95.0))).
 
     useCase("Employment 6 - Customers claiming CA may claim an allowable expense of up to 50% of their Occupational Pension contributions. This amount may then be deducted from their gross pay figure.").
-    scenario(World("2010-3-8"), Xmls.validateClaim("CL100112A"), "CL100112A-occupational pension").
-    expected(ReasonAndAmount("carers.validClaim", Some(95))).
-    //    useCase("DP's without the required level of qualifing benefit will result in the disallowance of the claim to CA.").
-    //    scenario(World.blankTestWorld, Xmls.validateClaim("CL100106A"), "CL100106A-No Qualifying Benefit").
-    //    expected(ReasonAndPayment("carer.dp.withoutLevelOfQualifyingBenefit")).
-    //    because((w: World, e: Elem) => true).
+    scenario((World("2010-3-8"), "CL100112A"), "CL100112A-occupational pension").
+    expected(ReasonAndAmount("carers.validClaim", Some(95.0))).
 
     useCase("Employment 7 - Customer in paid employment exceeding �100 (after allowable expenses) per week is not entitled to CA.").
-    scenario(World("2010-6-1"), Xmls.validateClaim("CL100113A"), "CL100113A-paid employment earning too much").
+    scenario((World("2010-6-1"), "CL100113A"), "CL100113A-paid employment earning too much").
     expected(ReasonAndAmount("carers.nettIncome.moreThan100PerWeek", None)).
-    because((w: World, e: Elem) => {
-      val expenses: Double = calculateExpenses(w, e).amount.getOrElse(0);
-      val weeklyIncome: Double = calculateWeeklyIncome(w, e)
-      val nett = weeklyIncome - expenses
-      nett > 100
-    }).
+    because((c: CarersXmlSituation) => !c.incomeOk).
 
     useCase("Self employment 2 - Customer in Self employed work earning more than the prescribed limit of �100 per week (after allowable expenses) are not entitled to CA.").
-    scenario(World("2010-3-1"), Xmls.validateClaim("CL100114A"), "CL114A-self employed earning too much").
+    scenario((World("2010-3-1"), "CL100114A"), "CL114A-self employed earning too much").
     expected(ReasonAndAmount("carers.nettIncome.moreThan100PerWeek", None)).
 
     useCase("Sublet 2- Customers receiving payment for subletting their property for board and lodgings receiving more than the prescribed limit of �100 (after allowable expenses) will be disallowed for CA.").
-    scenario(World("2010-3-1"), Xmls.validateClaim("CL100115A"), "CL115A-sub let").
+    scenario((World("2010-3-1"), "CL100115A"), "CL115A-sub let").
     expected(ReasonAndAmount("carers.income.rental", None)).
-    because((w: World, e: Elem) => Xmls.asYesNo((e \\ "ClaimRentalIncome").text)).
+    because((c: CarersXmlSituation) => c.ClaimRentalIncome()).
 
     useCase("Prop 2- Customer receiving an Income from the renting of another property or land in the UK or abroad either their own name or a share in a partners profit is above £100 per week(after allowable expenses) is not entitled to CA.").
-    scenario(World("2010-3-1"), Xmls.validateClaim("CL100116A"), "CL116A-income from renting").
+    scenario((World("2010-3-1"), "CL100116A"), "CL116A-income from renting").
     expected(ReasonAndAmount("carers.income.rental", None)).
 
-    //    useCase("Overlapping benefit 2 - Customer receiving certain other benefits at a rate lower than the rate of CA will reduce the payable amount of CA.").
-    //    scenario(World("2010-5-5"), Xmls.validateClaim("CL100117A"), "CL100117A-self employed earning too much").
-    //    expected(ReasonAndAmount("carers.overlappingBenefit.higherRatePension", None)).
-    //    because((w: World, e: Elem) => {
-    //      val dependantNino = (e \\ "DependantNINO").text;
-    //      val dependantXml = w.ninoToCis(dependantNino);
-    //      (dependantXml \\ "AwardComponent").text == "DLA Middle Rate Care"
-    //    }).
-    //
-    //    useCase("Break 6 - Break in care, at a hospital for 2 weeks - still gets paid").
-    //    scenario(World("2010-5-5"), Xmls.validateClaim("CL100119A"), "CL100119A-dp in hospital for 2 weeks").
-    //    expected(ReasonAndAmount("carers.validClaim", Some(95))).
-    build;
+    build
 
   def main(args: Array[String]) {
-    println(Xmls.validateClaim("CL100113A"))
-
-    val sharedWord = World("2010-1-1")
-    //    val myWorld = sharedWorld.makeMeOne;
-    println(Carers.engine(sharedWord, Xmls.validateClaim("CL100113A")))
-    //    println(Dbase.template)
-    println("done")
-
+	  val situation: CarersXmlSituation= (World("2010-6-1"), "CL100113A")
+	  println(situation)
   }
+
 }

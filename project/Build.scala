@@ -41,7 +41,8 @@ object BuildSettings {
       </developers>),
 
     organization := "org.autotdd",
-    version := "1.1.0-SNAPSHOT",
+    //version := "1.2.0-SNAPSHOT",
+    version := "1.2.0",
     scalacOptions ++= Seq(),
     retrieveManaged := false,
     scalaVersion := "2.10.1",

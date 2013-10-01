@@ -3,6 +3,8 @@ package org.autotdd.carers
 import org.autotdd.engine.AbstractTest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import org.autotdd.engine.XmlSituation
+import org.autotdd.engine.XmlFragment
 
 trait XmlTestMother {
   val xml = <Root><one>1</one><two>2</two><repeated>3</repeated><repeated>4</repeated></Root>
