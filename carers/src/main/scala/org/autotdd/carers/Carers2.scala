@@ -18,7 +18,6 @@ case class CarersXmlSituation(w: World, e: Elem) extends XmlSituation {
   lazy val ClaimCurrentResidentUK = yesNo(e, default = false) \ "ClaimData" \ "ClaimCurrentResidentUK"
   lazy val ClaimEducationFullTime = yesNo(e, default = false) \ "ClaimData" \ "ClaimEducationFullTime"
   lazy val ClaimRentalIncome = yesNo(e, default = false) \ "ClaimData" \ "ClaimRentalIncome"
-  lazy val ClaimRentalIncome2 = integer(e) \ "ClaimData" \ "ClaimRentalIncome"
 //  lazy val genderAtRegistration = strsing(e) \ "ClaimantData" \ "ClaimantGenderAtRegistration"
 
   lazy val dependantXml: Elem = DependantNino.get() match {
@@ -39,6 +38,7 @@ case class CarersXmlSituation(w: World, e: Elem) extends XmlSituation {
       case Some(i) => i < 100
       case _ => false
     }
+  override def toString =  getClass.getSimpleName() + s"(\n  expenses=${expenses}\n  income=${income}\n  nettIncome=${nettIncome}\n  incomeOk = ${incomeOk}\n  ${fragmentsToString}\n${xmlsToString})"
 
 }
 @RunWith(classOf[AutoTddJunitRunner])
@@ -96,10 +96,6 @@ object Carers2 {
     useCase("Employment 6 - Customers claiming CA may claim an allowable expense of up to 50% of their Occupational Pension contributions. This amount may then be deducted from their gross pay figure.").
     scenario((World("2010-3-8"), "CL100112A"), "CL100112A-occupational pension").
     expected(ReasonAndAmount("carers.validClaim", Some(95.0))).
-    //    useCase("DP's without the required level of qualifing benefit will result in the disallowance of the claim to CA.").
-    //    scenario(World.blankTestWorld, Xmls.validateClaim("CL100106A"), "CL100106A-No Qualifying Benefit").
-    //    expected(ReasonAndPayment("carer.dp.withoutLevelOfQualifyingBenefit")).
-    //    because((w: World, e: Elem) => true).
 
     useCase("Employment 7 - Customer in paid employment exceeding �100 (after allowable expenses) per week is not entitled to CA.").
     scenario((World("2010-6-1"), "CL100113A"), "CL100113A-paid employment earning too much").

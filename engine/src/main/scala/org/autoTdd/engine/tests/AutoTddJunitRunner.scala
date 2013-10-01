@@ -15,7 +15,7 @@ import sys.process._
 import java.lang.reflect.Field
 import junit.framework.AssertionFailedError
 
-object AutoTddJuitRunner {
+object AutoTddJunitRunner {
   val separator = "\n#########\n"
   val userHome = System.getProperty("user.home");
   val directory = new File(userHome, ".autoTdd")
@@ -76,11 +76,11 @@ trait AutoTddRunner extends Runner with JunitUniverse[Any] with NotActuallyFacto
     }
   }
 
-  def fileFor(clazz: Class[Any], ed: Description, extension: String) = new File(AutoTddJuitRunner.directory, clazz.getName() + "." + ed.getDisplayName() + "." + extension)
+  def fileFor(clazz: Class[Any], ed: Description, extension: String) = new File(AutoTddJunitRunner.directory, clazz.getName() + "." + ed.getDisplayName() + "." + extension)
 
   def saveResults(clazz: Class[Any], ed: Description, e: Any) {
     import Files._
-    AutoTddJuitRunner.directory.mkdirs()
+    AutoTddJunitRunner.directory.mkdirs()
     printToFile(fileFor(clazz, ed, "attd"))((pw) => pw.write(e.toString))
     //        new File(AutoTddRunner.directory, clazz.getName() + "." + ed.getDisplayName() + ".attd"))((pw) => pw.write(e.toString))
   }
@@ -162,6 +162,7 @@ trait AutoTddRunner extends Runner with JunitUniverse[Any] with NotActuallyFacto
   }
 
 }
+
 class AutoTddJunitRunner(val clazz: Class[Any]) extends AutoTddRunner {
 
   val getDescription = Description.createSuiteDescription("ATDD: " + clazz.getName);
