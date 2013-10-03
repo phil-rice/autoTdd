@@ -44,7 +44,7 @@ case class CarersXmlSituation(w: World, e: Elem) extends XmlSituation {
 
 }
 @RunWith(classOf[AutoTddJunitRunner])
-object Carers2 {
+object Carers {
   implicit def worldElemToCarers(x: Tuple2[World, Elem]) = CarersXmlSituation(x._1, x._2)
   implicit def worldStringToCarers(x: Tuple2[World, String]) = CarersXmlSituation(x._1, Xmls.validateClaim(x._2))
   //  implicit def carersToWorld(x: CarersXmlSituation) = x.w

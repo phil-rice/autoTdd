@@ -1,34 +1,11 @@
-The following should have failed on the date in middle test, as it broke earlier tests. It didn't... Fix
 
-@RunWith(classOf[AutoTddJunitRunner])
-object Time {
+An engine description. For the website
+Macros: The because/code/withDefaultCode should become macros on engine. That way I can get rid of the type signatures in the because 
+Consider: The expected might also be able to take a parameter list, so that the input can be copied to the output...
+CSS for the improved website
 
-  implicit def stringToDate(s: String): DateTime = Xmls.asDate(s)
 
-  val dateRangeInDate = Engine[DateTime, DateRange, Boolean]().
-    useCase("Returns false if date Not In Range").
-    scenario("2010-6-1", DateRange("2010-1-1", "2010-2-1"), "Range in past").
-    expected(false).
+Special Engines
+* Ranges (dates / numbers / amounts). We know it's about partitioning the range, so let's make it easy
+* XML We can have special because clauses that allow you to specify one or more fragments, then make statements about the fragments. this allows us to highlight the code better in the documentation and error messages
 
-    scenario("2010-6-1", DateRange("2010-8-1", "2010-9-1"), "Range in future").
-    expected(false).
-
-    scenario("2010-6-10", DateRange("2010-6-11", "2010-6-12"), "Range starts tomorrow").
-    expected(false).
-
-    scenario("2010-6-10", DateRange("2010-6-8", "2010-6-9"), "Range ends yesterday").
-    expected(false).
-
-    useCase("Date In Range").
-    scenario("2010-6-10", DateRange("2010-6-8", "2010-6-12"), "Date in middle").
-    expected(true).
-    because((d: DateTime, dr: DateRange) => true).
-
-    scenario("2010-6-18", DateRange("2010-6-8", "2010-6-12"), "Date on first day").
-    expected(true).
-    
-    scenario("2010-6-12", DateRange("2010-6-8", "2010-6-12"), "Date on last day").
-    expected(true).
-    
-    build
-}

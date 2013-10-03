@@ -44,7 +44,7 @@ trait JunitUniverse[R] extends EngineUniverse[R] {
       val text =
         <h2>{ scenarioIndex }{ s.description.collect { case d => ": " + d } getOrElse ("") }</h2>
         <table>
-          <tr><td>Parameters</td><td>{ s.params.mkString(",") }</td></tr>
+          <tr><td>Parameters</td><td><pre>{ s.params.mkString(",") }</pre></td></tr>
           <tr><td>Expected</td><td>{ s.expected.getOrElse("<undefined>") }</td></tr>
           {
             if (s.because.isDefined)
