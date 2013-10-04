@@ -44,19 +44,19 @@ trait JunitUniverse[R] extends EngineUniverse[R] {
       val text =
         <h2>{ scenarioIndex }{ s.description.collect { case d => ": " + d } getOrElse ("") }</h2>
         <table>
-          <tr><td>Parameters</td><td><pre>{ s.params.mkString(",") }</pre></td></tr>
-          <tr><td>Expected</td><td>{ s.expected.getOrElse("<undefined>") }</td></tr>
+          <tr><td>Parameters</td><td><pre>{ s.params.map(displayProcessor).mkString(", ") }</pre></td></tr>
+          <tr><td>Expected</td><td><pre>{ s.expected.getOrElse("<undefined>") }</pre></td></tr>
           {
             if (s.because.isDefined)
-              <tr><td>Because </td><td> { s.becauseString } </td><td>{ s.because.get.comment }</td></tr>
+              <tr><td>Because</td><td><pre>{ s.becauseString }</pre></td><td><pre>{ s.because.get.comment }</pre></td></tr>
           }
           {
             if (s.code.isDefined)
-              <tr><td>Code</td><td>{ s.code.get.description }</td><td>{ s.code.get.comment }</td></tr>
+              <tr><td>Code</td><td><pre>{ s.code.get.description }</pre></td><td><pre>{ s.code.get.comment }</pre></td></tr>
           }
           {
             if (s.assertions.size > 0)
-              <tr><td>Assertions</td><td>{ s.assertions.mkString(",") }</td></tr>
+              <tr><td>Assertions</td><td><pre>{ s.assertions.mkString(",") }</pre></td></tr>
           }
         </table>;
 

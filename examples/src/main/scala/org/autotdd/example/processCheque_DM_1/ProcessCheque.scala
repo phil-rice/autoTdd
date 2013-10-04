@@ -1,9 +1,16 @@
-package org.autotdd.example
+package org.autotdd.example.processCheque_DM_1
 
 import org.joda.time.DateTime
-import org.autotdd.engine.Engine
+import org.autotdd.engine._
 import org.junit.runner.RunWith
 import org.autotdd.engine.tests._
+
+//This is compatible with 
+//	<dependency>
+//		<groupId>org.autotdd</groupId>
+//		<artifactId>engine_2.10</artifactId>
+//		<version>1.2.0</version>
+//	</dependency>
 
 case class World(date: DateTime, thisBank: BankId, customerIdToCustomer: (CustomerId) => Customer, acceptedBanks: List[BankId] = List(BankId.hsbc, BankId.rbs, BankId.thisBank));
 
@@ -64,7 +71,7 @@ object ProcessCheque {
     scenario(world, Cheque("1", dodgyDaveId, dodgyDaveAtDodgyBankId, today, 50), "Dodgy Dave is moving half his funds to a bank that isn't on the accepted list").
     expected(ProcessChequeResult(false, ("processCheque.reject.toBank.notInWhiteList", BankId.dodgyBank))).
     because((w: World, c: Cheque) => !w.acceptedBanks.contains(c.to.bank)).
-//
+    //
     useCase("Cheques that will take the customer over the overdraft limit will should be rejected").
     scenario(world, Cheque("1", dodgyDaveId, richRogerId, today, 110), "Dodgy Dave sending more money than he has").
     expected(ProcessChequeResult(false, "processCheque.reject.noOverdraft")).
@@ -72,14 +79,14 @@ object ProcessCheque {
       val customer = w.customerIdToCustomer(c.from)
       c.amount >= customer.balance && customer.overdraftLimit == GBP(0, 0)
     }).
-//
+    //
     scenario(world, Cheque("1", richRogerId, richRogerAtHsbcId, today, 15000), "Rich Roger sending more money than he has, taking him over his limit").
     expected(ProcessChequeResult(false, "processCheque.reject.exceedsOverdraftLimit")).
     because((w: World, c: Cheque) => {
       val customer = w.customerIdToCustomer(c.from)
       c.amount >= customer.balance + customer.overdraftLimit
     }).
-//
+    //
     useCase("Cheques that are to to customers in an accepted bank, when the cheque writer has sufficient funds, should be allowed").
     scenario(world, Cheque("1", dodgyDaveId, richRogerId, today, 50), "Dodgy Dave sending an OK cheque to someone in this bank").
     expected(ProcessChequeResult(true, "processCheque.accept")).

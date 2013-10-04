@@ -29,8 +29,9 @@ object XmlFragment {
     try { Some(DateTimeFormat.forPattern(pattern).parseDateTime(r)) } catch {
       case e: Throwable => None
     });
-  
+
   def nodeSeq(e: Elem) = new XmlFragment[NodeSeq](e, (n, _) => Some(n))
+  def obj[T](e: Elem, fn: (NodeSeq, String) => Option[T]) = new XmlFragment[T](e, fn)
 }
 
 case class XmlFragment[T](raw: Elem, fn: (NodeSeq, String) => Option[T], default: Option[T] = None, paths: List[Path] = List()) extends Fragment[Elem, NodeSeq, String, T] {
@@ -43,14 +44,14 @@ case class XmlFragment[T](raw: Elem, fn: (NodeSeq, String) => Option[T], default
   })
 }
 
-trait XmlSituation extends Structure[  Elem, NodeSeq, String] {
+trait XmlSituation extends Structure[Elem, NodeSeq, String] {
 
   private lazy val fragmentFields = new FieldSet[XmlFragment[_]](this, classOf[XmlFragment[_]])
   private lazy val xmlFields = new FieldSet[Elem](this, classOf[Elem])
   protected lazy val pathMap = PathMap[Elem, NodeSeq, String](fragmentFields.values)
 
   protected lazy val fragmentsToString = findFragmentsToString(fragmentFields.fieldMap, (e) => e.mkString(","))
-  protected lazy val xmlsToString = structuresToString(pathMap, (s) => "  Xml: " + xmlFields.findFieldWithValue(s).getName()  +"  " + s.toString.replace('\n', ' '))
+  protected lazy val xmlsToString = structuresToString(pathMap, (s) => "  Xml: " + xmlFields.findFieldWithValue(s).getName() + "  " + s.toString.replace('\n', ' '))
 
   override def toString() = {
     getClass.getSimpleName() + s"(\n  ${fragmentsToString}\n${xmlsToString})"
