@@ -99,21 +99,21 @@ object Carers {
     scenario((World("2010-3-8"), "CL100112A"), "CL100112A-occupational pension").
     expected(ReasonAndAmount("carers.validClaim", Some(95.0))).
 
-    useCase("Employment 7 - Customer in paid employment exceeding ï¿½100 (after allowable expenses) per week is not entitled to CA.").
+    useCase("Employment 7 - Customer in paid employment exceeding £100 (after allowable expenses) per week is not entitled to CA.").
     scenario((World("2010-6-1"), "CL100113A"), "CL100113A-paid employment earning too much").
     expected(ReasonAndAmount("carers.nettIncome.moreThan100PerWeek", None)).
     because((c: CarersXmlSituation) => !c.incomeOk).
 
-    useCase("Self employment 2 - Customer in Self employed work earning more than the prescribed limit of ï¿½100 per week (after allowable expenses) are not entitled to CA.").
+    useCase("Self employment 2 - Customer in Self employed work earning more than the prescribed limit of £100 per week (after allowable expenses) are not entitled to CA.").
     scenario((World("2010-3-1"), "CL100114A"), "CL114A-self employed earning too much").
     expected(ReasonAndAmount("carers.nettIncome.moreThan100PerWeek", None)).
 
-    useCase("Sublet 2- Customers receiving payment for subletting their property for board and lodgings receiving more than the prescribed limit of ï¿½100 (after allowable expenses) will be disallowed for CA.").
+    useCase("Sublet 2- Customers receiving payment for subletting their property for board and lodgings receiving more than the prescribed limit of £100 (after allowable expenses) will be disallowed for CA.").
     scenario((World("2010-3-1"), "CL100115A"), "CL115A-sub let").
     expected(ReasonAndAmount("carers.income.rental", None)).
     because((c: CarersXmlSituation) => c.ClaimRentalIncome()).
 
-    useCase("Prop 2- Customer receiving an Income from the renting of another property or land in the UK or abroad either their own name or a share in a partners profit is above Â£100 per week(after allowable expenses) is not entitled to CA.").
+    useCase("Prop 2- Customer receiving an Income from the renting of another property or land in the UK or abroad either their own name or a share in a partners profit is above £100 per week(after allowable expenses) is not entitled to CA.").
     scenario((World("2010-3-1"), "CL100116A"), "CL116A-income from renting").
     expected(ReasonAndAmount("carers.income.rental", None)).
 
