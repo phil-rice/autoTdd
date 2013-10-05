@@ -6,7 +6,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class ScenarioPrintTests extends EngineStringStringTests with JunitUniverse[String] {
 
-  val bldr = builder.useCase("uc1").
+  val bldr = builder.withDescription("EngineDescription").useCase("uc1").
     scenario("s1_1").expected("a").scenario("s1_2").expected("b").
     useCase("uc2").scenario("s2_1").expected("c").scenario("s2_2").expected("d")
 
@@ -14,10 +14,11 @@ class ScenarioPrintTests extends EngineStringStringTests with JunitUniverse[Stri
     var actualUseCaseStrings = List[String]();
     var actualEndUseCaseStrings = List[String]();
     var actualScenarioStrings = List[String]();
+    var actualDescription: Option[String] = None
     var started = false
     var ended = false;
     bldr.walkScenarios(new ScenarioVisitor() {
-      def start = if (actualUseCaseStrings ::: actualEndUseCaseStrings ::: actualScenarioStrings != List()) throw new IllegalStateException; started = true; if (ended) throw new IllegalStateException
+      def start(engineDescription: Option[String]) = actualDescription = engineDescription; if (actualUseCaseStrings ::: actualEndUseCaseStrings ::: actualScenarioStrings != List()) throw new IllegalStateException; started = true; if (ended) throw new IllegalStateException
       def visitUseCase(ui: Int, u: UseCase) = actualUseCaseStrings = (ui + "/" + u.description) :: actualUseCaseStrings; if (ended) throw new IllegalStateException
       def visitUseCaseEnd(u: UseCase) = actualEndUseCaseStrings = u.description :: actualEndUseCaseStrings; if (ended) throw new IllegalStateException
       def visitScenario(ui: Int, u: UseCase, si: Int, s: Scenario) = actualScenarioStrings = (ui + "/" + u.description + "/" + si + "/" + s.expected.get) :: actualScenarioStrings; if (ended) throw new IllegalStateException
@@ -29,6 +30,7 @@ class ScenarioPrintTests extends EngineStringStringTests with JunitUniverse[Stri
     assertEquals(List("0/uc2", "1/uc1"), actualUseCaseStrings.reverse)
     assertEquals(List("uc2", "uc1"), actualEndUseCaseStrings.reverse)
     assertEquals(List("0/uc2/0/d", "0/uc2/1/c", "1/uc1/0/b", "1/uc1/1/a"), actualScenarioStrings.reverse)
+    assertEquals(Some("EngineDescription"), actualDescription)
   }
 
   "Walking a scenario in reverse" should "visit each scenario and use case " in {
@@ -37,8 +39,9 @@ class ScenarioPrintTests extends EngineStringStringTests with JunitUniverse[Stri
     var actualScenarioStrings = List[String]();
     var started = false
     var ended = false;
+    var actualDescription: Option[String] = None
     bldr.walkScenarios(new ScenarioVisitor() {
-      def start = if (actualUseCaseStrings ::: actualEndUseCaseStrings ::: actualScenarioStrings != List()) throw new IllegalStateException; started = true; if (ended) throw new IllegalStateException
+      def start(engineDescription: Option[String]) = actualDescription = engineDescription; if (actualUseCaseStrings ::: actualEndUseCaseStrings ::: actualScenarioStrings != List()) throw new IllegalStateException; started = true; if (ended) throw new IllegalStateException
       def visitUseCase(ui: Int, u: UseCase) = actualUseCaseStrings = (ui + "/" + u.description) :: actualUseCaseStrings; if (ended) throw new IllegalStateException
       def visitUseCaseEnd(u: UseCase) = actualEndUseCaseStrings = u.description :: actualEndUseCaseStrings; if (ended) throw new IllegalStateException
       def visitScenario(ui: Int, u: UseCase, si: Int, s: Scenario) = actualScenarioStrings = (ui + "/" + u.description + "/" + si + "/" + s.expected.get) :: actualScenarioStrings; if (ended) throw new IllegalStateException
@@ -50,6 +53,7 @@ class ScenarioPrintTests extends EngineStringStringTests with JunitUniverse[Stri
     assertEquals(List("0/uc1", "1/uc2"), actualUseCaseStrings.reverse)
     assertEquals(List("uc1", "uc2"), actualEndUseCaseStrings.reverse)
     assertEquals(List("0/uc1/0/a", "0/uc1/1/b", "1/uc2/0/c", "1/uc2/1/d"), actualScenarioStrings.reverse)
+    assertEquals(Some("EngineDescription"), actualDescription)
   }
 
   "The Junit scebario printer" should "produce an HTML entry for each scenario and use case with default values if not specified" in {
@@ -57,8 +61,9 @@ class ScenarioPrintTests extends EngineStringStringTests with JunitUniverse[Stri
     val visitor = new JunitScenarioReporter(manipulator, logger)
     bldr.walkScenarios(visitor, true);
     val results = manipulator.results.reverse
-    assert(results.contains("<h1>Usecase 0: uc1</h1>"), results);
-    assert(results.contains("<h1>Usecase 1: uc2</h1>"), results);
+    assert(results.contains("<h1>EngineDescription</h1>"), results);
+    assert(results.contains("<h2>Usecase 0: uc1</h2>"), results);
+    assert(results.contains("<h2>Usecase 1: uc2</h2>"), results);
     val scenariosText = results.filter(_.contains("<table>"))
     checkContents(scenariosText(0), "Parameters:s1_1", "Expected:a");
     checkContents(scenariosText(1), "Parameters:s1_2", "Expected:b");
@@ -79,6 +84,23 @@ class ScenarioPrintTests extends EngineStringStringTests with JunitUniverse[Stri
     val results = manipulator.results.reverse
     val scenariosText = results.filter(_.contains("<table>"))
     checkContents(scenariosText(0), "Parameters:s1_1", "Expected:a", "Because:");
+  }
+
+  it should "Produce a h1 with the engine description in it" in {
+    val bldr = builder.withDescription("descr").useCase("uc1").scenario("s1_1").expected("a").because((x: String) => true, "comment")
+    val manipulator = new JUnitTestManipulator()
+    val visitor = new JunitScenarioReporter(manipulator, logger)
+    bldr.walkScenarios(visitor, true);
+    val results = manipulator.results.reverse
+    assertEquals("<h1>descr</h1>", results(0))
+  }
+  it should "not produce a h1 with no engine description " in {
+    val bldr = builder.useCase("uc1").scenario("s1_1").expected("a").because((x: String) => true, "comment")
+    val manipulator = new JUnitTestManipulator()
+    val visitor = new JunitScenarioReporter(manipulator, logger)
+    bldr.walkScenarios(visitor, true);
+    val results = manipulator.results.reverse
+    assert(!results(0).contains("<h1>"))
   }
   //TODO more HTML  it should "produce an HTML entry with code if specified" in {
   //    fail
@@ -104,7 +126,7 @@ class ScenarioPrintTests extends EngineStringStringTests with JunitUniverse[Stri
 
       } else {
         val findAColonB(a, b) = s
-        val expected = <tr><td>{ a }</td><td>{ b }</td></tr>.mkString
+        val expected = <tr><td>{ a }</td><td><pre>{ b }</pre></td></tr>.mkString
         assert(scenariosText.contains(expected), s"Expected is $expected\n scenariosText is $scenariosText")
       }
     }

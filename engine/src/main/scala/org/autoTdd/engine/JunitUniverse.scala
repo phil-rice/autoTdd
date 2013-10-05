@@ -28,11 +28,16 @@ trait JunitUniverse[R] extends EngineUniverse[R] {
   }
 
   class JunitScenarioReporter(manipulator: JUnitManipulator, displayProcessor: LoggerDisplayProcessor) extends ScenarioVisitor {
-
-    def start = manipulator.nuke
+    def start(engineDescription: Option[String]) = {
+      manipulator.nuke
+      engineDescription match {
+        case Some(d) => manipulator.append(<h1>{ d }</h1>.toString);
+        case _ => ;
+      }
+    }
 
     def visitUseCase(ui: Int, u: UseCase) {
-      val text = <h1>Usecase { ui }: { u.description }</h1>.mkString;
+      val text = <h2>Usecase { ui }: { u.description }</h2>.mkString;
       manipulator.append(text)
     }
 
@@ -42,7 +47,7 @@ trait JunitUniverse[R] extends EngineUniverse[R] {
     def visitScenario(useCaseindex: Int, u: UseCase, scenarioIndex: Int, s: Scenario) {
       val paramsString = s.params.mkString("<br />,")
       val text =
-        <h2>{ scenarioIndex }{ s.description.collect { case d => ": " + d } getOrElse ("") }</h2>
+        <h3>{ scenarioIndex }{ s.description.collect { case d => ": " + d } getOrElse ("") }</h3>
         <table>
           <tr><td>Parameters</td><td><pre>{ s.params.map(displayProcessor).mkString(", ") }</pre></td></tr>
           <tr><td>Expected</td><td><pre>{ s.expected.getOrElse("<undefined>") }</pre></td></tr>
@@ -64,8 +69,8 @@ trait JunitUniverse[R] extends EngineUniverse[R] {
       manipulator.append(t)
     }
 
-    def end={}
-    
+    def end = {}
+
     def ifPrint: (String, Node) => String = ???
     def elsePrint: (String, Node) => String = ???
     def endPrint: (String, Node) => String = ???

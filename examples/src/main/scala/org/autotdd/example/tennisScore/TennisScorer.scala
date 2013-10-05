@@ -19,6 +19,7 @@ object Score {
   val won = Score("won")
   val lost = Score("lost")
 }
+
 @RunWith(classOf[AutoTddJunitRunner])
 object TennisScorer {
   import Score._
@@ -28,6 +29,7 @@ object TennisScorer {
   val rightWon = "right won"
 
   val scorer = Engine[Int, Int, String]().
+    withDescription("Tennis Kata specified by http://codingdojo.org/cgi-bin/wiki.pl?KataTennis").
     withDefaultCode((l: Int, r: Int) => "error").
     useCase("A game is won by the first player to have won at least four points in total and at least two points more than the opponent.").
     scenario(4, 0).expected(leftWon).because((l: Int, r: Int) => (l - r) >= 2 && l >= 4).
