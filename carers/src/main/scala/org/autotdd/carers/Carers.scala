@@ -20,6 +20,9 @@ case class CarersXmlSituation(w: World, e: Elem) extends XmlSituation {
   lazy val ClaimCurrentResidentUK = yesNo(e, default = false) \ "ClaimData" \ "ClaimCurrentResidentUK"
   lazy val ClaimEducationFullTime = yesNo(e, default = false) \ "ClaimData" \ "ClaimEducationFullTime"
   lazy val ClaimRentalIncome = yesNo(e, default = false) \ "ClaimData" \ "ClaimRentalIncome"
+  
+  lazy val claimBreaksFrom = date(e) \ "ClaimBreaks" \ "BICFromDate"
+  lazy val claimBreaksTo= date(e) \ "ClaimBreaks" \ "BICToDate"
 //  lazy val genderAtRegistration = strsing(e) \ "ClaimantData" \ "ClaimantGenderAtRegistration"
 
   lazy val dependantXml: Elem = DependantNino.get() match {
