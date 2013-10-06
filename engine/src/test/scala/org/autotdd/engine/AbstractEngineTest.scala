@@ -1,6 +1,5 @@
 package org.autotdd.engine
 
-
 import scala.language.implicitConversions
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.FlatSpec
@@ -21,14 +20,14 @@ trait AbstractTest extends FlatSpec with ShouldMatchers {
       val s: Traversable[Tuple2[Char, Char]] = for ((ce, ca) <- (expectedString, actualString).zipped) yield (ce, ca)
       for ((t, i) <- s.toList.zipWithIndex) {
         if (t._1 != t._2) {
-          val expectedMax = Math.min(i + 10, expectedString.length()-1)
-          val actualMax = Math.min(i + 10, actualString.length()-1)
+          val expectedMax = Math.min(i + 10, expectedString.length() - 1)
+          val actualMax = Math.min(i + 10, actualString.length() - 1)
           fail("First fail at " + i + " Expected: [" + expectedString.substring(i, expectedMax) + "] Actual: [ " + actualString.substring(i, actualMax) + "]\n" + msg)
         }
       }
       expectedString.length() - actualString.length() match {
-        case x if x < 0 => fail(s"Actual ran over end at ${expectedString.length}\n ${msg}")
-        case x if x > 0 => fail(s"Actual fell short end at ${actualString.length}\n ${msg}")
+        case x if x < 0 => fail(s"Actual ran over end at ${expectedString.length}\n" + msg)
+        case x if x > 0 => fail(s"Actual fell short end at ${actualString.length}\n" + msg)
       }
 
     }

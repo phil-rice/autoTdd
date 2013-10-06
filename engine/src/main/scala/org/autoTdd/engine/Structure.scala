@@ -10,23 +10,28 @@ trait FragStrategy[S, Result] {
   def findA[T, A](result: Result, convertor: (Result) => Option[T], fold: Fold[T, A]): Option[A]
 }
 
-case class Fragment[S, Result, T, A](fragStrategy: FragStrategy[S, Result], raw: S, paths: List[Path] = List(), convertor: (Result) => Option[T] = (n: Result) => None, fold: Option[Fold[T, A]] = None) {
+case class Fragment[S, Result, T, A](fragStrategy: FragStrategy[S, Result], raw: S, paths: List[Path] = List(), convertor: Option[(Result) => Option[T]], fold: Option[Fold[T, A]] = None) {
   def \(s: String) = Fragment(fragStrategy, raw, Path(true, s) :: paths, convertor, fold)
   def \\(s: String) = Fragment(fragStrategy, raw, Path(false, s) :: paths, convertor, fold)
-  def \[T](c: (Result) => Option[T]) = Fragment[S, Result, T, T](fragStrategy, raw, paths, c, None)
+  def \[T](c: (Result) => Option[T]) = Fragment[S, Result, T, T](fragStrategy, raw, paths, Some(c), None)
   def \[A](fold: Fold[T, A]) = Fragment[S, Result, T, A](fragStrategy, raw, paths, convertor, Some(fold))
 
   lazy val result = fragStrategy.findResult(raw, paths)
-  private lazy val value: Option[A] = fold match {
-    case Some(f) => fragStrategy.findA(result, convertor, f)
-    case _ => convertor(result).asInstanceOf[Option[A]] // Can only be here without Fold, in which case T = A
+  private lazy val value: Option[A] = convertor match {
+    case Some(c) =>
+      fold match {
+        case Some(f) => fragStrategy.findA(result, c, f)
+        case _ =>
+          val r = c(result)
+          r.asInstanceOf[Option[A]] // Can only be here without Fold, in which case T = A
+      }
+    case _ => None
   }
   def get() = value
   def apply(): A = value match {
     case Some(v) => v
-    case _ => throw new NoSuchElementException(s"Fragment $paths \ $convertor \ $fold \n${raw.getClass.getSimpleName}\n$raw")
+    case _ => throw new NoSuchElementException(raw"Fragment $paths \ $convertor \ $fold \n${raw.getClass.getSimpleName}\n$raw")
   }
-
 }
 object PathMap {
   def subLists[X](l: List[X]) =
@@ -63,7 +68,6 @@ case class Path(linked: Boolean, element: String) {
 }
 
 case class MapOfList[K, V](val map: Map[K, List[V]] = Map[K, List[V]]()) {
-
   val emptyList = List[V]()
   def apply(k: K) = map.getOrElse(k, emptyList)
   def put(k: K, v: V) =
@@ -96,7 +100,7 @@ class FieldSet[T](instance: Any, clazz: Class[T]) {
   lazy val fields = instance.getClass.getDeclaredFields.filter((f) => clazz.isAssignableFrom(f.getType())).toList
   lazy val fieldMap = { instantiateLazyVals; Map[Field, T]() ++ fields.map((f) => (f -> value(f))) }
   lazy val values = fields.map(fieldMap)
-  def findFieldWithValue(x: Any) = fields.find((f) => fieldMap(f) == x).get
+  def findFieldWithValue(x: Any) = fields.find((f) => fieldMap(f) == x)
 
 }
 
@@ -104,17 +108,25 @@ trait Structure[S, Result] {
 
   protected def findFragmentsToString(fragmentFieldMap: Map[Field, Fragment[S, Result, _, _]], endToString: (Result) => String) = fragmentFieldMap.keys.map(((f) => {
     val frag = fragmentFieldMap(f)
-    //    val end = frag.end(frag.raw, frag.paths)
-    //    val endString = endToString(end)
-    val resultString = try { frag.apply } catch { case e: Throwable => e.getClass.getSimpleName() + " " + e.getMessage }
-    s"${f.getName} = ${resultString}"
+    val resultString = try {
+      frag.convertor match {
+        case Some(_) => frag.apply
+        case _ => "No Convertor"
+      }
+    } catch { case e: Throwable => e.getClass.getSimpleName() + " " + e.getMessage }
+    raw"${f.getName} = ${resultString}"
   })).mkString("\n  ")
 
   protected def selfAndChildren(s: S, pathMap: PathMap[S, Result]): (IndentAndString, List[Path]) => IndentAndString = (acc, p) => {
     val fragments = pathMap.fullPaths(s).filter(_.paths.reverse == p)
     val valueString = fragments.size match {
       case 0 => "";
-      case _ => " = " + fragments.map((f) => try { f.apply } catch { case e: Throwable => e.getClass.getSimpleName() + " " + e.getMessage }).mkString(",")
+      case _ => " = " + fragments.map((f) => try {
+        f.convertor match {
+          case Some(c) => f.apply
+          case _ => "No Convertor"
+        }
+      } catch { case e: Throwable => e.getClass.getSimpleName() + " " + e.getMessage }).mkString(",")
     }
     val myString = acc.indent + p.mkString("") + valueString + "\n"
     val childrensString = pathMap(s, p).foldLeft(acc.indentedBlank)(selfAndChildren(s, pathMap))
