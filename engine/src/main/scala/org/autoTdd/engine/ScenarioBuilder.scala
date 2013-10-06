@@ -1,5 +1,6 @@
 package org.autotdd.engine
 
+import scala.language.implicitConversions
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 import scala.concurrent.stm._

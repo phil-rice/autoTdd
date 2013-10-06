@@ -1,5 +1,7 @@
 package org.autotdd.eclipse2
 
+
+import scala.language.reflectiveCalls
 import java.io.File
 import scala.collection.JavaConversions._
 import scala.io.Source

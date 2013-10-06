@@ -1,5 +1,6 @@
 package org.autotdd.example.processCheque_DM_1
 
+import scala.language.implicitConversions
 import org.joda.time.DateTime
 import org.autotdd.engine._
 import org.junit.runner.RunWith

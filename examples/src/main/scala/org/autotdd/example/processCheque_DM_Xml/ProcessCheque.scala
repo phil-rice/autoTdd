@@ -1,5 +1,6 @@
 package org.autotdd.example.processCheque_DM_Xml
 
+import scala.language.implicitConversions
 import org.joda.time.DateTime
 import org.autotdd.engine._
 import org.junit.runner.RunWith
@@ -9,7 +10,7 @@ import org.joda.time.format.DateTimeFormatter
 import org.joda.time.format.DateTimeFormat
 import scala.xml.Elem
 import scala.xml.NodeSeq
- 
+
 //This is compatible with 
 //	<dependency>
 //		<groupId>org.autotdd</groupId>
@@ -86,7 +87,7 @@ object ProcessChequeTestMother {
   val richRogerAtHsbcId = CustomerId("123", BankId.hsbc)
 
   val today = DateTime.parse("2013-9-1")
-  val world = World(today, BankId.thisBank, MapWithDefault(Map(dodgyDaveId -> dodgyDave, richRogerId -> richRoger), <NoCustomerRecord />))
+  val world = World(today, BankId.thisBank, MapWithDefault(Map(dodgyDaveId -> dodgyDave, richRogerId -> richRoger), <NoCustomerRecord/>))
 
   def cheque(ref: String, from: CustomerId, to: CustomerId, date: DateTime, amount: Double) =
     {
@@ -103,22 +104,22 @@ object ProcessChequeTestMother {
 
 case class ChequeSituation(world: World, cheque: Elem) extends XmlSituation {
   import GBP._
-  import XmlFragment._
-  def gbp(e: Elem) = obj(e, (_, s) => Some(stringToGBP(s)))
-  def bankId(e: Elem) = obj(e, (_, s) => Some(BankId(s)))
+  import Xml._
+  def gbp = (n: NodeSeq) => Some(stringToGBP(n.text))
+  def bankId = (n: NodeSeq) => Some(BankId(n.text))
 
-  lazy val chequeFromBank = bankId(cheque) \ "From" \ "Bank"
-  lazy val chequeFromId = string(cheque) \ "From" \ "Id"
+  lazy val chequeFromBank = xml(cheque) \ "From" \ "Bank" \ bankId
+  lazy val chequeFromId = xml(cheque) \ "From" \ "Id" \ string
   lazy val chequeFrom = CustomerId(chequeFromId(), chequeFromBank())
 
-  lazy val chequeToBank = bankId(cheque) \ "To" \ "Bank"
-  lazy val chequeToId = string(cheque) \ "To" \ "Id"
+  lazy val chequeToBank = xml(cheque) \ "To" \ "Bank" \ bankId
+  lazy val chequeToId = xml(cheque) \ "To" \ "Id" \ string
   lazy val chequeTo = CustomerId(chequeToId(), chequeToBank())
-  lazy val chequeAmount = gbp(cheque) \\ "Amount"
+  lazy val chequeAmount = xml(cheque) \ "Amount" \ gbp
 
   lazy val customer: Elem = world.customerIdToCustomer(chequeFrom)
-  lazy val customerBalance = gbp(customer) \ "Balance"
-  lazy val customerOverdraftLimit = gbp(customer) \ "OverdraftLimit"
+  lazy val customerBalance = xml(customer) \ "Balance" \gbp
+  lazy val customerOverdraftLimit = xml(customer) \ "OverdraftLimit"\gbp
 
   lazy val customerWouldBeOverDrawn = chequeAmount() > customerBalance()
   lazy val customerHasNoOverdraftLimit = customerOverdraftLimit() == GBP(0, 0)
@@ -147,10 +148,11 @@ object ProcessChequeXml {
     useCase("Cheques that are to a bank not on the white list should be rejected").
     scenario((world, cheque("1", dodgyDaveId, dodgyDaveAtDodgyBankId, today, 50)), "Dodgy Dave is moving half his funds to a bank that isn't on the accepted list").
     expected(ProcessChequeResult(false, ("processCheque.reject.toBank.notInWhiteList", BankId.dodgyBank))).
-    because((s: ChequeSituation) =>{ 
-      val c = s.chequeToBank() 
-      !s.world.acceptedBanks.contains(c)}).
-      
+    because((s: ChequeSituation) => {
+      val c = s.chequeToBank()
+      !s.world.acceptedBanks.contains(c)
+    }).
+
     //
     useCase("Cheques that will take the customer over the overdraft limit will should be rejected").
     scenario((world, cheque("1", dodgyDaveId, richRogerId, today, 110)), "Dodgy Dave sending more money than he has").

@@ -39,10 +39,10 @@ object TddLogger {
   def loggerPriority = logger.getPriority()
   def log(priority: Level, msg: String) = logger.log(priority, msg);
   sealed abstract class TddMessageType(val name: String)
-  case class Compile extends TddMessageType("Compile")
-  case class Run extends TddMessageType("Run")
-  val compile = Compile();
-  val run = Run();
+  class Compile extends TddMessageType("Compile")
+  class Run extends TddMessageType("Run")
+  val compile = new Compile();
+  val run = new Run();
 
 }
 

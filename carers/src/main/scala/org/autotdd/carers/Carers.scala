@@ -1,51 +1,51 @@
 package org.autotdd.carers
 
+import scala.language.implicitConversions
 import scala.xml.NodeSeq
 import scala.xml.Elem
 import org.joda.time.DateTime
 import org.joda.time.format._
 import scala.concurrent.stm._
-import org.autotdd.engine.Engine
 import org.junit.runner.RunWith
 import org.autotdd.engine.tests.AutoTddJunitRunner
-import org.autotdd.engine.XmlSituation
-import org.autotdd.engine.XmlFragment
+import org.autotdd.engine._
 
 case class CarersXmlSituation(w: World, e: Elem) extends XmlSituation {
-  import XmlFragment._
-  lazy val birthdate = date(e) \ "ClaimantData" \ "ClaimantBirthDate" \ "PersonBirthDate"
-  lazy val DependantNino = string(e) \ "DependantData" \ "DependantNINO"
-  lazy val ClaimAlwaysUK = yesNo(e, default = false) \ "ClaimData" \ "ClaimAlwaysUK"
-  lazy val Claim35Hours = yesNo(e, default = false) \ "ClaimData" \ "Claim35Hours"
-  lazy val ClaimCurrentResidentUK = yesNo(e, default = false) \ "ClaimData" \ "ClaimCurrentResidentUK"
-  lazy val ClaimEducationFullTime = yesNo(e, default = false) \ "ClaimData" \ "ClaimEducationFullTime"
-  lazy val ClaimRentalIncome = yesNo(e, default = false) \ "ClaimData" \ "ClaimRentalIncome"
-  
-  lazy val claimBreaksFrom = date(e) \ "ClaimBreaks" \ "BICFromDate"
-  lazy val claimBreaksTo= date(e) \ "ClaimBreaks" \ "BICToDate"
-//  lazy val genderAtRegistration = strsing(e) \ "ClaimantData" \ "ClaimantGenderAtRegistration"
+  import Xml._
+  lazy val birthdate = xml(e) \ "ClaimantData" \ "ClaimantBirthDate" \ "PersonBirthDate" \ date
+  lazy val DependantNino = xml(e) \ "DependantData" \ "DependantNINO" \ string
+  lazy val ClaimAlwaysUK = xml(e) \ "ClaimData" \ "ClaimAlwaysUK" \ yesNo(default = false)
+  lazy val Claim35Hours = xml(e) \ "ClaimData" \ "Claim35Hours" \ yesNo(default = false)
+  lazy val ClaimCurrentResidentUK = xml(e) \ "ClaimData" \ "ClaimCurrentResidentUK" \ yesNo(default = false)
+  lazy val ClaimEducationFullTime = xml(e) \ "ClaimData" \ "ClaimEducationFullTime" \ yesNo(default = false)
+  lazy val ClaimRentalIncome = xml(e) \ "ClaimData" \ "ClaimRentalIncome" \ yesNo(default = false)
+
+  lazy val claimBreaksFrom = xml(e) \ "ClaimBreaks" \ "BICFromDate" \ date
+  lazy val claimBreaksTo = xml(e) \ "ClaimBreaks" \ "BICToDate" \ date
+  //  lazy val genderAtRegistration = strsing(e) \ "ClaimantData" \ "ClaimantGenderAtRegistration"
 
   lazy val dependantXml: Elem = DependantNino.get() match {
     case Some(s) => w.ninoToCis(s);
     case None => <NoDependantXml/>
   }
-  lazy val DependantAwardComponent = string(dependantXml, default = "") \\ "AwardComponent"
+  lazy val DependantAwardComponent = xml(dependantXml) \\ "AwardComponent" \ string
 
   lazy val expenses = Expenses.expenses(w, e)
   lazy val income = Income.income(w, e)
-  
+
   lazy val nettIncome: Option[Double] =
     for (e <- expenses.amount; i <- income.amount)
       yield i - e
-      
+
   lazy val incomeOk =
     nettIncome match {
       case Some(i) => i < 100
       case _ => false
     }
-  override def toString =  getClass.getSimpleName() + s"(\n  expenses=${expenses}\n  income=${income}\n  nettIncome=${nettIncome}\n  incomeOk = ${incomeOk}\n  ${fragmentsToString}\n${xmlsToString})"
+  override def toString = getClass.getSimpleName() + s"(\n  expenses=${expenses}\n  income=${income}\n  nettIncome=${nettIncome}\n  incomeOk = ${incomeOk}\n  ${fragmentsToString}\n${xmlsToString})"
 
 }
+
 @RunWith(classOf[AutoTddJunitRunner])
 object Carers {
   implicit def worldElemToCarers(x: Tuple2[World, Elem]) = CarersXmlSituation(x._1, x._2)
@@ -123,8 +123,8 @@ object Carers {
     build
 
   def main(args: Array[String]) {
-	  val situation: CarersXmlSituation= (World("2010-6-1"), "CL100113A")
-	  println(situation)
+    val situation: CarersXmlSituation = (World("2010-6-1"), "CL100113A")
+    println(situation)
   }
 
 }
