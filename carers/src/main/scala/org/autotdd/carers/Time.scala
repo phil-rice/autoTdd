@@ -6,6 +6,7 @@ import org.autotdd.engine.tests.AutoTddJunitRunner
 import scala.xml.Elem
 import org.joda.time.DateTime
 import scala.language.implicitConversions
+import org.joda.time.DateTimeField
 
 class IllegalDateRangeException(val dateRange: DateRange) extends Exception(dateRange.toString())
 
@@ -34,8 +35,7 @@ object Time {
 
     scenario("2010-6-12", "2010-6-8" -> "2010-6-12", "Date on last day").
     expected(true).
-    
-    
+
     useCase("Returns false if date Not In Range").
     scenario("2010-6-1", "2010-1-1" -> "2010-2-1", "Range in past").
     because((d: DateTime, dr: DateRange) => d.isAfter(dr.to) || d.isBefore(dr.from)).
@@ -80,6 +80,41 @@ object Time {
     scenario("2013-9-10", "2013-10-1" -> "2013-10-12", "range starts well after week").
     expected(false).
 
+    build
+
+  def WeeksBetween(startDate: DateTime, current: DateTime): Int =
+    {
+      val startDayOfWeek = startDate.dayOfWeek().get; //Monday = 1, Sunday = 7
+      val startMonday = startDate.minusDays(startDayOfWeek - 1)
+      val millis = current.getMillis() - startMonday.getMillis()
+      val days = millis / 1000 / 60 / 60 / 24
+      val weeks = days / 7
+      weeks.toInt
+    }
+  val weeksActive = Engine[DateTime, DateTime, Int]().
+    withDescription("First datetime is the start date. Second is current date. How many weeks between the two dates").
+    withDefaultCode((startDate: DateTime, current: DateTime) => 0).
+    useCase("If current date is before start date, should be zero").
+    scenario("2013-8-10", "2010-4-10", "current day two days before start date").
+    expected(0).
+
+    useCase("If current date is in same week, answer is 0 ").
+    scenario("2013-10-7", "2013-10-8", "Start date Monday. End date Tuesday").
+    expected(0).
+    scenario("2013-10-7", "2013-10-13", "Start date Monday. End date Sunday").
+    expected(0).
+    scenario("2013-10-8", "2013-10-13", "Start date Tuesday. End date Sunday").
+    expected(0).
+
+    useCase("The count of the weeks impacted. For example a friday through to monday is a week. (Started wk0, ended wk 1").
+    scenario("2013-10-11", "2013-10-14", "Start date Friday / wk 0, End data Monday / wk 1").
+    expected(1).
+    code((startDate: DateTime, current: DateTime) => WeeksBetween(startDate, current)).
+    because((startDate: DateTime, current: DateTime) => WeeksBetween(startDate, current) > 0).
+
+    scenario("2013-10-11", "2013-11-8", "Start date Friday / wk 0, End data Monday / wk 4").
+    expected(4).
+    code((startDate: DateTime, current: DateTime) => WeeksBetween(startDate, current)).
     build
 
 }

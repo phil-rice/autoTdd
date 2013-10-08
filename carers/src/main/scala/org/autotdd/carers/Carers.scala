@@ -19,10 +19,10 @@ case class CarersXmlSituation(w: World, e: Elem) extends XmlSituation {
   lazy val ClaimCurrentResidentUK = xml(e) \ "ClaimData" \ "ClaimCurrentResidentUK" \ yesNo(default = false)
   lazy val ClaimEducationFullTime = xml(e) \ "ClaimData" \ "ClaimEducationFullTime" \ yesNo(default = false)
   lazy val ClaimRentalIncome = xml(e) \ "ClaimData" \ "ClaimRentalIncome" \ yesNo(default = false)
+  lazy val ClaimStartDate = xml(e) \ "ClaimData" \ "ClaimStartDate" \ date
 
-  lazy val claimBreaksFrom = xml(e) \ "ClaimBreaks" \ "BICFromDate" \ date
-  lazy val claimBreaksTo = xml(e) \ "ClaimBreaks" \ "BICToDate" \ date
-  //  lazy val genderAtRegistration = strsing(e) \ "ClaimantData" \ "ClaimantGenderAtRegistration"
+  lazy val claimBreaksFrom = xml(e) \ "ClaimData" \ "ClaimBreaks" \ "BreakInCare" \ "BICFromDate" \ date \ list[DateTime]
+  lazy val claimBreaksTo = xml(e) \ "ClaimData" \ "ClaimBreaks" \ "BreakInCare" \ "BICToDate" \ date \ list[DateTime]
 
   lazy val dependantXml: Elem = DependantNino.get() match {
     case Some(s) => w.ninoToCis(s);
@@ -33,6 +33,8 @@ case class CarersXmlSituation(w: World, e: Elem) extends XmlSituation {
   lazy val expenses = Expenses.expenses(w, e)
   lazy val income = Income.income(w, e)
 
+//  lazy val howLongHasClaimBeenActiveInWeeks = 
+  
   lazy val nettIncome: Option[Double] =
     for (e <- expenses.amount; i <- income.amount)
       yield i - e
@@ -120,10 +122,17 @@ object Carers {
     scenario((World("2010-3-1"), "CL100116A"), "CL116A-income from renting").
     expected(ReasonAndAmount("carers.income.rental", None)).
 
+//    useCase("Customer receiving certain other benefits at a rate lower than the rate of CA will reduce the payable amount of CA.").
+//    scenario((World("2010-3-1"), "CL100117A"), "CL117A-income from renting - pension from 10/4/2010. Date is before the pension started.").
+//    scenario((World("2010-5-1"), "CL100117A"), "CL117A-income from renting - pension from 10/4/2010. Date is after the pension started.").
+
+    useCase("Customer receiving certain other benefits at a rate lower than the rate of CA will reduce the payable amount of CA.").
+    
+    
     build
 
   def main(args: Array[String]) {
-    val situation: CarersXmlSituation = (World("2010-6-1"), "CL100113A")
+    val situation: CarersXmlSituation = (World("2010-6-1"), "CL800119A")
     println(situation)
   }
 

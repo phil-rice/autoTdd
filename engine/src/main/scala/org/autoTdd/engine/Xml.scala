@@ -30,13 +30,14 @@ object Xml {
   def date: (NodeSeq) => Option[DateTime] = date("yyyy-MM-dd")
   def date(pattern: String) = (n: NodeSeq) =>
     try { Some(DateTimeFormat.forPattern(pattern).parseDateTime(n.text)) } catch {
-      case e: Throwable => None
+      case e: Throwable => e.printStackTrace();None
     };
 
   def string = (n: NodeSeq) => Some(n.text)
-  def integer() = (n: NodeSeq) => Some(n.text.toInt)
+  def integer = (n: NodeSeq) => Some(n.text.toInt)
   def double = (n: NodeSeq) => Some(n.text.toDouble)
   def nodeSeq = (n: NodeSeq) => Some(n)
+  def list[T]() = Fold[T,List[T]](List[T](), (acc, t)=> t :: acc)
   def yesNo: (NodeSeq) => Option[Boolean] = (n: NodeSeq) => n.text match {
     case "yes" => Some(true)
     case "no" => Some(false)

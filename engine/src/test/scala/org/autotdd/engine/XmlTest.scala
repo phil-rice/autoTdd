@@ -54,6 +54,7 @@ trait XmlTestMother {
     val repeatedInteger = xml(x) \ "repeated" \ integer
     val repeatedFold = xml(x) \ "repeated" \ integer \ Fold(0, (l: Int, r: Int) => l + r)
     val repeatedNestedFold = xml(x) \ "repeated" \ "nested" \ integer \ Fold(0, (l: Int, r: Int) => l + r)
+    val repeatedNestedList = xml(x) \ "repeated" \ "nested" \ integer \ list[Int]
   }
 }
 
@@ -108,6 +109,7 @@ class XmlTest extends AbstractTest with XmlTestMother {
     assertEquals("1234", situation.repeatedNestedString())
     assertEquals(1234, situation.repeatedInteger())
     assertEquals(10, situation.repeatedNestedFold())
+    assertEquals(List(4,3,2,1), situation.repeatedNestedList())
     evaluating { situation.repeatedFold() } should produce[NumberFormatException]
   }
 
@@ -117,13 +119,23 @@ class XmlTest extends AbstractTest with XmlTestMother {
       "  repeatedInteger = 1234\n" +
       "  repeatedFold = NumberFormatException For input string: \"\"\n" +
       "  repeatedNestedFold = 10\n" +
+      "  repeatedNestedList = List(4, 3, 2, 1)\n" +
       "  repeatedString = 1234\n" +
       "  repeatedNestedString = 1234\n" +
       "  Xml: x  <root>               <repeated><nested>1</nested><nested>2</nested></repeated>               <repeated><nested>3</nested><nested>4</nested></repeated>               <repeated></repeated>             </root>\n" +
       "    \\repeated = 1234,1234,1234,NumberFormatException For input string: \"\"\n" +
-      "      \\repeated\\nested = 10\n" +
+      "      \\repeated\\nested = 10,List(4, 3, 2, 1)\n" +
+      "      \\repeated\\nested = 10,List(4, 3, 2, 1)\n" +
       ")", situation.toString)
   }
 
+  "An Xml Situation with a fragment that isn't present" should "produce a decent toString" in {
+    val situation = new xmlSituationOneFragmentNotFound(x)
+    assertEquals("xmlSituationOneFragmentNotFound(\n" +
+      "  notIn = \n" +
+      "  Xml:   <root>       <one>1</one>       <two>2</two>       <repeated>1</repeated>       <repeated>2</repeated>       <repeated>3</repeated>     </root>\n" +
+      "    \\absent = \n" +
+      ")", situation.toString)
+  }
 }
 
