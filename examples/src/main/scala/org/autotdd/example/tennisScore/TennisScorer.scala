@@ -2,9 +2,8 @@ package org.autotdd.example.tennisScore
 
 import org.autotdd.engine.Engine
 import org.junit.runner.RunWith
-import org.autotdd.engine.tests.AutoTddJunitRunner
-
 import javax.ws.rs._
+import org.autotdd.engine.tests._
 
 case class Score(item: String)
 object Score {
@@ -48,12 +47,12 @@ object TennisScorer {
     scenario(2, 1).expected("thirty, fifteen").
 
     useCase("The running score, if both scores are the same, is called xx all").
-    scenario(0, 0).expected("love all").because((l: Int, r: Int) => l == r && l < 4).code((l: Int, r: Int) => s"${lookup(l).item} all").
+    scenario(0, 0).expected("love all").because((l: Int, r: Int) => l == r && l < 3).code((l: Int, r: Int) => s"${lookup(l).item} all").
     scenario(2, 2).expected("thirty all").
-    scenario(3, 3).expected("forty all").
 
     useCase("If at least three points have been scored by each player, and the scores are equal, the score is 'deuce'.").
-    scenario(4, 4).expected("deuce").because((l: Int, r: Int) => l > 3 && r > 3 && l == r).
+    scenario(3, 3).expected("deuce").because((l: Int, r: Int) => l >= 3 && r >= 3 && l == r).
+    scenario(4, 4).expected("deuce").because((l: Int, r: Int) => l >= 3 && r >= 3 && l == r).
     scenario(6, 6).expected("deuce").
 
     useCase("If at least three points have been scored by each side and a player has one more point than his opponent, the score of the game is 'advantage' for the player in the lead.").

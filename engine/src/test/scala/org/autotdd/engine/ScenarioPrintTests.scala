@@ -21,7 +21,7 @@ class ScenarioPrintTests extends EngineStringStringTests with JunitUniverse[Stri
       def start(engineDescription: Option[String]) = actualDescription = engineDescription; if (actualUseCaseStrings ::: actualEndUseCaseStrings ::: actualScenarioStrings != List()) throw new IllegalStateException; started = true; if (ended) throw new IllegalStateException
       def visitUseCase(ui: Int, u: UseCase) = actualUseCaseStrings = (ui + "/" + u.description) :: actualUseCaseStrings; if (ended) throw new IllegalStateException
       def visitUseCaseEnd(u: UseCase) = actualEndUseCaseStrings = u.description :: actualEndUseCaseStrings; if (ended) throw new IllegalStateException
-      def visitScenario(ui: Int, u: UseCase, si: Int, s: Scenario) = actualScenarioStrings = (ui + "/" + u.description + "/" + si + "/" + s.expected.get) :: actualScenarioStrings; if (ended) throw new IllegalStateException
+      def visitScenario(ui: Int, u: UseCase, si: Int, s: Scenario) = actualScenarioStrings = (ui + "/" + u.description + "/" + si + "/" + s.expected) :: actualScenarioStrings; if (ended) throw new IllegalStateException
       def end = ended = true
     }, false)
 
@@ -44,7 +44,7 @@ class ScenarioPrintTests extends EngineStringStringTests with JunitUniverse[Stri
       def start(engineDescription: Option[String]) = actualDescription = engineDescription; if (actualUseCaseStrings ::: actualEndUseCaseStrings ::: actualScenarioStrings != List()) throw new IllegalStateException; started = true; if (ended) throw new IllegalStateException
       def visitUseCase(ui: Int, u: UseCase) = actualUseCaseStrings = (ui + "/" + u.description) :: actualUseCaseStrings; if (ended) throw new IllegalStateException
       def visitUseCaseEnd(u: UseCase) = actualEndUseCaseStrings = u.description :: actualEndUseCaseStrings; if (ended) throw new IllegalStateException
-      def visitScenario(ui: Int, u: UseCase, si: Int, s: Scenario) = actualScenarioStrings = (ui + "/" + u.description + "/" + si + "/" + s.expected.get) :: actualScenarioStrings; if (ended) throw new IllegalStateException
+      def visitScenario(ui: Int, u: UseCase, si: Int, s: Scenario) = actualScenarioStrings = (ui + "/" + u.description + "/" + si + "/" + s.expected) :: actualScenarioStrings; if (ended) throw new IllegalStateException
       def end = ended = true
     }, true)
 

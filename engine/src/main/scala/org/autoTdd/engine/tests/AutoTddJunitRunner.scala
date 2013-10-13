@@ -28,7 +28,7 @@ trait NotActuallyFactory[R] extends EngineUniverse[R] {
   def makeClosureForBecause(params: List[Any]) = ???
   def makeClosureForCfg(params: List[Any]) = ???
   def makeClosureForResult(params: List[Any]) = ???
-  def makeClosureForAssertion(params: List[Any], r: R) = ???
+  def makeClosureForAssertion(params: List[Any], r: ROrException[R]) = ???
 
 }
 
@@ -64,7 +64,7 @@ trait AutoTddRunner extends Runner with JunitUniverse[Any] with NotActuallyFacto
       engineDescription.addChild(useCaseDescription)
 
       for (s <- u.scenarios) yield {
-        val name = s.description.getOrElse(s.params.map(logger).mkString(",")) + " => " + logger(s.expected.getOrElse("<NoExpected>")) + " " + s.becauseString
+        val name = s.description.getOrElse(s.params.map(logger).mkString(",")) + " => " + logger(s.expected) + " " + s.becauseString
         val cleanedName = Strings.clean(name)
         println("   " + cleanedName)
         val scenarioDescription = Description.createSuiteDescription(cleanedName)
@@ -110,7 +110,7 @@ trait AutoTddRunner extends Runner with JunitUniverse[Any] with NotActuallyFacto
                 log("notifier.fireTestIgnored(sd)" + sd)
               } else
                 try {
-                  val actual = Some(engine.applyParam(engine.root, scenario.params, true))
+                  val actual = ROrException(engine.applyParam(engine.root, scenario.params, true))
                   if (scenario.expected == actual) {
                     log("notifier.fireTestFinished(sd)" + sd)
                     notifier.fireTestFinished(sd)

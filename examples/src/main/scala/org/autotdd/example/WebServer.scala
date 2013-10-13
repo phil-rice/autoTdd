@@ -9,8 +9,13 @@ import com.sun.jersey.spi.container.servlet.ServletContainer
 
 object WebServer {
 
+
   def launch(s: String*) {
-    val server = new Server(8080)
+    val portString = System.getenv("PORT")
+    println("PortString[" + portString +"]")
+    val port = portString match {case null => 8080; case _ => portString.toInt}
+    println("Port[" + port +"]")
+    val server = new Server(port)
     val connector = new SelectChannelConnector()
     server.addConnector(connector)
 
@@ -22,6 +27,7 @@ object WebServer {
     server.start
     server.join
   }
+
 
   def main(args: Array[String]) {
     launch("org.autotdd.example.tennisScore")

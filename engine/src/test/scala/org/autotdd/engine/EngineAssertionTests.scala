@@ -17,7 +17,7 @@ class EngineAssertionTests extends EngineStringStringTests {
 
   def checkAssertionExecuted(times: Int) {
     var count = 0
-    val a: A = (p: String, r: String) => {
+    val a: A = (p: String, r:  ROrException[String]) => {
       count += 1;
       true
     }

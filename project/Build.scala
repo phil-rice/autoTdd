@@ -50,8 +50,8 @@ object BuildSettings {
     scalaVersion := "2.10.1",
     EclipseKeys.withSource := true,
     EclipseKeys.eclipseOutput := Some("bin"),
-//    resolvers += Classpaths.typesafeResolver,
-//    addSbtPlugin("com.typesafe.startscript" % "sbt-start-script-plugin" % "0.9.0"),
+    resolvers += Classpaths.typesafeResolver,
+// 
     libraryDependencies ++= Seq(
 	  "org.scalaj" % "scalaj-time_2.10.2" % "0.7",
 	  "org.hsqldb" % "hsqldb" % "2.0.0",     
@@ -65,6 +65,8 @@ object BuildSettings {
       "log4j" % "log4j" % "1.2.17",
       "junit" % "junit" % "4.8.2"))
 
+
+	  
   val eclipseSettings = buildSettings ++ Seq(
     resolvers += "eclipse-repo" at "https://swt-repo.googlecode.com/svn/repo/",
     libraryDependencies ++= Seq(

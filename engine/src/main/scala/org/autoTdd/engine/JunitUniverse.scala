@@ -50,7 +50,7 @@ trait JunitUniverse[R] extends EngineUniverse[R] {
         <h3>{ scenarioIndex }{ s.description.collect { case d => ": " + d } getOrElse ("") }</h3>
         <table>
           <tr><td>Parameters</td><td><pre>{ s.params.map(displayProcessor).mkString(", ") }</pre></td></tr>
-          <tr><td>Expected</td><td><pre>{ s.expected.getOrElse("<undefined>") }</pre></td></tr>
+          <tr><td>Expected</td><td><pre>{ s.expected }</pre></td></tr>
           {
             if (s.because.isDefined)
               <tr><td>Because</td><td><pre>{ s.becauseString }</pre></td><td><pre>{ s.because.get.comment }</pre></td></tr>

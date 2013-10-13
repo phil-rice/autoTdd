@@ -22,7 +22,7 @@ trait AbstractScenarioTests[R] extends FirstScenarioTest[R] {
     assert(c.params == firstParams)
     assert(c.code == None)
     assert(c.because == None)
-    assert(c.expected == None)
+    assert(c.expected == ROrException[R]())
     assert(c.configuration == None)
     assert(c.description == None, c.description)
   }
@@ -39,7 +39,7 @@ trait AbstractScenarioTests[R] extends FirstScenarioTest[R] {
     assert(c.params == firstParams)
     assert(c.code == None)
     assert(c.because == None)
-    assert(c.expected == Some(firstResult), c)
+    assert(c.expected == ROrException[R](firstResult), c)
     assert(c.configuration == None)
   }
 
@@ -49,7 +49,7 @@ trait AbstractScenarioTests[R] extends FirstScenarioTest[R] {
     val expectedCode = Some(new CodeFn(codeFn, "AbstractScenarioTests.this.codeFn"))
     assert(c.code == expectedCode, "Scenario: " + c + "\nCode: " + c.code + "\nExpected: " + expectedCode)
     assert(c.because == None)
-    assert(c.expected == Some(firstResult))
+    assert(c.expected ==  ROrException[R](firstResult))
     assert(c.configuration == None)
   }
 
@@ -59,7 +59,7 @@ trait AbstractScenarioTests[R] extends FirstScenarioTest[R] {
     assert(c.code == None)
     val expected = Some(new Because(because, "AbstractScenarioTests.this.because"))
     assert(c.because == expected, c.because)
-    assert(c.expected == Some(firstResult))
+    assert(c.expected == ROrException[R](firstResult))
     assert(c.configuration == None)
   }
 
@@ -77,7 +77,7 @@ trait AbstractScenarioTests[R] extends FirstScenarioTest[R] {
     val b = builderWithScenario.expected(firstResult)
     val engine = build(b)
     assertEquals("UseCases", b.useCasesForBuild, engine.useCases)
-    val expectedScenario = Scenario(firstUseCaseDescription + "[0]", None, firstParams, logger, Some(firstResult));
+    val expectedScenario = Scenario(firstUseCaseDescription + "[0]", None, firstParams, logger, ROrException[R](firstResult));
     assertEquals(List(expectedScenario), engine.scenarios)
   }
 
@@ -114,10 +114,10 @@ class Scenario1Tests extends FirstScenario1Test[Int, Int] with AbstractScenarioT
     assertEquals(2, e.scenarios.size)
 
     assertEquals("", firstScenaro.becauseString)
-    assertEquals(Some(firstResult), firstScenaro.expected)
+    assertEquals(ROrException[Int](firstResult), firstScenaro.expected)
 
     assertEquals("((x: Int) => x.>(2))", secondScenaro.becauseString)
-    assertEquals(Some(7), secondScenaro.expected)
+    assertEquals(ROrException[Int](7), secondScenaro.expected)
   }
 
   it should "have a tostring method that includes the locator and the descriptor if it exists" in {
