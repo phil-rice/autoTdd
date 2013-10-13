@@ -80,7 +80,6 @@ case class ROrException[R](value: Option[R], exception: Option[Throwable]) {
       case (ROrException(Some(_), None), _) => false
       case (ROrException(None, Some(e1)), ROrException(None, Some(e2))) => e1.getClass == e2.getClass
       case (ROrException(None, Some(_)), _) => false
-      case (ROrException(None, Some(_)), _) => false
       case (ROrException(None, None), ROrException(None, None)) => true
     }
   } else false
@@ -151,6 +150,12 @@ trait EngineUniverse[R] extends EngineTypes[R] {
   }
   class WrongExceptionThrownException(msg: String, scenario: Scenario, val expected: Class[_ <: Throwable], actual: Throwable) extends ScenarioException(msg, scenario, actual)
 
+  object ExceptionWithoutCodeException {
+    def apply(s: Scenario) = new ExceptionWithoutCodeException(s.toString, s)
+  }
+  class ExceptionWithoutCodeException(msg: String, scenario: Scenario) extends ScenarioException(msg, scenario)
+  
+  
   def rfnMaker: (Either[Exception, R]) => RFn
   def logger: TddLogger
 
@@ -253,15 +258,9 @@ trait EngineUniverse[R] extends EngineTypes[R] {
 
     def checkExpectedEmpty(s: Scenario) = if (s.expected.isDefined) throw new IllegalStateException("Cannot specify expected a second time")
     def checkCodeEmpty(s: Scenario) = if (s.code != None) throw new IllegalStateException("Cannot specify code a second time")
-    def expectException(c: CodeFn[B, RFn, R], comment: String = "") = scenarioLens.mod(thisAsBuilder, (s) => {
+    def expectException[E <: Throwable](e: E, comment: String = "") = scenarioLens.mod(thisAsBuilder, (s) => {
       checkExpectedEmpty(s)
-      checkCodeEmpty(s)
-      val optionE = try { makeClosureForResult(s.params).apply(c.rfn); None } catch { case e: Throwable => Some(e) }
-      optionE match {
-        case Some(e) => s.copy(expected = ROrException(e))
-        case _ => throw new IllegalArgumentException("Didn't throw exception")
-      }
-
+      s.copy(expected = ROrException(e))
     })
     def because(b: Because[B], comment: String = "") = scenarioLens.mod(thisAsBuilder,
       (s) => {
@@ -459,6 +458,10 @@ trait EngineUniverse[R] extends EngineTypes[R] {
         case c :: tail =>
           try {
             validateBecause(c);
+            c.expected match {
+              case ROrException(None, Some(e)) => if (!c.code.isDefined) throw ExceptionWithoutCodeException(c)
+              case _ => ;
+            }
             val newRoot = withScenario(None, root, c, true)
             validateScenario(newRoot, c);
             buildFromScenarios(newRoot, tail, seMap)
