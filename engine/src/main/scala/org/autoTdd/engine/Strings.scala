@@ -4,7 +4,7 @@ object Strings {
   val alphas = stringToKvs("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
   val digits = stringToKvs("0123456789")
   val brackets = bracketsToKvs("<{(>})", "<<<>>>")
-  val misc = stringToKvs("., /=")
+  val misc = stringToKvs("., /=-")
 
   def rawCleaner() = new StringCleaner(Map())
   val cleaner = {
@@ -17,6 +17,7 @@ object Strings {
   def stringToKvs(s: String) = s.foldLeft(List[(Char, Char)]()) { (m, c) => (c, c) :: m }
   def bracketsToKvs(left: String, right: String) = left.zip(right).toList
 
+  def oneLine(s: String) = s.replace('\n', ' ')
 }
 
 class StringCleaner(map: Map[Char, Char] = Map()) {

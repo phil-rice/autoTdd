@@ -1,7 +1,9 @@
 package org.autotdd.example
 
 import org.autotdd.engine.Engine
-
+import org.junit.runner.RunWith
+import org.autotdd.engine.tests.AutoTddJunitRunner
+@RunWith(classOf[AutoTddJunitRunner])
 object HelloWorld {
 
   val engine = Engine[Int, String]().
@@ -11,9 +13,16 @@ object HelloWorld {
     code((i: Int) => List.fill(i)("Hello World").mkString(", ")).
     scenario(2, "Two times").
     expected("Hello World, Hello World").
+    scenario(0).
+    expected("").
+    scenario(-1).
+    expected("").
+
     build;
 
   def main(args: Array[String]) {
+    println(engine(-1))
+    println(engine(0))
     println(engine(1))
     println(engine(2))
     println(engine(3))

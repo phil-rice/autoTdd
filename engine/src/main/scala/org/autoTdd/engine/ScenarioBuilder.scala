@@ -87,6 +87,11 @@ case class ROrException[R](value: Option[R], exception: Option[Throwable]) {
 
 trait EngineUniverse[R] extends EngineTypes[R] {
 
+  object ParentAndBoolean {
+    implicit def toNode(p: ParentAndBoolean) = p.parent
+  }
+  case class ParentAndBoolean(parent: Node, result: Boolean)
+
   object ExceptionScenarioPrinter {
     val fullScenario = false
     def apply(s: Scenario) = scenario2Str(s)
@@ -138,8 +143,11 @@ trait EngineUniverse[R] extends EngineTypes[R] {
   class ScenarioConflictException(msg: String, scenario: Scenario, val beingAdded: Scenario, cause: Throwable = null) extends ScenarioException(msg, scenario, cause)
 
   object ScenarioConflictingWithoutBecauseException {
-    def apply(expected: ROrException[R], actual: ROrException[R], s: Scenario, beingAdded: Scenario) =
-      new ScenarioConflictingWithoutBecauseException(s"\nCame to wrong conclusion: ${actual}\nInstead of ${expected}\n${ExceptionScenarioPrinter.existingAndBeingAdded(s, beingAdded)}", s, beingAdded)
+    def apply(expected: ROrException[R], actual: ROrException[R], parents: List[ParentAndBoolean], beingAdded: Scenario) = {
+      val s = parents.head.scenarioThatCausedNode;
+      val path = parents.map((n) => Strings.oneLine(f"${n.result}%5s ${n.because.description}")).mkString("\n")
+      new ScenarioConflictingWithoutBecauseException(s"\nCame to wrong conclusion: ${actual}\nInstead of ${expected}\nPath\n$path\n${ExceptionScenarioPrinter.existingAndBeingAdded(s, beingAdded)}", s, beingAdded)
+    }
   }
 
   class ScenarioConflictingWithoutBecauseException(msg: String, scenario: Scenario, beingAdded: Scenario, cause: Throwable = null) extends ScenarioConflictException(msg, scenario, beingAdded, cause)
@@ -154,8 +162,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     def apply(s: Scenario) = new ExceptionWithoutCodeException(s.toString, s)
   }
   class ExceptionWithoutCodeException(msg: String, scenario: Scenario) extends ScenarioException(msg, scenario)
-  
-  
+
   def rfnMaker: (Either[Exception, R]) => RFn
   def logger: TddLogger
 
@@ -462,7 +469,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
               case ROrException(None, Some(e)) => if (!c.code.isDefined) throw ExceptionWithoutCodeException(c)
               case _ => ;
             }
-            val newRoot = withScenario(None, root, c, true)
+            val newRoot = withScenario(List(), root, c, true)
             validateScenario(newRoot, c);
             buildFromScenarios(newRoot, tail, seMap)
           } catch {
@@ -542,7 +549,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       result
     }
 
-    private def withScenario(parent: Option[Node], n: RorN, s: Scenario, parentWasTrue: Boolean): RorN =
+    private def withScenario(parents: List[ParentAndBoolean], n: RorN, s: Scenario, parentWasTrue: Boolean): RorN =
       try {
         //        println("Scenario: " + s)
         val result: RorN = n match {
@@ -556,8 +563,8 @@ trait EngineUniverse[R] extends EngineTypes[R] {
             val newCnC = CodeAndScenarios(s.actualCode, List(s))
             s.because match {
               case Some(b) =>
-                parent match {
-                  case Some(p) =>
+                parents match {
+                  case p :: tail =>
                     for (scenario <- l.scenarios) {
                       scenario.configure
                       val result = makeClosureForBecause(scenario.params)(b.because)
@@ -604,22 +611,25 @@ trait EngineUniverse[R] extends EngineTypes[R] {
                   case true =>
                     logger.addScenarioFor(s.descriptionString, l.code)
                     Left(l.copy(scenarios = s :: l.scenarios))
-                  case false => //Only way here is when I am coming down a no node. By definition I have a parent and it was false
-                    if (parent.isDefined && resultsSame(parent.get.no.left.get, s)) {
-                      logger.addScenarioFor(s.descriptionString, l.code)
-                      Left(l.copy(scenarios = s :: l.scenarios))
-                    } else
-                      throw new AssertionException("Adding assertion to else and got wrong value.\nAdding: " + s + "\nto: " + parent.get.no + "\n", s)
+                  case false =>
+                    parents match {
+                      case parent :: tail =>
+                        if (resultsSame(parent.no.left.get, s)) { ////Only way here is when I am coming down a no node. By definition I have a parent and it was false. So this match will throw an exception is that assumption is false
+                          logger.addScenarioFor(s.descriptionString, l.code)
+                          Left(l.copy(scenarios = s :: l.scenarios))
+                        } else
+                          throw new AssertionException("Adding assertion to else and got wrong value.\nAdding: " + s + "\nto: " + parent.no + "\n", s)
+                    }
                 }
 
                 (s.expected, actualResultIfUseThisScenariosCode) match {
                   case (ROrException(Some(v1), None), ROrException(Some(v2), None)) =>
                     if (v1 == v2)
                       add
-                    else if (parent.isDefined)
-                      throw ScenarioConflictingWithoutBecauseException(s.expected, actualResultIfUseThisScenariosCode, parent.get.scenarioThatCausedNode, s)
-                    else
+                    else if (parents.isEmpty)
                       throw ScenarioConflictingWithDefaultException(actualResultIfUseThisScenariosCode, s)
+                    else
+                      throw ScenarioConflictingWithoutBecauseException(s.expected, actualResultIfUseThisScenariosCode, parents, s)
                   case (ROrException(Some(v1), None), ROrException(None, Some(e2))) => throw e2
                   case (ROrException(None, Some(e1)), ROrException(None, Some(e2))) =>
                     if (e1.getClass == e2.getClass) add else throw WrongExceptionThrownException(s, e1.getClass, e2)
@@ -629,8 +639,8 @@ trait EngineUniverse[R] extends EngineTypes[R] {
 
           case Right(r) =>
             evaluateBecauseForScenario(r.scenarioThatCausedNode, s.params) match {
-              case true => Right(r.copy(yes = withScenario(Some(r), r.yes, s, true)));
-              case false => Right(r.copy(no = withScenario(Some(r), r.no, s, false)));
+              case true => Right(r.copy(yes = withScenario(ParentAndBoolean(r, true) :: parents, r.yes, s, true)));
+              case false => Right(r.copy(no = withScenario(ParentAndBoolean(r, false) :: parents, r.no, s, false)));
             }
         }
         //          println("Produced: " + result)
