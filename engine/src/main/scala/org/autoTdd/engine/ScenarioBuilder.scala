@@ -549,6 +549,40 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       result
     }
 
+    object PathPrinter {
+      def apply(p: List[ParentAndBoolean]): String = p.map((n) => Strings.oneLine(n.scenarioThatCausedNode.because.description)).mkString("\n");
+    }
+
+    def findWhereItGoes(root: RorN, s: Scenario): List[ParentAndBoolean] = findWhereItGoes(List(), root, s)
+
+    def findWhereItGoes(parents: List[ParentAndBoolean], n: RorN, s: Scenario): List[ParentAndBoolean] = {
+      n match {
+        case null => if (parents.isEmpty) parents else throw new IllegalStateException(PathPrinter(parents))
+        case Left(l: CodeAndScenarios) => parents; //we got to the bottom! 
+        case Right(r) =>
+          evaluateBecauseForScenario(r.scenarioThatCausedNode, s.params) match {
+            case true => ParentAndBoolean(r, true) :: parents;
+            case false => ParentAndBoolean(r, false) :: parents;
+          }
+      }
+    }
+
+    def addIt(path: List[ParentAndBoolean], r: RorN, s: Scenario): RorN = {
+      ( r, path,s.because) match {
+        case (Right(r), ParentAndBoolean(p, true) :: tail, _) => Right(r.copy(yes = addIt(tail, r.yes, s)));
+        case (Right(r), ParentAndBoolean(p, failse) :: tail, _) => Right(r.copy(no = addIt(tail, r.no, s)));
+        case (Some(_), Nil) => throw new CannotHaveBecauseInFirstScenarioException
+        case (None, Nil) =>
+          logger.newRoot(s.descriptionString);
+          Left(CodeAndScenarios(s.actualCode, List(s)))
+        case (Some(b), p :: Nil) => {
+
+        }
+      }
+
+      null
+    }
+
     private def withScenario(parents: List[ParentAndBoolean], n: RorN, s: Scenario, parentWasTrue: Boolean): RorN =
       try {
         //        println("Scenario: " + s)
