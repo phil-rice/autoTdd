@@ -7,8 +7,7 @@ import org.scalatest.junit.JUnitRunner
 class EngineSecondScenarioTests extends EngineStringStringTests {
 
   override val logger = new ConsoleLogger
-  
-  
+
   "An  engine" should "Add assertions to the no if scenario comes to correct value" in {
     val bldr = builderWithDefault.
       scenario("A").because("A").expected("X").
@@ -107,14 +106,6 @@ class EngineSecondScenarioTests extends EngineStringStringTests {
     } should produce[ScenarioConflictingWithDefaultException]
 
   }
-
-  //  it should "Throw ScenarioConflictingWithDefaultException if scenario doesnt match root condition and comes to wrong conclusion" in {
-  //    val bldr = builderWithDefault.
-  //      scenario("A").because("A").expected("X"). //
-  //      scenario("B").expected("Y"); //no because so should have come to 
-  //
-  //    evaluating { bldr.build } should produce[ScenarioConflictingWithDefaultException]
-  //  }
 
   it should "throw ScenarioConflictingWithoutBecause if no because and doesnt come to correct result" in {
     val b = builderWithDefault.

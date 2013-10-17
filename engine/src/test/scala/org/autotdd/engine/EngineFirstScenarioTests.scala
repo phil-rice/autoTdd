@@ -35,6 +35,15 @@ class EngineFirstTwoScenarioTests extends EngineStringStringTests {
   }
 
   it should "Add scenario to root if adding assertion" in {
+    val b = builderWithDefault.scenario("B").expected("Z")
+    val e1 = builderWithDefault.build
+    val e2 = b.build
+    val bScenario = e2.scenarios(1)
+    assertEngineMatches(e1, Left(CodeAndScenarios("Z", List(defaultScenario))))
+    assertEngineMatches(e2, Left(CodeAndScenarios("Z", List(bScenario, defaultScenario))))
+  }
+  
+  it should "Add scenario to root if adding with same conclusion, different reason" in {
     val b = builderWithDefault.scenario("B").because("B").expected("Z")
     val e1 = builderWithDefault.build
     val e2 = b.build
@@ -50,6 +59,7 @@ class EngineFirstTwoScenarioTests extends EngineStringStringTests {
 
   it should "Throw ScenarioBecauseException if because is not true in scenario" in {
     val b = builderWithDefault.scenario("B").because("X")
+//    b.build
     evaluating { b.build } should produce[ScenarioBecauseException]
   }
 

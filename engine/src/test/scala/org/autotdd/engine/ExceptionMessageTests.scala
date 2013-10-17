@@ -60,7 +60,6 @@ class ExceptionMessageTests extends EngineStringStringTests {
     val bldr = builderWithDefault.
       scenario("AB").because("A").expected("X").
       scenario("AB").because("B").expected("Y");
-
     val e = evaluating { bldr.build } should produce[ScenarioConflictException]
     assertEquals("Cannot differentiate based on:\n" +
       " B\n" +

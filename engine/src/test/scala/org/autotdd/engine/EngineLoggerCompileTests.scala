@@ -7,6 +7,18 @@ import org.scalatest.junit.JUnitRunner
 class EngineLoggerCompileTests extends EngineStringStringTests {
   override val logger = new TestLogger()
 
+  it should "log adding to no clause if because is false for root" in {
+	  val bldr = builder.useCase("UseCase").
+			  scenario("W").expected("Z").
+			  scenario("A").expected("X").because("A").
+			  scenario("B").expected("Y").because("B")
+			  logger.reset
+			  bldr.build
+			  checkMessages(
+					  "DEBUG Compile() Adding UseCase[0] as new root",
+					  "DEBUG Compile() Adding UseCase[1] as first if then else",
+					  "DEBUG Compile() Adding UseCase[2] under no of node UseCase[1]")
+  }
   "An empty engine" should "Add scenario to root if adding assertion" in {
     val bldr = builder.useCase("UseCase").
       scenario("W").expected("Z").
@@ -33,18 +45,6 @@ class EngineLoggerCompileTests extends EngineStringStringTests {
     checkMessages("DEBUG Compile() Adding UseCase[0] as new root", "DEBUG Compile() Adding UseCase[1] as first if then else")
   }
 
-  it should "log adding to no clause if because is false for root" in {
-    val bldr = builder.useCase("UseCase").
-      scenario("W").expected("Z").
-      scenario("A").expected("X").because("A").
-      scenario("B").expected("Y").because("B")
-    logger.reset
-    bldr.build
-    checkMessages(
-      "DEBUG Compile() Adding UseCase[0] as new root",
-      "DEBUG Compile() Adding UseCase[1] as first if then else",
-      "DEBUG Compile() Adding UseCase[2] under no of node UseCase[1]")
-  }
 
   it should "log adding to yes clause if because is true for root" in {
     val bldr = builder.useCase("UseCase").
