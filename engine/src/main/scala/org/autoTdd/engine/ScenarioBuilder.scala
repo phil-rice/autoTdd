@@ -234,7 +234,8 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     code: Option[CodeFn[B, RFn, R]] = None,
     because: Option[Because[B]] = None,
     assertions: List[Assertion[A]] = List(),
-    configuration: Option[CfgFn] = None) {
+    configuration: Option[CfgFn] = None, 
+    priority: Int = 0) {
 
     def configure = if (configuration.isDefined) makeClosureForCfg(params)(configuration.get)
     lazy val actualCode: CodeFn[B, RFn, R] = code.getOrElse({
@@ -319,6 +320,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     def expected(e: R) = scenarioLens.mod(thisAsBuilder, (s) => { checkExpectedEmpty(s); s.copy(expected = ROrException(e)) })
     def code(c: CodeFn[B, RFn, R], comment: String = "") = scenarioLens.mod(thisAsBuilder, (s) => { checkCodeEmpty(s); s.copy(code = Some(c.copy(comment = comment))) })
     def configuration[K](cfg: CfgFn) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(configuration = Some(cfg)))
+    def priority(priority: Int) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(priority=priority))
     def assertion(a: Assertion[A], comment: String = "") = scenarioLens.mod(thisAsBuilder, (s) => s.copy(assertions = a.copy(comment = comment) :: s.assertions))
 
     def useCasesForBuild: List[UseCase] =
@@ -495,7 +497,8 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     }
 
     def buildFromScenarios(root: RorN, cs: List[Scenario], seMap: ScenarioExceptionMap): (RorN, ScenarioExceptionMap) = {
-      cs match {
+      val sorted = cs.sortBy(_.priority)
+      sorted match {
         case c :: tail =>
           try {
             validateBecause(c);
@@ -665,24 +668,27 @@ trait EngineUniverse[R] extends EngineTypes[R] {
         //I have a because. The because must be good enough 
         case (NodePath(Left(codeAndScenarios), _) :: Nil, Some(because)) =>
           val optParent = lastParent(fullPath)
-          val newCnC = CodeAndScenarios(s.actualCode, List(s))
 
           val actualResultIfUseThisScenariosCode: ROrException[R] = safeCall(makeClosureForResult(s.params), codeAndScenarios.code.rfn);
           val expectedSame = actualResultIfUseThisScenariosCode == s.expected
           (expectedSame, optParent) match {
             case (true, None) =>
+            logger.mergeRoot(s.descriptionString)
               Left(codeAndScenarios.copy(scenarios = s :: codeAndScenarios.scenarios))
             case (true, Some((lastParent, yesNo))) =>
               val newBecause = s.because.collect { case b => b :: lastParent.because }.getOrElse(lastParent.because)
+              logger.merge(lastParent.scenarioThatCausedNode.descriptionString,s.descriptionString, yesNo)
               if (yesNo)
                 (Right(lastParent.copy(because = newBecause, yes = Left(codeAndScenarios.copy(scenarios = s :: codeAndScenarios.scenarios)))), true)
               else
                 (Right(lastParent.copy(because = newBecause, no = Left(codeAndScenarios.copy(scenarios = s :: codeAndScenarios.scenarios)))), true)
             case (false, Some((lastParent, yesNo))) =>
+              val newCnC = CodeAndScenarios(s.actualCode, List(s))
               checkDoesntMatch(codeAndScenarios, s)
               logger.addingUnder(s.descriptionString, yesNo, lastParent.scenarioThatCausedNode.descriptionString);
               Right(Node(List(because), s.params, Left(newCnC), Left(codeAndScenarios), s))
             case (false, None) =>
+              val newCnC = CodeAndScenarios(s.actualCode, List(s))
               checkDoesntMatch(codeAndScenarios, s)
               logger.addFirstIfThenElse(s.descriptionString);
               Right(Node(List(because), s.params, Left(newCnC), Left(codeAndScenarios), s))

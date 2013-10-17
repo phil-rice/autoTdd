@@ -57,6 +57,12 @@ trait TddLogger extends LoggerDisplayProcessor {
   def addFirstIfThenElse(description: String) = message(Level.DEBUG, TddLogger.compile, "Adding " + description + " as first if then else")
   def addScenarioFor[B, RFn, R](description: String, code: CodeFn[B, RFn, R]) = message(Level.DEBUG, TddLogger.compile, "Adding " + description + " as extra scenario for " + code.description)
 
+  private val yesNoLookup = Map(false -> "no", true -> "yes")
+  def merge(parentDescription: String, childDescription: String, yesNo: Boolean) =
+    message(Level.DEBUG, TddLogger.compile, "Merging " + childDescription + " under " + yesNoLookup(yesNo) + " of " + parentDescription)
+  def mergeRoot(description: String) =
+    message(Level.DEBUG, TddLogger.compile, "Merging " + description + " into root")
+
   def executing(params: List[Any]) = message(Level.DEBUG, TddLogger.run, "Executing " + params.map(this).mkString(","))
   def evaluating(because: List[Any], condition: Boolean) = message(Level.INFO, TddLogger.run, " Condition " + because.mkString(" or ") + " was " + condition)
   def result(result: Any) =
