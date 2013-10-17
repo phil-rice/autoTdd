@@ -36,25 +36,7 @@ class ExceptionMessageTests extends EngineStringStringTests {
       "Detailed:\n" +
       "  List(B)", e.getMessage())
   }
-  it should "throw ScenarioConflictException if  cannot differentiate inputs, identical result, different because" in {
-    val bldr = builderWithDefault.
-      scenario("AB").because("A").expected("X").
-      scenario("AB").because("B").expected("X");
 
-    val s = bldr.useCasesForBuild.flatMap(_.scenarios)
-    val w = s(0); assertEquals(List("W"), w.params)
-    val xBecauseA = s(1); assertEquals("A", xBecauseA.becauseString)
-    val xBecauseB = s(2); assertEquals("B", xBecauseB.becauseString)
-    val e = evaluating { bldr.build } should produce[ScenarioConflictException]
-    assertEquals("Cannot differentiate based on:\n" +
-      " B\n" +
-      "Existing: UseCase1[1]\n" +
-      "Being Added: UseCase1[2]\n" +
-      "Detailed existing:\n" +
-      "Scenario(UseCase1[1], AB, because=A, expected=X)\n" +
-      "Detailed of being Added:\n" +
-      "Scenario(UseCase1[2], AB, because=B, expected=X)", e.getMessage())
-  }
 
   it should "throw ScenarioConflictException if it cannot decide between two scenarios" in {
     val bldr = builderWithDefault.

@@ -206,15 +206,23 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     override def toString() = getClass.getSimpleName + "(" + code + ":" + scenarios.map(_.description).mkString(",") + ")";
   }
 
-  case class Node(val because: Because[B], inputs: List[Any], yes: RorN, no: RorN, scenarioThatCausedNode: Scenario) {
+  case class Node(val because: List[Because[B]], inputs: List[Any], yes: RorN, no: RorN, scenarioThatCausedNode: Scenario) {
     def allScenarios = scenarios(Right(this))
+    def becauseString = because.map(_.description).mkString(" or ")
+    def prettyString = because.map(_.pretty).mkString(" or ")
     private def scenarios(rOrN: RorN): List[Scenario] = {
       rOrN match {
         case Left(cd) => cd.scenarios
         case Right(n) => scenarios(n.yes) ++ scenarios(n.no)
       }
     }
-    override def toString = getClass().getSimpleName() + "(" + because.description + " => " + yes.toString() + " =/> " + no.toString() + " / " + scenarioThatCausedNode.description + ")";
+    def evaluateBecause(fn: BecauseClosure): Boolean = {
+      for (b <- because)
+        if (fn(b.because)) return true
+      false
+
+    }
+    override def toString = getClass().getSimpleName() + "(" + becauseString + " => " + yes.toString() + " =/> " + no.toString() + " / " + scenarioThatCausedNode.description + ")";
   }
 
   case class Scenario(
@@ -374,7 +382,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     }
 
     private def evaluate(fn: BecauseClosure, n: Node, log: Boolean): RFn = {
-      val condition = fn(n.because.because)
+      val condition = n.evaluateBecause(fn)
       if (log)
         logger.evaluating(n.because, condition)
       condition match {
@@ -410,7 +418,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
 
     class DefaultIfThenPrinter extends IfThenPrinter {
       def resultPrint = (indent, result) => indent + result.pretty + ":" + result.scenarios.map((s) => s.descriptionString).mkString(",") + "\n"
-      def ifPrint = (indent, node) => indent + "if(" + node.because.pretty + ")\n"
+      def ifPrint = (indent, node) => indent + "if(" + node.prettyString + ")\n"
       def elsePrint = (indent, node) => indent + "else\n";
       def endPrint = (indent, node) => "";
       def titlePrint: (String, Scenario) => String = (indent, scenario) => "";
@@ -597,9 +605,9 @@ trait EngineUniverse[R] extends EngineTypes[R] {
           Left(CodeAndScenarios(s.actualCode, List(s)));
         case (null, Some(_)) => throw new CannotHaveBecauseInFirstScenarioException
         case _ =>
-          val path=findWhereItGoes(root, s)
+          val path = findWhereItGoes(root, s)
           val reversedPath = path.reverse;
-          addIt(path, reversedPath, s)
+          addIt(path, reversedPath, s)._1
       }
     }
     def addAssertion(fullPath: List[NodePath], codeAndScenarios: CodeAndScenarios, s: Scenario): RorN = {
@@ -618,9 +626,9 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       result
     }
 
-    def lastParent(fullPath: List[NodePath]): Option[(Node,Boolean)] = {
+    def lastParent(fullPath: List[NodePath]): Option[(Node, Boolean)] = {
       fullPath match {
-        case _ ::  NodePath(Right(n),yesNo) :: _ => Some((n, yesNo))
+        case _ :: NodePath(Right(n), yesNo) :: _ => Some((n, yesNo))
         case _ => None
       }
     }
@@ -634,15 +642,22 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       }
     }
 
-    def addIt(fullPath: List[NodePath], path: List[NodePath], s: Scenario): RorN = {
-      val result = (path, s.because) match {
+    //If the boolean is false the RorN returns is the new child. If it is true, then it is the new parent (and therefore includes the child)
+    //The only time the boolean in the result is true, is when adding and or to the parent
+    def addIt(fullPath: List[NodePath], path: List[NodePath], s: Scenario): (RorN, Boolean) = {
+      implicit def toTuple(rOrN: RorN) = (rOrN, false)
+      val result: (RorN, Boolean) = (path, s.because) match {
 
         //Should only get here if root is null
         case (Nil, _) => { logger.newRoot(s.descriptionString); Left(CodeAndScenarios(s.actualCode, List(s))) }
 
         //walking down to the bottom
-        case (NodePath(Right(node), true) :: tail, _) => Right(node.copy(yes = addIt(fullPath, tail, s)));
-        case (NodePath(Right(node), false) :: tail, _) => Right(node.copy(no = addIt(fullPath, tail, s)));
+        case (NodePath(Right(node), true) :: tail, _) =>
+          val recurse = addIt(fullPath, tail, s);
+          if (recurse._2) recurse._1 else Right(node.copy(yes = recurse._1));
+        case (NodePath(Right(node), false) :: tail, _) =>
+          val recurse = addIt(fullPath, tail, s);
+          if (recurse._2) recurse._1 else Right(node.copy(no = recurse._1));
 
         //Assertions are scenarios without a because
         case (NodePath(Left(codeAndScenarios), _) :: Nil, None) => addAssertion(fullPath, codeAndScenarios, s)
@@ -651,12 +666,27 @@ trait EngineUniverse[R] extends EngineTypes[R] {
         case (NodePath(Left(codeAndScenarios), _) :: Nil, Some(because)) =>
           val optParent = lastParent(fullPath)
           val newCnC = CodeAndScenarios(s.actualCode, List(s))
-          checkDoesntMatch(codeAndScenarios, s)
-          optParent match {
-            case Some((lastParent, yesNo)) => logger.addingUnder(s.descriptionString, yesNo, lastParent.scenarioThatCausedNode.descriptionString)
-            case None => logger.addFirstIfThenElse(s.descriptionString)
+
+          val actualResultIfUseThisScenariosCode: ROrException[R] = safeCall(makeClosureForResult(s.params), codeAndScenarios.code.rfn);
+          val expectedSame = actualResultIfUseThisScenariosCode == s.expected
+          (expectedSame, optParent) match {
+            case (true, None) =>
+              Left(codeAndScenarios.copy(scenarios = s :: codeAndScenarios.scenarios))
+            case (true, Some((lastParent, yesNo))) =>
+              val newBecause = s.because.collect { case b => b :: lastParent.because }.getOrElse(lastParent.because)
+              if (yesNo)
+                (Right(lastParent.copy(because = newBecause, yes = Left(codeAndScenarios.copy(scenarios = s :: codeAndScenarios.scenarios)))), true)
+              else
+                (Right(lastParent.copy(because = newBecause, no = Left(codeAndScenarios.copy(scenarios = s :: codeAndScenarios.scenarios)))), true)
+            case (false, Some((lastParent, yesNo))) =>
+              checkDoesntMatch(codeAndScenarios, s)
+              logger.addingUnder(s.descriptionString, yesNo, lastParent.scenarioThatCausedNode.descriptionString);
+              Right(Node(List(because), s.params, Left(newCnC), Left(codeAndScenarios), s))
+            case (false, None) =>
+              checkDoesntMatch(codeAndScenarios, s)
+              logger.addFirstIfThenElse(s.descriptionString);
+              Right(Node(List(because), s.params, Left(newCnC), Left(codeAndScenarios), s))
           }
-          Right(Node(because, s.params, Left(newCnC), Left(codeAndScenarios), s))
 
         case (p :: tail, _) => throw new IllegalStateException(f"Path = ${path.toString}\nscenario = $s")
       }
@@ -664,124 +694,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       result
     }
 
-    //    private def withScenario(parents: List[NodePath], n: RorN, s: Scenario, parentWasTrue: Boolean): RorN =
-    //      try {
-    //        //        println("Scenario: " + s)
-    //        val result: RorN = n match {
-    //          case null =>
-    //            if (s.because.isDefined)
-    //              throw new CannotHaveBecauseInFirstScenarioException
-    //            logger.newRoot(s.descriptionString)
-    //            Left(CodeAndScenarios(s.actualCode, List(s)))
-    //          case Left(l: CodeAndScenarios) =>
-    //            val cd: CodeFn[B, RFn, R] = s.actualCode
-    //            val newCnC = CodeAndScenarios(s.actualCode, List(s))
-    //            s.because match {
-    //              case Some(b) =>
-    //                parents match {
-    //                  case p :: tail =>
-    //                    for (scenario <- l.scenarios) {
-    //                      scenario.configure
-    //                      val result = makeClosureForBecause(scenario.params)(b.because)
-    //                      if (result)
-    //                        throw ScenarioConflictException(scenario, s)
-    //                    }
-    //                    p.scenarioThatCausedNode.configure
-    //                    val wouldBreakExisting = parentWasTrue & makeClosureForBecause(p.inputs)(b.because)
-    //                    if (wouldBreakExisting) {
-    //                      val existing = p.scenarioThatCausedNode.description + " " + p.scenarioThatCausedNode.params;
-    //                      val existingScenario = p.scenarioThatCausedNode
-    //                      s.configure;
-    //                      throw ScenarioConflictException(p.scenarioThatCausedNode, s)
-    //                    }
-    //                    //                   logger.debugCompile( "Adding " + newCnC + "to yes of leaf " + parent.toString)
-    //                    logger.addingUnder(s.descriptionString, parentWasTrue, p.scenarioThatCausedNode.descriptionString)
-    //                    Right(Node(b, s.params, Left(newCnC), Left(l), s)) //Adding to the 'yes' of the current
-    //                  case _ => //No parent so we are the root.
-    //                    resultsSame(l, s) match {
-    //                      case true =>
-    //                        logger.addScenarioForRoot(s.descriptionString)
-    //                        Left(l.copy(scenarios = s :: l.scenarios)); // we come to same conclusion as root, so we just add ourselves as assertion
-    //                      case false =>
-    //                        if (!s.because.isDefined)
-    //                          throw new NoBecauseException(s"Scenario\n${s}", s)
-    //
-    //                        val because = s.because.get.because
-    //                        for (scenario <- l.scenarios) {
-    //                          scenario.configure
-    //                          val b = makeClosureForBecause(scenario.params);
-    //                          val result = b(because);
-    //                          if (result)
-    //                            throw ScenarioConflictException(scenario, s);
-    //                        }
-    //                        logger.addFirstIfThenElse(s.descriptionString)
-    //                        Right(Node(b, s.params, Left(newCnC), Left(l), s)) //So we are if b then new result else default 
-    //                    }
-    //                }
-    //              case None => {
-    //                if (s.expected.isEmpty)
-    //                  throw NoExpectedException(s)
-    //                val actualResultIfUseThisScenariosCode: ROrException[R] = safeCall(makeClosureForResult(s.params), l.code.rfn);
-    //                def add = parentWasTrue match {
-    //                  case true =>
-    //                    logger.addScenarioFor(s.descriptionString, l.code)
-    //                    Left(l.copy(scenarios = s :: l.scenarios))
-    //                  case false =>
-    //                    parents match {
-    //                      case parent :: tail =>
-    //                        if (resultsSame(parent.no.left.get, s)) { ////Only way here is when I am coming down a no node. By definition I have a parent and it was false. So this match will throw an exception is that assumption is false
-    //                          logger.addScenarioFor(s.descriptionString, l.code)
-    //                          Left(l.copy(scenarios = s :: l.scenarios))
-    //                        } else
-    //                          throw new AssertionException("Adding assertion to else and got wrong value.\nAdding: " + s + "\nto: " + parent.no + "\n", s)
-    //                    }
-    //                }
-    //
-    //                (s.expected, actualResultIfUseThisScenariosCode) match {
-    //                  case (ROrException(Some(v1), None), ROrException(Some(v2), None)) =>
-    //                    if (v1 == v2)
-    //                      add
-    //                    else if (parents.isEmpty)
-    //                      throw ScenarioConflictingWithDefaultException(actualResultIfUseThisScenariosCode, s)
-    //                    else
-    //                      throw ScenarioConflictingWithoutBecauseException(s.expected, actualResultIfUseThisScenariosCode, parents, s)
-    //                  case (ROrException(Some(v1), None), ROrException(None, Some(e2))) => throw e2
-    //                  case (ROrException(None, Some(e1)), ROrException(None, Some(e2))) =>
-    //                    if (e1.getClass == e2.getClass) add else throw WrongExceptionThrownException(s, e1.getClass, e2)
-    //                }
-    //              }
-    //            }
-    //
-    //          case Right(r) =>
-    //            evaluateBecauseForScenario(r.scenarioThatCausedNode, s.params) match {
-    //              case true => Right(r.copy(yes = withScenario(NodePath(r, true) :: parents, r.yes, s, true)));
-    //              case false => Right(r.copy(no = withScenario(NodePath(r, false) :: parents, r.no, s, false)));
-    //            }
-    //        }
-    //        //          println("Produced: " + result)
-    //        result
-    //      } catch {
-    //        case e: EngineException => throw e;
-    //        case e: Throwable => throw new ExceptionAddingScenario("Scenario: " + s.description + "\nFull Details:\n" + s, e)
-    //      }
-    private def findLastMatch(fn: BecauseClosure, root: Option[Node], lastMatch: Option[Node], params: List[Any]): Option[Node] = {
-      root match {
-        case None => None
-        case Some(r) =>
-          fn(r.because.because) match {
-            case true => findLastMatch(fn, r.yes, root, params)
-            case false => findLastMatch(fn, r.no, lastMatch, params)
-          }
-      }
-    }
-    private def findLastMatch(fn: BecauseClosure, root: RorN, lastMatch: Option[Node], params: List[Any]): Option[Node] = {
-      root match {
-        case Left(r) => lastMatch
-        case Right(n) => findLastMatch(fn, Some(n), lastMatch, params)
-      }
-    }
   }
-
   abstract class Engine(val engineDescription: Option[String], val defaultCode: Option[Code]) extends BuildEngine with ScenarioWalker {
     def defaultRoot: RorN = defaultCode match {
       case Some(code) => Left(new CodeAndScenarios(code, List()))
@@ -1006,7 +919,7 @@ trait NodeComparator[R] extends EngineUniverse[R] {
 
   }
   def compareNodes(prefix: String, n1: Node, n2: Node): List[String] = {
-    check(prefix + "because {0} {1}", n1.because.description, n2.because.description) ++
+    check(prefix + "because {0} {1}", n1.becauseString, n2.becauseString) ++
       check(prefix + "inputs {0} {1}", n1.inputs, n2.inputs) ++
       compareNodes(prefix + "yes/", n1.yes, n2.yes) ++
       compareNodes(prefix + "no/", n1.no, n2.no)

@@ -24,7 +24,7 @@ class EngineFirstTwoScenarioTests extends EngineStringStringTests {
     assertEquals(2, e.scenarios.size)
     assertEquals(defaultScenario, e.scenarios(0))
     val bScenario = e.scenarios(1)
-    assertEngineMatches(e, Right(Node(because = "B", inputs = List("B"), yes = Left(CodeAndScenarios("X", List(bScenario))), no = Left(CodeAndScenarios("Z", List(defaultScenario))), scenarioThatCausedNode = bScenario)))
+    assertEngineMatches(e, Right(Node(because = List("B"), inputs = List("B"), yes = Left(CodeAndScenarios("X", List(bScenario))), no = Left(CodeAndScenarios("Z", List(defaultScenario))), scenarioThatCausedNode = bScenario)))
   }
 
   it should "Throw ScenarioConflictingWithDefaultException if second scenario is assertion and comes to wrong result" in {
@@ -42,7 +42,7 @@ class EngineFirstTwoScenarioTests extends EngineStringStringTests {
     assertEngineMatches(e1, Left(CodeAndScenarios("Z", List(defaultScenario))))
     assertEngineMatches(e2, Left(CodeAndScenarios("Z", List(bScenario, defaultScenario))))
   }
-  
+
   it should "Add scenario to root if adding with same conclusion, different reason" in {
     val b = builderWithDefault.scenario("B").because("B").expected("Z")
     val e1 = builderWithDefault.build
@@ -59,7 +59,7 @@ class EngineFirstTwoScenarioTests extends EngineStringStringTests {
 
   it should "Throw ScenarioBecauseException if because is not true in scenario" in {
     val b = builderWithDefault.scenario("B").because("X")
-//    b.build
+    //    b.build
     evaluating { b.build } should produce[ScenarioBecauseException]
   }
 
