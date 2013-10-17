@@ -21,7 +21,7 @@ trait AbstractScenarioTests[R] extends FirstScenarioTest[R] {
     val c = firstScenario
     assert(c.params == firstParams)
     assert(c.code == None)
-    assert(c.because == None)
+    assert(c.because == List())
     assert(c.expected == ROrException[R]())
     assert(c.configuration == None)
     assert(c.description == None, c.description)
@@ -38,7 +38,7 @@ trait AbstractScenarioTests[R] extends FirstScenarioTest[R] {
     val c = scenarioLens.get(builderWithScenario.expected(firstResult))
     assert(c.params == firstParams)
     assert(c.code == None)
-    assert(c.because == None)
+    assert(c.because == List())
     assert(c.expected == ROrException[R](firstResult), c)
     assert(c.configuration == None)
   }
@@ -48,7 +48,7 @@ trait AbstractScenarioTests[R] extends FirstScenarioTest[R] {
     assert(c.params == firstParams)
     val expectedCode = Some(new CodeFn(codeFn, "AbstractScenarioTests.this.codeFn"))
     assert(c.code == expectedCode, "Scenario: " + c + "\nCode: " + c.code + "\nExpected: " + expectedCode)
-    assert(c.because == None)
+    assert(c.because == List())
     assert(c.expected ==  ROrException[R](firstResult))
     assert(c.configuration == None)
   }
@@ -57,7 +57,7 @@ trait AbstractScenarioTests[R] extends FirstScenarioTest[R] {
     val c = scenarioLens.get(builderWithScenario.expected(firstResult).because(because))
     assert(c.params == firstParams)
     assert(c.code == None)
-    val expected = Some(new Because(because, "AbstractScenarioTests.this.because"))
+    val expected = List(new Because(because, "AbstractScenarioTests.this.because"))
     assert(c.because == expected, c.because)
     assert(c.expected == ROrException[R](firstResult))
     assert(c.configuration == None)

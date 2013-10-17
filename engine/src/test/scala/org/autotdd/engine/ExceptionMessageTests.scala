@@ -30,6 +30,7 @@ class ExceptionMessageTests extends EngineStringStringTests {
 
   it should "Throw ScenarioBecauseException if because is not true in scenario" in {
     val b = builderWithDefault.scenario("B").because("X")
+//    b.build 
     val e = evaluating { b.build } should produce[ScenarioBecauseException]
     assertEquals(b.scenariosForBuild(1), e.scenario)
     assertEquals("X is not true for Scenario(UseCase1[1], B, because=X, expected=<N/A>)\n" +

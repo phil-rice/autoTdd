@@ -49,7 +49,8 @@ trait AbstractEngineTest[R] extends EngineUniverse[R] with AbstractTest with Nod
   }
   def assertEngineMatches(e: Engine, n2: RorN) {
     val actual = compareNodes(e.root.asInstanceOf[RorN], n2)
-    assert(actual == List(), "\n" + actual.mkString("\n\n") + "\n\nExpected:\n" + n2 + "\n\nRoot:\n" + e.root)
+    if (actual != List())
+      assert(actual == List(), "\n" + actual.mkString("\n\n") + "\n\nExpected:\n" + n2 + "\n\nRoot:\n" + e.root)
   }
 
   //  def checkSingleException[E](code: => Unit, exceptionClass: Class[E]): E =

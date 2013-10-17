@@ -52,8 +52,8 @@ trait JunitUniverse[R] extends EngineUniverse[R] {
           <tr><td>Parameters</td><td><pre>{ s.params.map(displayProcessor).mkString(", ") }</pre></td></tr>
           <tr><td>Expected</td><td><pre>{ s.expected }</pre></td></tr>
           {
-            if (s.because.isDefined)
-              <tr><td>Because</td><td><pre>{ s.becauseString }</pre></td><td><pre>{ s.because.get.comment }</pre></td></tr>
+            if (!s.because.isEmpty)
+              <tr><td>Because</td><td><pre>{ s.becauseString }</pre></td><td><pre>{ s.because.map(_.comment).mkString("\n") }</pre></td></tr>
           }
           {
             if (s.code.isDefined)

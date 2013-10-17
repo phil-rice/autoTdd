@@ -114,7 +114,6 @@ trait EngineUniverse[R] extends EngineTypes[R] {
 
   }
 
-  class CannotModifyFragmentThatDoesntExistException extends Exception;
   class ScenarioException(msg: String, val scenario: Scenario, cause: Throwable = null) extends EngineException(msg, cause)
 
   object NoExpectedException {
@@ -141,25 +140,17 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     def apply(actual: ROrException[R], s: Scenario) =
       new ScenarioConflictingWithDefaultException(s"\nActual Result: ${actual}\nExpected ${s.expected}\n Scenario ${ExceptionScenarioPrinter.full(s)}", actual, s)
   }
-  class ScenarioConflictingWithDefaultException(msg: String, val actual: ROrException[R], scenario: Scenario) extends ScenarioException(msg, scenario)
-  //  object ScenarioConflictException {
-  //    def apply(existing: Scenario, beingAdded: Scenario, cause: Throwable = null) =
-  //      new ScenarioConflictException(s"Cannot differentiate based on:\n ${beingAdded.becauseString}" +
-  //        s"\n${ExceptionScenarioPrinter.existingAndBeingAdded(existing, beingAdded)}", existing, beingAdded, null)
-  //  }
-  //
   object ScenarioConflictingWithoutBecauseException {
     def apply(expected: ROrException[R], actual: ROrException[R], parents: List[NodePath], beingAdded: Scenario) = {
       val pathString = PathPrinter(parents)
       parents match {
-        case NodePath(Left(l: CodeAndScenarios), _) :: Nil => throw ScenarioConflictingWithDefaultException(actual, beingAdded);
-        case NodePath(Left(l: CodeAndScenarios), _) :: tail =>
-          new ScenarioConflictingWithoutBecauseException(s"\nCame to wrong conclusion: ${actual}\nInstead of ${expected}\nPath\n$pathString\n${ExceptionScenarioPrinter.existingAndBeingAdded(l.firstAddedScenario, beingAdded)}", l.firstAddedScenario, beingAdded)
+        case NodePath(Left(l: CodeAndScenarios), _) :: Nil => ScenarioConflictingWithDefaultException(actual, beingAdded);
+        case NodePath(Left(l: CodeAndScenarios), _) :: tail => new ScenarioConflictingWithoutBecauseException(s"\nCame to wrong conclusion: ${actual}\nInstead of ${expected}\nPath\n$pathString\n${ExceptionScenarioPrinter.existingAndBeingAdded(l.firstAddedScenario, beingAdded)}", l.firstAddedScenario, beingAdded)
         case _ => throw new IllegalStateException;
       }
     }
   }
-
+  class ScenarioConflictingWithDefaultException(msg: String, val actual: ROrException[R], scenario: Scenario) extends ScenarioException(msg, scenario)
   class ScenarioConflictingWithoutBecauseException(msg: String, scenario: Scenario, beingAdded: Scenario, cause: Throwable = null) extends ScenarioConflictException(msg, scenario, beingAdded, cause)
 
   object ScenarioConflictException {
@@ -168,6 +159,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
         s"\n${ExceptionScenarioPrinter.existingAndBeingAdded(existing, beingAdded)}", existing, beingAdded, cause)
   }
   class ScenarioConflictException(msg: String, scenario: Scenario, val beingAdded: Scenario, cause: Throwable = null) extends ScenarioException(msg, scenario, cause)
+
   class MultipleExceptions(msg: String, val scenarioExceptionMap: ScenarioExceptionMap) extends EngineException(msg, scenarioExceptionMap.first.get)
 
   object WrongExceptionThrownException {
@@ -206,7 +198,9 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     override def toString() = getClass.getSimpleName + "(" + code + ":" + scenarios.map(_.description).mkString(",") + ")";
   }
 
-  case class Node(val because: Because[B], inputs: List[Any], yes: RorN, no: RorN, scenarioThatCausedNode: Scenario) {
+  case class Node(val because: List[Because[B]], inputs: List[Any], yes: RorN, no: RorN, scenarioThatCausedNode: Scenario) {
+    def becauseDescription = because.map(_.description).mkString(" or ")
+    def prettyDescription = because.map(_.pretty).mkString(" or ")
     def allScenarios = scenarios(Right(this))
     private def scenarios(rOrN: RorN): List[Scenario] = {
       rOrN match {
@@ -224,7 +218,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     paramPrinter: LoggerDisplayProcessor,
     expected: ROrException[R] = ROrException[R](),
     code: Option[CodeFn[B, RFn, R]] = None,
-    because: Option[Because[B]] = None,
+    because: List[Because[B]] = List(),
     assertions: List[Assertion[A]] = List(),
     configuration: Option[CfgFn] = None) {
 
@@ -238,7 +232,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
         case _ => new CodeFn(rfnMaker(Left(new IllegalStateException("Do not have code or expected  for this scenario: " + ExceptionScenarioPrinter(this)))), "No expected or Code")
       }
     })
-    def becauseString = because match { case Some(b) => b.description; case _ => "" }
+    def becauseString = because.map(_.description).mkString(" or ")
     def descriptionString = description.getOrElse(locator)
     override def toString =
       s"Scenario(${descriptionString}, ${params.map(paramPrinter).mkString(",")}, because=${becauseString}, expected=${logger(expected)})"
@@ -268,16 +262,21 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     })
   case class UseCase(description: String, scenarios: List[Scenario]);
 
-  trait ScenarioBuilder extends ScenarioWalker {
-    def validateBecause(s: Scenario) = {
-      s.configure
-      s.because match {
-        case Some(b) =>
-          if (!makeClosureForBecause(s.params).apply(b.because))
-            throw new ScenarioBecauseException(s.becauseString + " is not true for " + ExceptionScenarioPrinter.full(s) + "\n", s);
-        case None =>
-      }
+  def validateBecause(s: Scenario) = {
+    s.configure
+    if (s.because.size > 0 && !evaluateBecauseForScenario(s, s.params))
+      throw new ScenarioBecauseException(s.becauseString + " is not true for " + ExceptionScenarioPrinter.full(s) , s);
+  }
+  def evaluateBecauseForScenario(c: Scenario, params: List[Any]) = {
+    val fn = makeClosureForBecause(params)
+    val result = c.because.foldLeft(false) { (acc, b) =>
+      val x = fn(b.because);
+      val result = acc || x
+      result
     }
+    result
+  }
+  trait ScenarioBuilder extends ScenarioWalker {
 
     def engineDescription: Option[String]
 
@@ -297,8 +296,9 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     })
     def because(b: Because[B], comment: String = "") = scenarioLens.mod(thisAsBuilder,
       (s) => {
-        validateBecause(s);
-        s.copy(because = Some(b.copy(comment = comment)))
+        //        validateBecause(s);
+        val result = s.copy(because = List(b.copy(comment = comment)))
+        result
       })
 
     def withDefaultCode(code: Code): RealScenarioBuilder = {
@@ -363,8 +363,8 @@ trait EngineUniverse[R] extends EngineTypes[R] {
 
   trait EvaluateEngine {
 
-    def evaluate(fn: BecauseClosure, n: RorN, log: Boolean = true): RFn = {
-      val result = n match {
+    def evaluate(fn: BecauseClosure, rOrN: RorN, log: Boolean = true): RFn = {
+      val result = rOrN match {
         case Left(r) =>
           val result = r.code.rfn
           result
@@ -373,8 +373,16 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       result
     }
 
+    protected def evaluate(fn: BecauseClosure, becauses: List[Because[B]]): Boolean = {
+      for (because <- becauses)
+        if (fn(because.because))
+          return true
+      false
+    }
+
     private def evaluate(fn: BecauseClosure, n: Node, log: Boolean): RFn = {
-      val condition = fn(n.because.because)
+      val condition = evaluate(fn, n.because)
+
       if (log)
         logger.evaluating(n.because, condition)
       condition match {
@@ -410,7 +418,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
 
     class DefaultIfThenPrinter extends IfThenPrinter {
       def resultPrint = (indent, result) => indent + result.pretty + ":" + result.scenarios.map((s) => s.descriptionString).mkString(",") + "\n"
-      def ifPrint = (indent, node) => indent + "if(" + node.because.pretty + ")\n"
+      def ifPrint = (indent, node) => indent + "if(" + node.prettyDescription + ")\n"
       def elsePrint = (indent, node) => indent + "else\n";
       def endPrint = (indent, node) => "";
       def titlePrint: (String, Scenario) => String = (indent, scenario) => "";
@@ -447,16 +455,6 @@ trait EngineUniverse[R] extends EngineTypes[R] {
   }
 
   trait BuildEngine extends EvaluateEngine with EngineToString {
-    def validateBecause(s: Scenario) {
-      s.configure
-      s.because match {
-        case Some(b) =>
-          if (!makeClosureForBecause(s.params).apply(b.because))
-            throw new ScenarioBecauseException(s.becauseString + " is not true for " + ExceptionScenarioPrinter.full(s), s);
-        case None =>
-      }
-    }
-
     protected def checkExpectedMatchesAction(root: RorN, s: Scenario) {
       s.configure
       val bec = makeClosureForBecause(s.params)
@@ -530,12 +528,6 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       }
     }
 
-    def evaluateBecauseForScenario(c: Scenario, params: List[Any]) = {
-      val fn = makeClosureForBecause(params)
-      //    c.configure
-      c.because match { case Some(b) => fn(b.because); case _ => throw new IllegalStateException("No because in " + c) }
-    }
-
     def evaluateResultForScenario(c: Scenario, params: List[Any]): ROrException[R] = {
       val fnr = makeClosureForResult(params)
       c.configure
@@ -592,12 +584,12 @@ trait EngineUniverse[R] extends EngineTypes[R] {
 
     def addIt(root: RorN, s: Scenario): RorN = {
       (root, s.because) match {
-        case (null, None) =>
+        case (null, Nil) =>
           logger.newRoot(s.descriptionString)
           Left(CodeAndScenarios(s.actualCode, List(s)));
-        case (null, Some(_)) => throw new CannotHaveBecauseInFirstScenarioException
+        case (null, _) => throw new CannotHaveBecauseInFirstScenarioException
         case _ =>
-          val path=findWhereItGoes(root, s)
+          val path = findWhereItGoes(root, s)
           val reversedPath = path.reverse;
           addIt(path, reversedPath, s)
       }
@@ -618,9 +610,9 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       result
     }
 
-    def lastParent(fullPath: List[NodePath]): Option[(Node,Boolean)] = {
+    def lastParent(fullPath: List[NodePath]): Option[(Node, Boolean)] = {
       fullPath match {
-        case _ ::  NodePath(Right(n),yesNo) :: _ => Some((n, yesNo))
+        case _ :: NodePath(Right(n), yesNo) :: _ => Some((n, yesNo))
         case _ => None
       }
     }
@@ -628,7 +620,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     def checkDoesntMatch(codeAndScenarios: CodeAndScenarios, scenarioBeingAdded: Scenario) {
       for (scenario <- codeAndScenarios.scenarios) {
         scenario.configure
-        val result = makeClosureForBecause(scenario.params)(scenarioBeingAdded.because.get.because)
+        val result = evaluateBecauseForScenario(scenarioBeingAdded, scenario.params)
         if (result)
           throw ScenarioConflictException(scenario, scenarioBeingAdded)
       }
@@ -645,10 +637,10 @@ trait EngineUniverse[R] extends EngineTypes[R] {
         case (NodePath(Right(node), false) :: tail, _) => Right(node.copy(no = addIt(fullPath, tail, s)));
 
         //Assertions are scenarios without a because
-        case (NodePath(Left(codeAndScenarios), _) :: Nil, None) => addAssertion(fullPath, codeAndScenarios, s)
+        case (NodePath(Left(codeAndScenarios), _) :: Nil, Nil) => addAssertion(fullPath, codeAndScenarios, s)
 
         //I have a because. The because must be good enough 
-        case (NodePath(Left(codeAndScenarios), _) :: Nil, Some(because)) =>
+        case (NodePath(Left(codeAndScenarios), _) :: Nil, because) =>
           val optParent = lastParent(fullPath)
           val newCnC = CodeAndScenarios(s.actualCode, List(s))
           checkDoesntMatch(codeAndScenarios, s)
@@ -764,22 +756,22 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     //        case e: EngineException => throw e;
     //        case e: Throwable => throw new ExceptionAddingScenario("Scenario: " + s.description + "\nFull Details:\n" + s, e)
     //      }
-    private def findLastMatch(fn: BecauseClosure, root: Option[Node], lastMatch: Option[Node], params: List[Any]): Option[Node] = {
-      root match {
-        case None => None
-        case Some(r) =>
-          fn(r.because.because) match {
-            case true => findLastMatch(fn, r.yes, root, params)
-            case false => findLastMatch(fn, r.no, lastMatch, params)
-          }
-      }
-    }
-    private def findLastMatch(fn: BecauseClosure, root: RorN, lastMatch: Option[Node], params: List[Any]): Option[Node] = {
-      root match {
-        case Left(r) => lastMatch
-        case Right(n) => findLastMatch(fn, Some(n), lastMatch, params)
-      }
-    }
+    //    private def findLastMatch(fn: BecauseClosure, root: Option[Node], lastMatch: Option[Node], params: List[Any]): Option[Node] = {
+    //      root match {
+    //        case None => None
+    //        case Some(r) =>
+    //          fn(r.because.because) match {
+    //            case true => findLastMatch(fn, r.yes, root, params)
+    //            case false => findLastMatch(fn, r.no, lastMatch, params)
+    //          }
+    //      }
+    //    }
+    //    private def findLastMatch(fn: BecauseClosure, root: RorN, lastMatch: Option[Node], params: List[Any]): Option[Node] = {
+    //      root match {
+    //        case Left(r) => lastMatch
+    //        case Right(n) => findLastMatch(fn, Some(n), lastMatch, params)
+    //      }
+    //    }
   }
 
   abstract class Engine(val engineDescription: Option[String], val defaultCode: Option[Code]) extends BuildEngine with ScenarioWalker {
@@ -1006,7 +998,7 @@ trait NodeComparator[R] extends EngineUniverse[R] {
 
   }
   def compareNodes(prefix: String, n1: Node, n2: Node): List[String] = {
-    check(prefix + "because {0} {1}", n1.because.description, n2.because.description) ++
+    check(prefix + "because {0} {1}", n1.becauseDescription, n2.becauseDescription) ++
       check(prefix + "inputs {0} {1}", n1.inputs, n2.inputs) ++
       compareNodes(prefix + "yes/", n1.yes, n2.yes) ++
       compareNodes(prefix + "no/", n1.no, n2.no)

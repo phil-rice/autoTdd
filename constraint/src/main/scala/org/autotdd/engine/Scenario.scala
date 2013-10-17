@@ -59,7 +59,7 @@ object Because {
     val becauseString = show(b.tree)
     reify { Because[B](b.splice, c.literal(becauseString).splice, "") }
   }
-
+  
 }
 case class Assertion[A](val assertion: A, override val description: String, override val comment: String="") extends CodeHolder(description, comment)
 
