@@ -10,7 +10,6 @@ import java.lang.IllegalStateException
 
 class NeedUseCaseException extends Exception
 class NeedScenarioException extends Exception
-class CannotHaveBecauseInFirstScenarioException extends EngineException("")
 
 class ExceptionAddingScenario(msg: String, t: Throwable) extends EngineException(msg, t)
 
@@ -154,7 +153,11 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       parents match {
         case NodePath(Left(l: CodeAndScenarios), _) :: Nil => throw ScenarioConflictingWithDefaultException(actual, beingAdded);
         case NodePath(Left(l: CodeAndScenarios), _) :: tail =>
-          new ScenarioConflictingWithoutBecauseException(s"\nCame to wrong conclusion: ${actual}\nInstead of ${expected}\nPath\n$pathString\n${ExceptionScenarioPrinter.existingAndBeingAdded(l.firstAddedScenario, beingAdded)}", l.firstAddedScenario, beingAdded)
+          l.addedBy match {
+            case Some(existing) =>
+              new ScenarioConflictingWithoutBecauseException(s"\nCame to wrong conclusion: ${actual}\nInstead of ${expected}\nPath\n$pathString\n${ExceptionScenarioPrinter.existingAndBeingAdded(existing, beingAdded)}", existing, beingAdded)
+            case None => throw ScenarioConflictingWithDefaultException(actual, beingAdded);
+          }
         case _ => throw new IllegalStateException;
       }
     }
@@ -202,7 +205,10 @@ trait EngineUniverse[R] extends EngineTypes[R] {
   }
 
   case class CodeAndScenarios(val code: Code, val scenarios: List[Scenario] = List()) {
-    def firstAddedScenario = scenarios.last
+    def addedBy = scenarios match {
+      case Nil => None
+      case _ => Some(scenarios.last)
+    }
     override def toString() = getClass.getSimpleName + "(" + code + ":" + scenarios.map(_.description).mkString(",") + ")";
   }
 
@@ -234,7 +240,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     code: Option[CodeFn[B, RFn, R]] = None,
     because: Option[Because[B]] = None,
     assertions: List[Assertion[A]] = List(),
-    configuration: Option[CfgFn] = None, 
+    configuration: Option[CfgFn] = None,
     priority: Int = 0) {
 
     def configure = if (configuration.isDefined) makeClosureForCfg(params)(configuration.get)
@@ -320,7 +326,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     def expected(e: R) = scenarioLens.mod(thisAsBuilder, (s) => { checkExpectedEmpty(s); s.copy(expected = ROrException(e)) })
     def code(c: CodeFn[B, RFn, R], comment: String = "") = scenarioLens.mod(thisAsBuilder, (s) => { checkCodeEmpty(s); s.copy(code = Some(c.copy(comment = comment))) })
     def configuration[K](cfg: CfgFn) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(configuration = Some(cfg)))
-    def priority(priority: Int) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(priority=priority))
+    def priority(priority: Int) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(priority = priority))
     def assertion(a: Assertion[A], comment: String = "") = scenarioLens.mod(thisAsBuilder, (s) => s.copy(assertions = a.copy(comment = comment) :: s.assertions))
 
     def useCasesForBuild: List[UseCase] =
@@ -497,7 +503,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     }
 
     def buildFromScenarios(root: RorN, cs: List[Scenario], seMap: ScenarioExceptionMap): (RorN, ScenarioExceptionMap) = {
-      val sorted = cs.sortBy(_.priority)
+      val sorted = cs.sortBy(-_.priority)
       sorted match {
         case c :: tail =>
           try {
@@ -606,7 +612,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
         case (null, None) =>
           logger.newRoot(s.descriptionString)
           Left(CodeAndScenarios(s.actualCode, List(s)));
-        case (null, Some(_)) => throw new CannotHaveBecauseInFirstScenarioException
+//        case (null, Some(_)) => throw new CannotHaveBecauseInFirstScenarioException
         case _ =>
           val path = findWhereItGoes(root, s)
           val reversedPath = path.reverse;
@@ -673,11 +679,11 @@ trait EngineUniverse[R] extends EngineTypes[R] {
           val expectedSame = actualResultIfUseThisScenariosCode == s.expected
           (expectedSame, optParent) match {
             case (true, None) =>
-            logger.mergeRoot(s.descriptionString)
+              logger.mergeRoot(s.descriptionString)
               Left(codeAndScenarios.copy(scenarios = s :: codeAndScenarios.scenarios))
             case (true, Some((lastParent, yesNo))) =>
               val newBecause = s.because.collect { case b => b :: lastParent.because }.getOrElse(lastParent.because)
-              logger.merge(lastParent.scenarioThatCausedNode.descriptionString,s.descriptionString, yesNo)
+              logger.merge(lastParent.scenarioThatCausedNode.descriptionString, s.descriptionString, yesNo)
               if (yesNo)
                 (Right(lastParent.copy(because = newBecause, yes = Left(codeAndScenarios.copy(scenarios = s :: codeAndScenarios.scenarios)))), true)
               else

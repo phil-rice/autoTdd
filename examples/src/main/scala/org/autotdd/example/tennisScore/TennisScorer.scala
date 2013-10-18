@@ -12,7 +12,7 @@ object Score {
   val s30 = Score("thirty")
   val s40 = Score("forty")
   val deuce = Score("deuce")
-  val advantage = Score("advantage")
+  val advantage = Score("advantage") 
   val noScore = Score("noScore")
   val error = Score("error")
   val won = Score("won")
@@ -49,7 +49,7 @@ object TennisScorer {
     scenario(2, 2).expected("thirty all").
 
     useCase("If at least three points have been scored by each player, and the scores are equal, the score is 'deuce'.").
-    scenario(3, 3).expected("deuce").because((l: Int, r: Int) => l >= 3 && r >= 3 && l == r).
+    scenario(3, 3).expected("deuce").because((l: Int, r: Int) => l >= 3 && r >= 3 && l == r).priority(1).
     scenario(4, 4).expected("deuce").//because((l: Int, r: Int) => l >= 3 && r >= 3 && l == r).
     scenario(6, 6).expected("deuce").
 

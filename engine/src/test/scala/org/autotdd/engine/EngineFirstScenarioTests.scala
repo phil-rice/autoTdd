@@ -13,10 +13,10 @@ class EngineFirstTwoScenarioTests extends EngineStringStringTests {
     assertEquals("Z", engineWithDefault("B"))
   }
 
-  it should "throw an exception if the first scenario has a because " in {
-    val builderWithBecauseInFirstScenario = builderWithDefault.because("W")
-    evaluating { builderWithBecauseInFirstScenario.build } should produce[CannotHaveBecauseInFirstScenarioException]
-  }
+//  it should "throw an exception if the first scenario has a because " in {
+//    val builderWithBecauseInFirstScenario = builderWithDefault.because("W")
+//    evaluating { builderWithBecauseInFirstScenario.build } should produce[CannotHaveBecauseInFirstScenarioException]
+//  }
 
   it should "produce a simple if then with two scenarios" in {
     val b = builderWithDefault.scenario("B").because("B").expected("X");
