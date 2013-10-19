@@ -10,6 +10,7 @@ import java.lang.IllegalStateException
 
 class NeedUseCaseException extends Exception
 class NeedScenarioException extends Exception
+class UndecidedException extends Exception
 
 class ExceptionAddingScenario(msg: String, t: Throwable) extends EngineException(msg, t)
 
@@ -192,7 +193,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
   }
   class ExceptionWithoutCodeException(msg: String, scenario: Scenario) extends ScenarioException(msg, scenario)
 
-  def rfnMaker: (Either[Exception, R]) => RFn
+  def rfnMaker: (Either[() => Exception, R]) => RFn
   def logger: TddLogger
 
   type RorN = Either[CodeAndScenarios, Node]
@@ -204,12 +205,16 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     implicit def delegate_to[B, RFn, R](c: CodeAndScenarios) = c.code
   }
 
-  case class CodeAndScenarios(val code: Code, val scenarios: List[Scenario] = List()) {
+  case class CodeAndScenarios(val code: Code, val scenarios: List[Scenario] = List(), default: Boolean = false) {
+
     def addedBy = scenarios match {
       case Nil => None
       case _ => Some(scenarios.last)
     }
-    override def toString() = getClass.getSimpleName + "(" + code + ":" + scenarios.map(_.description).mkString(",") + ")";
+    override def toString() = {
+      val defaultString = if (default) "default, " else ""
+      getClass.getSimpleName + "(" + defaultString + code + ":" + scenarios.map(_.description).mkString(",") + ")";
+    }
   }
 
   case class Node(val because: List[Because[B]], inputs: List[Any], yes: RorN, no: RorN, scenarioThatCausedNode: Scenario) {
@@ -250,7 +255,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       expected match {
         case ROrException(Some(value), None) => new CodeFn(rfnMaker(Right(value)), value.toString);
         case ROrException(None, Some(_)) => throw new IllegalStateException("Internal Error: Have no code for an exception");
-        case _ => new CodeFn(rfnMaker(Left(new IllegalStateException("Do not have code or expected  for this scenario: " + ExceptionScenarioPrinter(this)))), "No expected or Code")
+        case _ => new CodeFn(rfnMaker(Left(() => new IllegalStateException("Do not have code or expected  for this scenario: " + ExceptionScenarioPrinter(Scenario.this)))), "No expected or Code")
       }
     })
     def becauseString = because match { case Some(b) => b.description; case _ => "" }
@@ -512,7 +517,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
               case ROrException(None, Some(e)) => if (!c.code.isDefined) throw ExceptionWithoutCodeException(c)
               case _ => ;
             }
-            val newRoot = addIt(root, c)
+            val newRoot = withScenario(root, c)
             //            val newRoot = withScenario(List(), root, c, true)
             validateScenario(newRoot, c);
             buildFromScenarios(newRoot, tail, seMap)
@@ -607,16 +612,16 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       }
     }
 
-    def addIt(root: RorN, s: Scenario): RorN = {
+    def withScenario(root: RorN, s: Scenario): RorN = {
       (root, s.because) match {
         case (null, None) =>
           logger.newRoot(s.descriptionString)
           Left(CodeAndScenarios(s.actualCode, List(s)));
-//        case (null, Some(_)) => throw new CannotHaveBecauseInFirstScenarioException
+        //        case (null, Some(_)) => throw new CannotHaveBecauseInFirstScenarioException
         case _ =>
           val path = findWhereItGoes(root, s)
           val reversedPath = path.reverse;
-          addIt(path, reversedPath, s)._1
+          withScenario(path, reversedPath, s)._1
       }
     }
     def addAssertion(fullPath: List[NodePath], codeAndScenarios: CodeAndScenarios, s: Scenario): RorN = {
@@ -653,23 +658,29 @@ trait EngineUniverse[R] extends EngineTypes[R] {
 
     //If the boolean is false the RorN returns is the new child. If it is true, then it is the new parent (and therefore includes the child)
     //The only time the boolean in the result is true, is when adding and or to the parent
-    def addIt(fullPath: List[NodePath], path: List[NodePath], s: Scenario): (RorN, Boolean) = {
+    def withScenario(fullPath: List[NodePath], path: List[NodePath], s: Scenario): (RorN, Boolean) = {
       implicit def toTuple(rOrN: RorN) = (rOrN, false)
+      def newCnC = CodeAndScenarios(s.actualCode, List(s))
       val result: (RorN, Boolean) = (path, s.because) match {
 
-        //Should only get here if root is null
+        //Should only get here if root is null... this is now a legacy clause, as it will never be null 
         case (Nil, _) => { logger.newRoot(s.descriptionString); Left(CodeAndScenarios(s.actualCode, List(s))) }
 
         //walking down to the bottom
         case (NodePath(Right(node), true) :: tail, _) =>
-          val recurse = addIt(fullPath, tail, s);
+          val recurse = withScenario(fullPath, tail, s);
           if (recurse._2) recurse._1 else Right(node.copy(yes = recurse._1));
         case (NodePath(Right(node), false) :: tail, _) =>
-          val recurse = addIt(fullPath, tail, s);
+          val recurse = withScenario(fullPath, tail, s);
           if (recurse._2) recurse._1 else Right(node.copy(no = recurse._1));
 
         //Assertions are scenarios without a because
-        case (NodePath(Left(codeAndScenarios), _) :: Nil, None) => addAssertion(fullPath, codeAndScenarios, s)
+        case (NodePath(Left(codeAndScenarios), _) :: Nil, None) =>
+          val optParent = lastParent(fullPath)
+          optParent match {
+            case None if (codeAndScenarios.default) => { logger.newRoot(s.descriptionString); Left(CodeAndScenarios(s.actualCode, List(s))) }
+            case _ => addAssertion(fullPath, codeAndScenarios, s)
+          }
 
         //I have a because. The because must be good enough 
         case (NodePath(Left(codeAndScenarios), _) :: Nil, Some(because)) =>
@@ -689,12 +700,10 @@ trait EngineUniverse[R] extends EngineTypes[R] {
               else
                 (Right(lastParent.copy(because = newBecause, no = Left(codeAndScenarios.copy(scenarios = s :: codeAndScenarios.scenarios)))), true)
             case (false, Some((lastParent, yesNo))) =>
-              val newCnC = CodeAndScenarios(s.actualCode, List(s))
               checkDoesntMatch(codeAndScenarios, s)
               logger.addingUnder(s.descriptionString, yesNo, lastParent.scenarioThatCausedNode.descriptionString);
               Right(Node(List(because), s.params, Left(newCnC), Left(codeAndScenarios), s))
             case (false, None) =>
-              val newCnC = CodeAndScenarios(s.actualCode, List(s))
               checkDoesntMatch(codeAndScenarios, s)
               logger.addFirstIfThenElse(s.descriptionString);
               Right(Node(List(because), s.params, Left(newCnC), Left(codeAndScenarios), s))
@@ -709,8 +718,9 @@ trait EngineUniverse[R] extends EngineTypes[R] {
   }
   abstract class Engine(val engineDescription: Option[String], val defaultCode: Option[Code]) extends BuildEngine with ScenarioWalker {
     def defaultRoot: RorN = defaultCode match {
-      case Some(code) => Left(new CodeAndScenarios(code, List()))
-      case _ => null
+      case Some(code) => Left(new CodeAndScenarios(code, List(), true))
+      case _ => Left(new CodeAndScenarios(rfnMaker(Left(() =>
+        new UndecidedException)), List(), true))
     }
     def useCases: List[UseCase];
     lazy val scenarios: List[Scenario] = useCases.flatMap(_.scenarios)

@@ -13,9 +13,9 @@ class InvalidBecauseException(msg: String) extends EngineException(msg, null)
 case class Configurator[K](item: K, fn: (K) => Unit);
 
 object RfnMaker {
-  def rfn1ConstantMaker[P, R] = (e: Either[Exception, R]) => e match { case Left(e) => (p: P) => throw e; case Right(r) => (p: P) => r }
-  def rfn2ConstantMaker[P1, P2, R] = (e: Either[Exception, R]) => e match { case Left(e) => (p1: P1, p2: P2) => throw e; case Right(r) => (p1: P1, p2: P2) => r }
-  def rfn3ConstantMaker[P1, P2, P3, R] = (e: Either[Exception, R]) => e match { case Left(e) => (p1: P1, p2: P2, p3: P3) => throw e; case Right(r) => (p1: P1, p2: P2, p3: P3) => r }
+  def rfn1ConstantMaker[P, R] = (e: Either[()=>Exception, R]) => e match { case Left(e) => (p: P) => throw e(); case Right(r) => (p: P) => r }
+  def rfn2ConstantMaker[P1, P2, R] = (e: Either[()=>Exception, R]) => e match { case Left(e) => (p1: P1, p2: P2) =>  throw e(); case Right(r) => (p1: P1, p2: P2) => r }
+  def rfn3ConstantMaker[P1, P2, P3, R] = (e: Either[()=>Exception, R]) => e match { case Left(e) => (p1: P1, p2: P2, p3: P3) => throw e(); case Right(r) => (p1: P1, p2: P2, p3: P3) => r }
 
 }
 
@@ -35,7 +35,7 @@ abstract class CodeHolder(val description: String, val comment: String) {
 
 }
 
-case class CodeFn[B, RFn, R](val rfn: RFn, override val description: String, override val comment: String="") extends CodeHolder(description, comment) {
+case class CodeFn[B, RFn, R](val rfn: RFn, override val description: String, override val comment: String = "") extends CodeHolder(description, comment) {
   override def toString = getClass.getSimpleName() + "(" + description + ")"
 }
 
@@ -49,7 +49,7 @@ object CodeFn {
 
 }
 
-case class Because[B](val because: B, override val description: String, override val comment: String="") extends CodeHolder(description, comment)
+case class Because[B](val because: B, override val description: String, override val comment: String = "") extends CodeHolder(description, comment)
 
 object Because {
   implicit def b_to_because[B](b: B): Because[B] = macro b_to_because_imp[B]
@@ -61,7 +61,7 @@ object Because {
   }
 
 }
-case class Assertion[A](val assertion: A, override val description: String, override val comment: String="") extends CodeHolder(description, comment)
+case class Assertion[A](val assertion: A, override val description: String, override val comment: String = "") extends CodeHolder(description, comment)
 
 object Assertion {
   implicit def a_to_assertion[A](a: A): Assertion[A] = macro a_to_assertion_impl[A]

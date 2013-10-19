@@ -24,7 +24,7 @@ object AutoTddJunitRunner {
 trait NotActuallyFactory[R] extends EngineUniverse[R] {
   def builder: RealScenarioBuilder = ???
   def logger: org.autotdd.engine.TddLogger = TddLogger.noLogger
-  def rfnMaker: scala.util.Either[Exception, Any] => RFn = ???
+  def rfnMaker: scala.util.Either[()=>Exception, Any] => RFn = ???
   def makeClosureForBecause(params: List[Any]) = ???
   def makeClosureForCfg(params: List[Any]) = ???
   def makeClosureForResult(params: List[Any]) = ???

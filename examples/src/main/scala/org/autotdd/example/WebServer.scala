@@ -1,4 +1,4 @@
-
+package org.autotdd.example
 
 import org.eclipse.jetty.servlet.ServletHolder
 import org.eclipse.jetty.servlet.ServletContextHandler
