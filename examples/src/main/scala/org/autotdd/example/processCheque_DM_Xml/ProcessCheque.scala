@@ -164,12 +164,11 @@ object ProcessChequeXml {
     because((s: ChequeSituation) => s.customerWouldExceedOverdraftLimit).
     //
     useCase("Cheques that are to to customers in an accepted bank, when the cheque writer has sufficient funds, should be allowed").
-    scenario((world, cheque("1", dodgyDaveId, richRogerId, today, 50)), "Dodgy Dave sending an OK cheque to someone in this bank").
     expected(ProcessChequeResult(true, "processCheque.accept")).
+    scenario((world, cheque("1", dodgyDaveId, richRogerId, today, 50)), "Dodgy Dave sending an OK cheque to someone in this bank").
     because((s: ChequeSituation) => s.world.acceptedBanks.contains(s.chequeToBank())).
 
     scenario((world, cheque("1", dodgyDaveId, richRogerAtHsbcId, today, 50)), "Dodgy Dave sending an OK cheque to someone in an accepted bank").
-    expected(ProcessChequeResult(true, "processCheque.accept")).
 
     build
 

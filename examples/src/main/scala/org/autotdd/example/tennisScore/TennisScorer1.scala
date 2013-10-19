@@ -4,6 +4,19 @@ import org.autotdd.engine.Engine
 import org.junit.runner.RunWith
 import org.autotdd.engine.tests.AutoTddJunitRunner
 
+object Score {
+  val love = Score("love")
+  val s15 = Score("fifteen")
+  val s30 = Score("thirty")
+  val s40 = Score("forty")
+  val deuce = Score("deuce")
+  val advantage = Score("advantage")
+  val noScore = Score("noScore")
+  val error = Score("error")
+  val won = Score("won")
+  val lost = Score("lost")
+}
+case class Score(item: String)
 @RunWith(classOf[AutoTddJunitRunner])
 object TennisScorer1 {
   import Score._

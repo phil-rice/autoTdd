@@ -17,25 +17,23 @@ object CategorisePerson {
   import GBP._
   val categorise = Engine[Person, String]().
     withDescription("This engine works out what category of customer you are").
-    withDefaultCode((p: Person) =>throw new IllegalStateException).
+    withDefaultCode((p: Person) => throw new IllegalStateException).
 
-    useCase("Young people are not eligable").
+    useCase("Young people are not eligable").expected("person.child").
     scenario(Person(savings = 10000, ageInYears = 10), "Child aged 10").
-    expected("person.child").because((p: Person) => p.tooYoung).
+    because((p: Person) => p.tooYoung).
 
     scenario(Person(savings = 10000, ageInYears = 15), "Child aged 15").
-    expected("person.child").
 
-    useCase("Poor people").
+    useCase("Poor people").expected("person.poor").
     scenario(Person(savings = 50, ageInYears = 20), "Very poor person").
-    expected("person.poor").because((p: Person) => (!p.hasEnoughSavings)).
+    because((p: Person) => (!p.hasEnoughSavings)).
 
     scenario(Person(savings = 999, ageInYears = 20), "Only just poor person").
-    expected("person.poor").
 
-    useCase("Rich people").
+    useCase("Rich people").expected("person.rich").
     scenario(Person(savings = 1050, ageInYears = 20), "Rich person").
-    expected("person.rich").because((p: Person) => p.hasEnoughSavings).
+    because((p: Person) => p.hasEnoughSavings).
 
     build
 

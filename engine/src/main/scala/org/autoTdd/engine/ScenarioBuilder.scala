@@ -281,7 +281,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     },
     (b, s) => b.useCases match {
       case u :: ut => u.scenarios match {
-        case sold :: st => b.withCases(b.engineDescription, u.copy(scenarios = s :: st) :: ut, b.defaultCode)
+        case sold :: st => b.withCases(b.engineDescription, u.copy(scenarios = s :: st) :: ut, b.defaultCode, b.lastExpect)
         case _ => throw new NeedScenarioException
       }
       case _ => throw new NeedUseCaseException
@@ -299,14 +299,16 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       }
     }
 
+    def lastExpect: ROrException[R]
+
     def engineDescription: Option[String]
 
     def defaultCode: Option[Code]
 
     def useCases: List[UseCase]
 
-    def withCases(description: Option[String], useCases: List[UseCase], defaultCode: Option[Code]): RealScenarioBuilder;
-    def withDescription(description: String) = withCases(Some(description), useCases, defaultCode)
+    def withCases(description: Option[String], useCases: List[UseCase], defaultCode: Option[Code], lastExpect: ROrException[R]): RealScenarioBuilder;
+    def withDescription(description: String) = withCases(Some(description), useCases, defaultCode, lastExpect)
     def thisAsBuilder: RealScenarioBuilder
 
     def checkExpectedEmpty(s: Scenario) = if (s.expected.isDefined) throw new IllegalStateException("Cannot specify expected a second time")
@@ -314,7 +316,7 @@ trait EngineUniverse[R] extends EngineTypes[R] {
     def expectException[E <: Throwable](e: E, comment: String = "") = scenarioLens.mod(thisAsBuilder, (s) => {
       checkExpectedEmpty(s)
       s.copy(expected = ROrException(e))
-    })
+    }).withLastExpected(ROrException[R](e))
     def because(b: Because[B], comment: String = "") = scenarioLens.mod(thisAsBuilder,
       (s) => {
         validateBecause(s);
@@ -325,31 +327,58 @@ trait EngineUniverse[R] extends EngineTypes[R] {
       if (defaultCode.isDefined)
         throw CannotDefineDefaultTwiceException(defaultCode.get, code)
       else
-        withCases(engineDescription, useCases, Some(code))
+        withCases(engineDescription, useCases, Some(code), lastExpect)
     }
-    def useCase(description: String) = withCases(engineDescription, UseCase(description, List()) :: useCases, defaultCode);
-    def expected(e: R) = scenarioLens.mod(thisAsBuilder, (s) => { checkExpectedEmpty(s); s.copy(expected = ROrException(e)) })
+    protected def withUseCase(description: String) =
+      withCases(engineDescription, UseCase(description, List()) :: useCases, defaultCode, ROrException[R]());
+    def useCase(description: String) = withLastScenarioUpdateWithExpects.withUseCase(description)
+    def expected(e: R) = (useCases match {
+      case u :: ut => u.scenarios match {
+        case s :: st => scenarioLens.mod(thisAsBuilder, (s) => { checkExpectedEmpty(s); s.copy(expected = ROrException(e)) })
+        case _ => thisAsBuilder
+      }
+      case _ => throw new NeedUseCaseException
+    }).withLastExpected(ROrException[R](e))
+    protected def withLastExpected(lastExpect: ROrException[R]) = withCases(engineDescription, useCases, defaultCode, lastExpect)
     def code(c: CodeFn[B, RFn, R], comment: String = "") = scenarioLens.mod(thisAsBuilder, (s) => { checkCodeEmpty(s); s.copy(code = Some(c.copy(comment = comment))) })
     def configuration[K](cfg: CfgFn) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(configuration = Some(cfg)))
     def priority(priority: Int) = scenarioLens.mod(thisAsBuilder, (s) => s.copy(priority = priority))
     def assertion(a: Assertion[A], comment: String = "") = scenarioLens.mod(thisAsBuilder, (s) => s.copy(assertions = a.copy(comment = comment) :: s.assertions))
 
-    def useCasesForBuild: List[UseCase] =
-      useCases.map(u => UseCase(u.description, u.scenarios.reverse)).reverse;
+    def useCasesForBuild: List[UseCase] = withLastScenarioUpdateWithExpects.useCases.map(u => UseCase(u.description, u.scenarios.reverse)).reverse;
 
     def scenariosForBuild: List[Scenario] =
       useCasesForBuild.flatMap((u) => u.scenarios);
 
-    protected def newScenario(description: String, params: List[Any]) =
+    protected def withNewScenario(description: String, params: List[Any]) = useCases match {
+      case h :: t => {
+        val descriptionString = if (description == null) None else Some(description);
+        withCases(engineDescription, UseCase(h.description, Scenario(s"${h.description}[${h.scenarios.size}]", descriptionString, params, logger) :: h.scenarios) :: t, defaultCode, lastExpect)
+      }
+      case _ => throw new NeedUseCaseException
+    }
+    protected def withLastScenarioUpdateWithExpects: RealScenarioBuilder =
       useCases match {
         case h :: t => {
-          val descriptionString = if (description == null) None else Some(description);
-          withCases(engineDescription, UseCase(h.description, Scenario(s"${h.description}[${h.scenarios.size}]", descriptionString, params, logger) :: h.scenarios) :: t, defaultCode)
+          useCases match {
+            case u :: ut => u.scenarios match {
+              case s :: st =>
+                scenarioLens.mod(thisAsBuilder, (s) =>
+                  s.expected == ROrException[R]() match {
+                    case true => s.copy(expected = lastExpect)
+                    case false => s
+                  })
+              case _ => thisAsBuilder
+            }
+            case _ => thisAsBuilder
+          }
         }
-        case _ => throw new NeedUseCaseException
+        case _ => thisAsBuilder
       }
 
+    protected def newScenario(description: String, params: List[Any]) = withLastScenarioUpdateWithExpects.withNewScenario(description, params)
   }
+
   trait IfThenPrinter {
     def resultPrint: (String, CodeAndScenarios) => String
     def ifPrint: (String, Node) => String
@@ -862,9 +891,9 @@ class BuilderFactory1[P, R](override val logger: TddLogger = TddLogger.noLogger)
   type RealScenarioBuilder = Builder1
   def builder = new Builder1
 
-  class Builder1(val engineDescription: Option[String] = None, val useCases: List[UseCase] = List(), val defaultCode: Option[Code] = None) extends ABuilder1 {
+  class Builder1(val engineDescription: Option[String] = None, val useCases: List[UseCase] = List(), val defaultCode: Option[Code] = None, val lastExpect: ROrException[R] = ROrException[R]()) extends ABuilder1 {
     def thisAsBuilder = this
-    def withCases(engineDescription: Option[String], useCases: List[UseCase], code: Option[Code]) = new Builder1(engineDescription, useCases, code)
+    def withCases(engineDescription: Option[String], useCases: List[UseCase], code: Option[Code], lastExpect: ROrException[R]) = new Builder1(engineDescription, useCases, code, lastExpect)
   }
 }
 
@@ -889,9 +918,9 @@ class BuilderFactory2[P1, P2, R](override val logger: TddLogger = TddLogger.noLo
   type RealScenarioBuilder = Builder2
   def builder = new Builder2
 
-  class Builder2(val engineDescription: Option[String] = None, val useCases: List[UseCase] = List(), val defaultCode: Option[Code] = None) extends ABuilder2 {
+  class Builder2(val engineDescription: Option[String] = None, val useCases: List[UseCase] = List(), val defaultCode: Option[Code] = None, val lastExpect: ROrException[R] = ROrException[R]()) extends ABuilder2 {
     def thisAsBuilder = this
-    def withCases(engineDescription: Option[String], useCases: List[UseCase], code: Option[Code]) = new Builder2(engineDescription, useCases, code)
+    def withCases(engineDescription: Option[String], useCases: List[UseCase], code: Option[Code], lastExpect: ROrException[R]) = new Builder2(engineDescription, useCases, code, lastExpect)
   }
 }
 
@@ -900,9 +929,9 @@ class BuilderFactory3[P1, P2, P3, R](override val logger: TddLogger = TddLogger.
   type RealScenarioBuilder = Builder3
   def builder = new Builder3
 
-  class Builder3(val engineDescription: Option[String] = None, val useCases: List[UseCase] = List(), val defaultCode: Option[Code] = None) extends ScenarioBuilder {
+  class Builder3(val engineDescription: Option[String] = None, val useCases: List[UseCase] = List(), val defaultCode: Option[Code] = None, val lastExpect: ROrException[R] = ROrException[R]()) extends ScenarioBuilder {
     def thisAsBuilder = this
-    def withCases(engineDescription: Option[String], useCases: List[UseCase], code: Option[Code]) = new Builder3(engineDescription, useCases, code)
+    def withCases(engineDescription: Option[String], useCases: List[UseCase], code: Option[Code], lastExpect: ROrException[R]) = new Builder3(engineDescription, useCases, code, lastExpect)
     def scenario(p1: P1, p2: P2, p3: P3, description: String = null) = newScenario(description, List(p1, p2, p3))
     def build = new Engine(engineDescription, defaultCode) with Function3[P1, P2, P3, R] {
       def useCases = useCasesForBuild
